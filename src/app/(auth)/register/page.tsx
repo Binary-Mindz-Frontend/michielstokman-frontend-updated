@@ -21,7 +21,7 @@ const registerSchema = z.object({
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
-  console.log()
+  console.log("test")
   const [registerUser] = useRegisterUserMutation();
   // const router = useRouter();
   // Zod Schema for Register
