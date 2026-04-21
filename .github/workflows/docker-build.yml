@@ -30,6 +30,8 @@ jobs:
           push: true
           # Change "your-dockerhub-username" in the dashboard later
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/michielstokman-frontend:latest
+          build-args: |
+            NEXT_PUBLIC_BASE_API=${{ secrets.NEXT_PUBLIC_BASE_API }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
