@@ -5,30 +5,34 @@ import InputField from '@/components/dashboard/Fields/InputField/InputField';
 import DynamicSectionHeader from '@/components/main/DynamicSectionHeader/DynamicSectionHeader';
 import { Button } from '@/components/ui/button';
 import { useRegisterUserMutation } from '@/redux/features/auth/auth.api';
+import { setAuth } from '@/redux/features/auth/authSlice';
+import { useAppDispatch } from '@/redux/hooks';
+import { setUserProfile } from '@/services/auth/auth.service';
+import { TLoginUser } from '@/types/userRole.types';
 import { catchAsyncMutation } from '@/utils/apiReqRes.utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
 // Zod Schema definition
 const registerSchema = z.object({
-  email: z.string(),
-  password: z.string(),
+  email: z.email('Please enter a valid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters long'),
 });
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
-  console.log("test")
+  const dispatch = useAppDispatch();
+  const router = useRouter();
   const [registerUser] = useRegisterUserMutation();
-  // const router = useRouter();
-  // Zod Schema for Register
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
   });
@@ -44,9 +48,16 @@ export default function RegisterPage() {
       registerUser(userInfo).unwrap(),
       // onSuccess
       (res) => {
-        console.log('RESPONSE============>', res);
+        const user: TLoginUser = {
+          email: res?.data?.user?.email,
+          is_admin: res?.data?.user?.is_admin || false,
+        };
+        dispatch(setAuth({ user }));
+        setUserProfile(user, res?.data?.access_token);
         toast.success(res?.message || 'User Regisetered Successfully');
-        // router.push('/register/stepper');
+        setTimeout(() => {
+          router.push('/register/stepper');
+        }, 1000);
       },
     );
   };
@@ -83,8 +94,12 @@ export default function RegisterPage() {
             error={errors.password?.message}
           />
 
-          <Button type="submit" className="btn-styles">
-            Create Account
+          <Button
+            disabled={isSubmitting}
+            type="submit"
+            className={`btn-styles border-primary bg-primary hover:bg-primary/90 w-full text-white disabled:cursor-not-allowed`}
+          >
+            {isSubmitting ? 'Creating Account...' : 'Create Account'}
           </Button>
         </form>
 
