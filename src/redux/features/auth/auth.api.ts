@@ -17,18 +17,18 @@ const authManagementApi = apiClient.injectEndpoints({
     loginUser: builder.mutation({
       query: (data) => {
         const result = {
-          url: '/auth/login',
+          url: '/login',
           method: 'POST',
           body: data,
         };
         return result;
       },
     }),
-    updateUser: builder.mutation({
+    updateUserProfile: builder.mutation({
       query: (data) => {
         const result = {
-          url: '/auth/profile',
-          method: 'PATCH',
+          url: '/me/profile',
+          method: 'PUT',
           body: data,
         };
         return result;
@@ -51,6 +51,6 @@ const authManagementApi = apiClient.injectEndpoints({
 export const {
   useLoginUserMutation,
   useRegisterUserMutation,
-  useUpdateUserMutation,
+  useUpdateUserProfileMutation,
   useGetUserProfileQuery,
 } = authManagementApi;

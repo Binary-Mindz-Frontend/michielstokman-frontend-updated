@@ -4,10 +4,17 @@
 
 import InputField from '@/components/dashboard/Fields/InputField/InputField';
 import { Button } from '@/components/ui/button';
+import { useLoginUserMutation } from '@/redux/features/auth/auth.api';
+import { setAuth } from '@/redux/features/auth/authSlice';
+import { useAppDispatch } from '@/redux/hooks';
+import { setUserProfile } from '@/services/auth/auth.service';
+import { TLoginUser } from '@/types/userRole.types';
+import { catchAsyncMutation } from '@/utils/apiReqRes.utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import { z } from 'zod';
 
 // Zod Schema for Login
@@ -19,6 +26,8 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
+  const [loginUser, { isLoading }] = useLoginUserMutation();
+  const dispatch = useAppDispatch();
   const router = useRouter();
   const {
     register,
@@ -32,9 +41,24 @@ export default function LoginPage() {
     },
   });
 
-  const onSubmit = (data: LoginFormData) => {
-    console.log('Login Data:', data);
-    router.push('/');
+  const onSubmit = async (data: LoginFormData) => {
+    await catchAsyncMutation(
+      loginUser(data).unwrap(),
+      // onSuccess
+      (res) => {
+        const user: TLoginUser = {
+          email: res?.data?.user?.email,
+          is_admin: res?.data?.user?.is_admin || false,
+        };
+        const redirectPath = res?.data?.user?.is_admin ? '/dashboard/overview' : '/profile';
+        dispatch(setAuth({ user }));
+        setUserProfile(user, res?.data?.access_token);
+        toast.success(res?.message || 'User Logged in Successfully');
+        setTimeout(() => {
+          router.push(redirectPath);
+        }, 1000);
+      },
+    );
   };
 
   return (
@@ -68,8 +92,12 @@ export default function LoginPage() {
             error={errors.password?.message}
           />
 
-          <Button type="submit" className="btn-styles">
-            Sign In
+          <Button
+            disabled={isLoading}
+            type="submit"
+            className={`btn-styles disabled:bg-primary/50 w-full ${isLoading ? 'cursor-not-allowed' : 'hover:bg-primary/90'}`}
+          >
+            {isLoading ? 'Signing in...' : 'Sign In'}
           </Button>
         </form>
 
