@@ -52,8 +52,9 @@ export const catchAsyncMutation = async <T>(
     }
 
     return res;
-  } catch (err) {
-    const error = err as IGlobalErrorResponse;
+  } catch (err: any) {
+    const error = err?.data as IGlobalErrorResponse;
+    console.log(err);
     toast.error(error.message || 'Something went wrong!');
 
     if (onError) {

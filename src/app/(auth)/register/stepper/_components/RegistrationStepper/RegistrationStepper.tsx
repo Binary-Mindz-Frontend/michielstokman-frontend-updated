@@ -8,10 +8,15 @@ import GrowthSlider from '@/components/main/GrowthSlider/GrowthSlider';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
+import { useUpdateUserProfileMutation } from '@/redux/features/auth/auth.api';
+
+import { catchAsyncMutation } from '@/utils/apiReqRes.utils';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader2Icon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import { z } from 'zod';
 
 // Zod Schema definition
@@ -42,6 +47,7 @@ const GENDER_OPTIONS = [
 export default function RegistrationStepper() {
   const router = useRouter();
   const [step, setStep] = useState(1);
+  const [updateUserProfile, { isLoading }] = useUpdateUserProfileMutation(undefined);
 
   const {
     register,
@@ -95,9 +101,41 @@ export default function RegistrationStepper() {
     if (isValid) setStep(nextStep);
   };
 
-  const onFinalSubmit = (data: StepperFormData) => {
-    console.log('Final Data:', data);
-    router.push('/profile');
+  const onFinalSubmit = async (data: StepperFormData) => {
+    const transformedData = {
+      true_name: data.name,
+      age: Number(data.age) || 0,
+      country: data.country,
+      city: data.city,
+      height: data.height,
+      education: data.education,
+      annual_income: data.income,
+      gender: data.gender,
+      sexual_orientation: data.isSexualOrientationEnabled ? data.sexualOrientation : '',
+      life_phase: data.lifePhase,
+
+      slider_desire_relationship: data.growthFocus['Desire & Relationship'] || 0,
+      slider_life_purpose: data.growthFocus['Life & Purpose'] || 0,
+      slider_career_money: data.growthFocus['Career & Money'] || 0,
+      slider_true_self: data.growthFocus['Show Your True Self'] || 0,
+      slider_sexuality_life_energy: data.growthFocus['Sexuality & Life Energy'] || 0,
+      slider_free_freedom: data.growthFocus['Fear & Freedom'] || 0,
+      slider_health_body: data.growthFocus['Health & Body'] || 0,
+      slider_enlightenment: data.growthFocus['Enlightenment'] || 0,
+    };
+
+    console.log('Transformed Data:', transformedData);
+
+    await catchAsyncMutation(
+      updateUserProfile(transformedData).unwrap(),
+      // onSuccess
+      (res) => {
+        toast.success(res?.message || 'Profile Updated Successfully');
+        setTimeout(() => {
+          router.push('/profile');
+        }, 1000);
+      },
+    );
   };
 
   return (
@@ -293,8 +331,18 @@ export default function RegistrationStepper() {
                 </p>
               </div>
             </div>
-            <Button onClick={handleSubmit(onFinalSubmit)} className="btn-styles">
-              Begin Your Journey
+            <Button
+              onClick={handleSubmit(onFinalSubmit)}
+              className="btn-styles flex items-center justify-center"
+            >
+              {isLoading ? (
+                <div className="flex items-center justify-center gap-2">
+                  <Loader2Icon className="animate-spin" />{' '}
+                  <span className="ml-2">Begin Your Journey</span>
+                </div>
+              ) : (
+                'Begin Your Journey'
+              )}
             </Button>
           </div>
         )}

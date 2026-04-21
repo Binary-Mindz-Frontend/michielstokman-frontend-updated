@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { BaseQueryApi } from '@reduxjs/toolkit/query';
 import React from 'react';
 
@@ -39,6 +40,6 @@ export interface IGlobalErrorResponse {
   // [x: string]: any;
   success: boolean;
   message: string;
-  error: string;
-  statusCode: number;
+  data: any;
+  status: number;
 }

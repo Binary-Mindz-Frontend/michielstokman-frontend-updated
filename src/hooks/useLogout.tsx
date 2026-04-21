@@ -6,7 +6,7 @@ import { useAppDispatch } from '@/redux/hooks';
 import { logoutUser } from '@/services/auth/auth.service';
 import { usePathname, useRouter } from 'next/navigation';
 
-export const protectedRoutes = ['/dashboard'];
+export const protectedRoutes = ['/dashboard', '/profile'];
 export const useLogout = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
@@ -19,7 +19,7 @@ export const useLogout = () => {
 
     await logoutUser();
     if (protectedRoutes.some((route) => pathname.match(route))) {
-      router.push('/login');
+      router.push('/');
     }
   };
 

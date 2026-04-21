@@ -4,6 +4,8 @@ import DynamicSectionHeader from '@/components/main/DynamicSectionHeader/Dynamic
 import GrowthSlider from '@/components/main/GrowthSlider/GrowthSlider';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { useLogout } from '@/hooks/useLogout';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export default function ProfilePage() {
@@ -29,6 +31,13 @@ export default function ProfilePage() {
   const handleUpdate = () => {
     console.log('Updated Preferences:', growthFocusValues);
     alert('Preferences updated successfully!');
+  };
+  const router = useRouter();
+  const logout = useLogout();
+
+  const handleLogout = () => {
+    logout();
+    router.push('/');
   };
 
   return (
@@ -101,6 +110,7 @@ export default function ProfilePage() {
         <Button
           variant="outline"
           className="btn-styles text-error border-error hover:bg-error/10 hover:text-error/90"
+          onClick={handleLogout}
         >
           Logout
         </Button>
