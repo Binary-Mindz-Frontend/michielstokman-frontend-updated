@@ -19,6 +19,11 @@ COPY . .
 # Next.js telemetry is disabled during the build
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# --- ADDED FOR ENVIRONMENT VARIABLES ---
+ARG NEXT_PUBLIC_BASE_API
+ENV NEXT_PUBLIC_BASE_API=$NEXT_PUBLIC_BASE_API
+# ---------------------------------------
+
 # Build the Next.js app
 RUN npm run build
 
