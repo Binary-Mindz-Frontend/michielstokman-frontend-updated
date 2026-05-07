@@ -42,6 +42,5 @@ jobs:
           script: |
             set -e
             cd ~/michielstokman_frontend
-            git pull origin main
             docker compose pull
             docker compose up -d --force-recreate
