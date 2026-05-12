@@ -1,11 +1,31 @@
-function TopResonanceContent() {
-  const topContent = [
-    { id: 1, title: 'The Day I Said No', reflections: 342, score: '9.2' },
-    { id: 2, title: 'Ocean of Stillness', reflections: 287, score: '9.2' },
-    { id: 3, title: 'Body Scan for Grief', reflections: 287, score: '9.2' },
-    { id: 4, title: 'Body Scan for Grief', reflections: 287, score: '9.2' },
-    { id: 5, title: 'Body Scan for Grief', reflections: 287, score: '9.2' },
-  ];
+import { TopResonanceContentSkeleton } from '../OverViewSkeleton/OverViewSkeleton';
+
+interface TopResonanceContent {
+  id: number;
+  title: string;
+  reflections: number;
+  score: string;
+}
+
+const TopResonanceContent = ({
+  topResonanceContent,
+  isLoading,
+}: {
+  topResonanceContent: TopResonanceContent[];
+  isLoading: boolean;
+}) => {
+  // add skeleton
+  if (isLoading) {
+    return <TopResonanceContentSkeleton />;
+  }
+
+  if (!topResonanceContent || topResonanceContent.length === 0) {
+    return (
+      <div className="text-secondary rounded-md bg-[#F5F2F0] p-6 text-center">
+        No resonance content data available.
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-md bg-[#F5F2F0] p-6">
@@ -15,7 +35,7 @@ function TopResonanceContent() {
       <p className="text-secondary text-sm sm:text-base">Highest pulse scores this month</p>
 
       <div>
-        {topContent?.map((content) => (
+        {topResonanceContent?.map((content) => (
           <div
             key={content?.id}
             className="border-primary/20 flex items-center justify-between border-b py-5 last:border-0"
@@ -37,6 +57,6 @@ function TopResonanceContent() {
       </div>
     </div>
   );
-}
+};
 
 export default TopResonanceContent;

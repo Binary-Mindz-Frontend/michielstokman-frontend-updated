@@ -1,10 +1,25 @@
-function WeeklyTrends() {
-  const trends = [
-    { label: 'This Week', views: '3,210', pulse: '7.8', shares: '312' },
-    { label: 'Last Week', views: '3,210', pulse: '7.8', shares: '312' },
-    { label: '2 Weeks Ago', views: '3,210', pulse: '7.8', shares: '312' },
-    { label: '3 Weeks Ago', views: '3,210', pulse: '7.8', shares: '312' },
-  ];
+import { WeeklyTrendSkeleton } from '../OverViewSkeleton/OverViewSkeleton';
+
+interface TrendItem {
+  label: string;
+  views: number | string;
+  pulse: number | string;
+  shares: number | string;
+}
+
+function WeeklyTrends({ trends, isLoading }: { trends: TrendItem[]; isLoading: boolean }) {
+  // Trend skeleton
+  if (isLoading) {
+    return <WeeklyTrendSkeleton />;
+  }
+
+  if (!trends || trends.length === 0) {
+    return (
+      <div className="text-secondary rounded-md bg-[#F5F2F0] p-6 text-center">
+        No trend data available.
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-md bg-[#F5F2F0] p-6">

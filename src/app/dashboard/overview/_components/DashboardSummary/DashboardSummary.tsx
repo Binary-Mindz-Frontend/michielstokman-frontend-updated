@@ -1,13 +1,47 @@
 'use client';
 import { BarChart3, Eye, Share2, TrendingUp } from 'lucide-react';
 import { SummaryCard } from './_components/SummaryCard';
-import { useGetFigmaStatsQuery } from '@/redux/features/admin/overview/overview.api';
+import { SummaryCardSkeleton } from '../OverViewSkeleton/OverViewSkeleton';
 
-export default function DashboardSummary() {
-  const { data: overviewStats } = useGetFigmaStatsQuery(undefined);
+interface DashboardSummaryProps {
+  views: {
+    value: string;
+    percentage: string;
+    trend: string;
+  };
+  resonance: {
+    value: string;
+    percentage: string;
+    trend: string;
+  };
+  completion: {
+    value: string;
+    percentage: string;
+    trend: string;
+  };
+  shares: {
+    value: string;
+    percentage: string;
+    trend: string;
+  };
+}
 
-  const topStats = overviewStats?.data?.top_stats;
-
+export default function DashboardSummary({
+  topStats,
+  isLoading,
+}: {
+  topStats: DashboardSummaryProps;
+  isLoading: boolean;
+}) {
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+        {[...Array(4)].map((_, i) => (
+          <SummaryCardSkeleton key={i} />
+        ))}
+      </div>
+    );
+  }
   const statsData = [
     {
       title: 'Total Views',
