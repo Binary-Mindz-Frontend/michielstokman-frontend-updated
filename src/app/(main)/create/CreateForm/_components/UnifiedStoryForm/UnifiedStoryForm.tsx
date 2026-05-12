@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/incompatible-library */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
@@ -6,11 +7,13 @@ import TextAreaField from '@/components/dashboard/Fields/TextAreaField/TextAreaF
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
+import { useGenerateStoryMutation } from '@/redux/features/aiStory/aiStory.api';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import * as z from 'zod';
-import SuccessModal from '../../SuccessModal/SuccessModal';
+import SuccessModal from '../SuccessModal/SuccessModal';
 
 const GROWTH_AREAS = [
   'Fear & Freedom',
@@ -31,15 +34,19 @@ const LIFE_PHASES = ['Discovering', 'Building', 'Recalibrating', 'Deepening', 'P
 const schema = z.object({
   title: z.string().min(1, 'Title is required'),
   firstName: z.string().min(1, 'First name is required'),
-  meditationScript: z.string().min(1, 'Script is required').max(5000, 'Max 5000 characters'),
+  content: z.string().min(1, 'Content is required').max(5000, 'Max 5000 characters'),
   growthAreas: z.array(z.string()).min(1, 'Select at least one growth area'),
   lifePhase: z.string().min(1, 'Select a life phase'),
   tags: z.string().optional(),
   sensitiveContent: z.boolean().default(false),
 });
 
-export default function MeditationForm() {
+export default function UnifiedStoryForm({ category }: { category: string }) {
   const [isSuccess, setIsSuccess] = useState(false);
+  const [generateStory, { isLoading: isGenerating }] = useGenerateStoryMutation();
+
+  const isConfession = category === 'Confessions';
+
   const {
     control,
     handleSubmit,
@@ -47,10 +54,11 @@ export default function MeditationForm() {
     setValue,
     watch,
     trigger,
+    reset,
   } = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
-      meditationScript: '',
+      content: '',
       title: '',
       firstName: '',
       growthAreas: [],
@@ -59,14 +67,41 @@ export default function MeditationForm() {
     },
   });
 
-  // eslint-disable-next-line react-hooks/incompatible-library
-  const scriptContent = watch('meditationScript') || '';
+  const contentValue = watch('content') || '';
   const selectedGrowthAreas = watch('growthAreas') || [];
   const selectedLifePhase = watch('lifePhase');
 
-  const onSubmit = (data: any) => {
-    console.log('Meditation Data:', data);
-    setIsSuccess(true);
+  const onSubmit = async (data: any) => {
+    try {
+      const formattedData = {
+        story_type: isConfession ? 'confession' : 'meditation',
+        title: data.title,
+        first_name: data.firstName,
+        story_input: data.content,
+        growth_areas: data.growthAreas,
+        life_phase: data.lifePhase,
+        tags: data.tags ? data.tags.split(',').map((tag: string) => tag.trim()) : [],
+        high_intensity: data.sensitiveContent,
+      };
+
+      const res = await generateStory(formattedData).unwrap();
+
+      if (res.success) {
+        setIsSuccess(true);
+        toast.success(res.message || `${category} submitted successfully!`);
+
+        reset({
+          content: '',
+          title: '',
+          firstName: '',
+          growthAreas: [],
+          lifePhase: 'Deepening',
+          sensitiveContent: false,
+        });
+      }
+    } catch (error: any) {
+      toast.error(error?.data?.message || 'Something went wrong!');
+    }
   };
 
   return (
@@ -91,26 +126,27 @@ export default function MeditationForm() {
           />
           <div>
             <TextAreaField
-              label="Meditation Script"
-              name="meditationScript"
-              placeholder="Write in second person (you)..."
+              label={isConfession ? 'Your story' : 'Meditation Script'}
+              name="content"
+              placeholder={
+                isConfession ? 'Begin wherever feels right' : 'Write in second person (you)...'
+              }
               control={control}
-              error={errors.meditationScript?.message}
+              error={errors.content?.message}
               required
               rows={6}
             />
             <div
               className={cn(
                 'mt-1 text-right text-xs',
-                scriptContent.length > 5000 ? 'text-error font-bold' : 'text-secondary',
+                contentValue.length > 5000 ? 'text-error font-bold' : 'text-secondary',
               )}
             >
-              {scriptContent.length}/5000
+              {contentValue.length}/5000
             </div>
           </div>
         </div>
 
-        {/* Same style and logic as Confessions, but independent */}
         <div className="space-y-4 sm:space-y-6">
           <div className="space-y-3">
             <label className="block font-medium">
@@ -183,17 +219,21 @@ export default function MeditationForm() {
           <div className="flex items-center justify-between border-t border-[#E5E0DA] pt-4">
             <div>
               <p className="text-lg font-medium">Contains sensitive content</p>
-              <p className="text-secondary text-sm">Mature themes</p>
+              <p className="text-secondary text-sm">Mature themes, heavy emotional content</p>
             </div>
-            <Switch onCheckedChange={(val) => setValue('sensitiveContent', val)} />
+            <Switch
+              checked={watch('sensitiveContent')}
+              onCheckedChange={(val) => setValue('sensitiveContent', val)}
+            />
           </div>
         </div>
 
         <Button
+          disabled={isGenerating}
           type="submit"
-          className="bg-primary/90 hover:bg-primary w-full rounded-md py-5 font-medium text-white sm:py-6 sm:text-lg"
+          className="bg-primary/90 hover:bg-primary w-full rounded-md py-5 font-medium text-white disabled:opacity-50 sm:py-6 sm:text-lg"
         >
-          Submit Meditation
+          {isGenerating ? 'Submitting...' : `Submit ${isConfession ? 'Confession' : 'Meditation'}`}
         </Button>
       </form>
 
