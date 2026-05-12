@@ -1,3 +1,4 @@
+import { TrendingUp } from 'lucide-react';
 import { WeeklyTrendSkeleton } from '../OverViewSkeleton/OverViewSkeleton';
 
 interface TrendItem {
@@ -8,15 +9,21 @@ interface TrendItem {
 }
 
 function WeeklyTrends({ trends, isLoading }: { trends: TrendItem[]; isLoading: boolean }) {
-  // Trend skeleton
   if (isLoading) {
     return <WeeklyTrendSkeleton />;
   }
 
   if (!trends || trends.length === 0) {
     return (
-      <div className="text-secondary rounded-md bg-[#F5F2F0] p-6 text-center">
-        No trend data available.
+      <div className="flex min-h-75 flex-col items-center justify-center rounded-md bg-[#F5F2F0] p-8">
+        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#EAE7E4]">
+          <TrendingUp className="h-8 w-8 text-[#A39F99]" />
+        </div>
+        <h3 className="text-lg font-semibold text-[#333333]">No Trend Data Yet</h3>
+        <p className="mt-2 max-w-70 text-center text-sm leading-relaxed text-[#726E6A]">
+          {`It looks like there isn't enough data to calculate weekly trends for this period. Check
+          back later!`}
+        </p>
       </div>
     );
   }
