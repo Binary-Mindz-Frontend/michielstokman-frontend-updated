@@ -5,54 +5,84 @@ import GrowthSlider from '@/components/main/GrowthSlider/GrowthSlider';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useLogout } from '@/hooks/useLogout';
+import { useGetProfileQuery } from '@/redux/features/userProfile/userProfile.api';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function ProfilePage() {
-  const [growthFocusValues, setGrowthFocusValues] = useState<Record<string, number>>({
-    'Desire & Relationship': 5,
-    'Life & Purpose': 8,
-    'Career & Money': 4,
-    'Show Your True Self': 6,
-    'Sexuality & Life Energy': 7,
-    'Fear & Freedom': 3,
-    'Health & Body': 9,
-    Enlightenment: 5,
-  });
-
-  // Slider change handler
-  const handleSliderChange = (key: string, newValue: number) => {
-    setGrowthFocusValues((prev) => ({
-      ...prev,
-      [key]: newValue,
-    }));
-  };
-
-  const handleUpdate = () => {
-    console.log('Updated Preferences:', growthFocusValues);
-    alert('Preferences updated successfully!');
-  };
   const router = useRouter();
   const logout = useLogout();
+
+  // Fetching currently logged in user's profile
+  const { data, isLoading } = useGetProfileQuery(undefined);
+
+  const profileData = data?.data;
+
+  // State for growth focus values (Read-only view)
+  const [growthFocusValues, setGrowthFocusValues] = useState<Record<string, number>>({
+    'Desire & Relationship': 0,
+    'Life & Purpose': 0,
+    'Career & Money': 0,
+    'Show Your True Self': 0,
+    'Sexuality & Life Energy': 0,
+    'Fear & Freedom': 0,
+    'Health & Body': 0,
+    Enlightenment: 0,
+  });
+
+  // Sync API data to state
+  useEffect(() => {
+    if (profileData) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setGrowthFocusValues({
+        'Desire & Relationship': profileData?.slider_desire_relationship || 0,
+        'Life & Purpose': profileData?.slider_life_purpose || 0,
+        'Career & Money': profileData?.slider_career_money || 0,
+        'Show Your True Self': profileData?.slider_true_self || 0,
+        'Sexuality & Life Energy': profileData?.slider_sexuality_life_energy || 0,
+        'Fear & Freedom': profileData?.slider_free_freedom || 0,
+        'Health & Body': profileData?.slider_health_body || 0,
+        Enlightenment: profileData?.slider_enlightenment || 0,
+      });
+    }
+  }, [profileData]);
 
   const handleLogout = () => {
     logout();
     router.push('/');
   };
 
+  if (isLoading) return <div className="py-20 text-center">Loading Profile...</div>;
+
+  const personalDetails = [
+    { label: 'Age', value: profileData?.age?.toString() },
+    { label: 'Country', value: profileData?.country },
+    { label: 'City', value: profileData?.city },
+    { label: 'Height', value: profileData?.height },
+    { label: 'Education', value: profileData?.education },
+    { label: 'Annual Income', value: profileData?.annual_income },
+    { label: 'Gender', value: profileData?.gender },
+    { label: 'Sexual Orientation', value: profileData?.sexual_orientation },
+  ];
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
       {/* Header Section */}
-      <DynamicSectionHeader title="Michiel Stockman" description="Discovering" />
+      <DynamicSectionHeader
+        title={profileData?.true_name || 'User'}
+        description={profileData?.life_phase || 'Discovering'}
+      />
 
       <div className="space-y-4">
-        {/* Daily Credits Card (Same to Same) */}
+        {/* Daily Credits Card */}
         <div className="border-primary/20 rounded-md border p-6">
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-dark-primary text-sm font-semibold tracking-wider uppercase">
               Daily Credits
             </h3>
-            <span className="text-dark-primary text-lg font-semibold">3/3 Remaining</span>
+            <span className="text-dark-primary text-lg font-semibold">
+              {profileData?.daily_credits || 'N/A'}
+            </span>
           </div>
           <Progress value={90} className="[&>div]:bg-primary bg-primary/20 h-2" />
           <p className="text-secondary mt-3 text-sm">
@@ -63,26 +93,25 @@ export default function ProfilePage() {
         {/* Stats Section */}
         <div className="grid grid-cols-2 gap-6">
           <div className="border-primary/20 rounded-md border p-6 text-center">
-            <h4 className="text-dark-primary font-serif text-3xl font-bold">7</h4>
+            <h4 className="text-dark-primary font-serif text-3xl font-bold">
+              {profileData?.reflections_count || 0}
+            </h4>
             <p className="text-secondary mt-1 text-[12px]">Reflections</p>
           </div>
           <div className="border-primary/20 rounded-md border p-6 text-center">
-            <h4 className="text-dark-primary font-serif text-3xl font-bold">8.3</h4>
+            <h4 className="text-dark-primary font-serif text-3xl font-bold">
+              {profileData?.avg_resonance || 0}
+            </h4>
             <p className="text-secondary mt-1 text-[12px]">Avg Resonance</p>
           </div>
         </div>
       </div>
 
-      {/* Personal Details Grid */}
+      {/* Personal Details Grid (Read Only) */}
       <div className="grid grid-cols-2 gap-x-12 gap-y-8 pt-2.5">
-        <DetailItem label="Age" value="12" />
-        <DetailItem label="Country" value="United States" />
-        <DetailItem label="City" value="New York" />
-        <DetailItem label="Height" value="6ft" />
-        <DetailItem label="Education" value="Bachelors" />
-        <DetailItem label="Annual Income" value="Bachelors" />
-        <DetailItem label="Gender" value="Male" />
-        <DetailItem label="Sexual Orientation" value="Yes" />
+        {personalDetails.map((detail, idx) => (
+          <DetailItem key={idx} label={detail?.label} value={detail?.value || 'N/A'} />
+        ))}
       </div>
 
       <div className="space-y-6 pt-6">
@@ -92,19 +121,14 @@ export default function ProfilePage() {
 
         <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2">
           {Object.entries(growthFocusValues).map(([key, val]) => (
-            <GrowthSlider
-              key={key}
-              label={key}
-              value={val}
-              onChange={(newValue) => handleSliderChange(key, newValue)}
-            />
+            <GrowthSlider key={key} label={key} value={val} />
           ))}
         </div>
       </div>
 
       {/* Action Buttons */}
       <div className="space-y-4 pt-8">
-        <Button onClick={handleUpdate} className="btn-styles">
+        <Button className="btn-styles" onClick={() => router.push('/register/stepper')}>
           Update Preferences
         </Button>
         <Button
