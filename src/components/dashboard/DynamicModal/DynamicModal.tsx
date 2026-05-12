@@ -1,7 +1,6 @@
 'use client';
 
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
-import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import React from 'react';
 
 /**
@@ -30,9 +29,9 @@ const DynamicModal: React.FC<DynamicModalProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className={`border-mute/20 bg-secondary max-w-137.5 gap-0 p-4 ${className}`}>
         {!title && (
-          <VisuallyHidden.Root>
+          <>
             <DialogTitle>Modal Dialog</DialogTitle>
-          </VisuallyHidden.Root>
+          </>
         )}
 
         {/* Visible Header Section */}

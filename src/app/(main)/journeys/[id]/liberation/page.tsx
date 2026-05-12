@@ -365,7 +365,7 @@ export default function JourneyPage() {
             <TextAreaField
               label={currentDay.checkinPrompt}
               name="feeling"
-              register={checkinForm.register}
+              control={checkinForm.control}
               placeholder="A word or two is enough"
               rows={4}
             />
@@ -479,7 +479,7 @@ export default function JourneyPage() {
             <TextAreaField
               label="What opened today?"
               name="whatOpened"
-              register={reflectionForm.register}
+              control={reflectionForm.control}
               placeholder="A feeling, a realization, a release"
               rows={4}
             />
@@ -487,7 +487,7 @@ export default function JourneyPage() {
             <TextAreaField
               label="One key takeaway"
               name="keyTakeaway"
-              register={reflectionForm.register}
+              control={reflectionForm.control}
               placeholder="What will you carry forward"
               rows={4}
             />

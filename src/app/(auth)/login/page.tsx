@@ -29,9 +29,10 @@ export default function LoginPage() {
   const [loginUser, { isLoading }] = useLoginUserMutation();
   const dispatch = useAppDispatch();
   const router = useRouter();
+
   const {
-    register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -77,16 +78,18 @@ export default function LoginPage() {
           <InputField
             label="Your email"
             name="email"
-            register={register}
+            type="email"
+            control={control}
             placeholder="Enter your email"
             error={errors.email?.message}
+            required
           />
 
           <InputField
             label="Password"
             name="password"
             type="password"
-            register={register}
+            control={control}
             placeholder="Enter your password"
             required
             error={errors.password?.message}

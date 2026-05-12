@@ -19,7 +19,7 @@ import { z } from 'zod';
 
 // Zod Schema definition
 const registerSchema = z.object({
-  email: z.email('Please enter a valid email address'),
+  email: z.string().email('Please enter a valid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters long'),
 });
 
@@ -29,12 +29,17 @@ export default function RegisterPage() {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const [registerUser] = useRegisterUserMutation();
+
   const {
-    register,
     handleSubmit,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
   });
 
   const onSubmit = async (data: RegisterFormData) => {
@@ -54,7 +59,7 @@ export default function RegisterPage() {
         };
         dispatch(setAuth({ user }));
         setUserProfile(user, res?.data?.access_token);
-        toast.success(res?.message || 'User Regisetered Successfully');
+        toast.success(res?.message || 'User Registered Successfully');
         setTimeout(() => {
           router.push('/register/stepper');
         }, 1000);
@@ -71,24 +76,25 @@ export default function RegisterPage() {
       <div className="w-full max-w-120 space-y-8 text-center">
         <DynamicSectionHeader
           title="Join the Journey"
-          description=" Create an account to save your reflections, get personalized content, and share your own
-            stories."
+          description=" Create an account to save your reflections, get personalized content, and share your own stories."
         />
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 text-left">
           <InputField
             label="Your email"
             name="email"
-            register={register}
+            type="email"
+            control={control}
             placeholder="Enter your email"
             error={errors.email?.message}
+            required
           />
 
           <InputField
             label="Password"
             name="password"
             type="password"
-            register={register}
+            control={control}
             placeholder="Enter your password"
             required
             error={errors.password?.message}

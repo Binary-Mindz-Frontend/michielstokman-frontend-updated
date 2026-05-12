@@ -41,7 +41,7 @@ const schema = z.object({
 export default function MeditationForm() {
   const [isSuccess, setIsSuccess] = useState(false);
   const {
-    register,
+    control,
     handleSubmit,
     formState: { errors },
     setValue,
@@ -77,7 +77,7 @@ export default function MeditationForm() {
             label="Title"
             name="title"
             placeholder="Give it a name that resonates..."
-            register={register}
+            control={control}
             error={errors.title?.message}
             required
           />
@@ -85,7 +85,7 @@ export default function MeditationForm() {
             label="Your first name"
             name="firstName"
             placeholder="How you'd like to be known..."
-            register={register}
+            control={control}
             error={errors.firstName?.message}
             required
           />
@@ -94,7 +94,7 @@ export default function MeditationForm() {
               label="Meditation Script"
               name="meditationScript"
               placeholder="Write in second person (you)..."
-              register={register}
+              control={control}
               error={errors.meditationScript?.message}
               required
               rows={6}
@@ -177,7 +177,7 @@ export default function MeditationForm() {
             label="Tags"
             name="tags"
             placeholder="Vulnerability, courage, morning"
-            register={register}
+            control={control}
           />
 
           <div className="flex items-center justify-between border-t border-[#E5E0DA] pt-4">
