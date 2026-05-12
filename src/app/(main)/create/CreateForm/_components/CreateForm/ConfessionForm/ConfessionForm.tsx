@@ -43,7 +43,7 @@ const schema = z.object({
 export default function ConfessionForm() {
   const [isSuccess, setIsSuccess] = useState(false);
   const {
-    register,
+    control,
     handleSubmit,
     formState: { errors },
     setValue,
@@ -78,7 +78,7 @@ export default function ConfessionForm() {
             label="Title"
             name="title"
             placeholder="Give it a name that resonates..."
-            register={register}
+            control={control}
             error={errors.title?.message}
             required
           />
@@ -86,7 +86,7 @@ export default function ConfessionForm() {
             label="Your first name"
             name="firstName"
             placeholder="How you'd like to be known..."
-            register={register}
+            control={control}
             error={errors.firstName?.message}
             required
           />
@@ -95,7 +95,7 @@ export default function ConfessionForm() {
               label="Your story"
               name="story"
               placeholder="Begin wherever feels right"
-              register={register}
+              control={control}
               error={errors.story?.message}
               required
               rows={6}
@@ -177,7 +177,7 @@ export default function ConfessionForm() {
             label="Tags"
             name="tags"
             placeholder="Vulnerability, courage, morning"
-            register={register}
+            control={control}
           />
 
           <div className="flex items-center justify-between border-t border-[#E5E0DA] pt-4">

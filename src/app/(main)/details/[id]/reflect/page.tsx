@@ -65,7 +65,7 @@ export default function ResonanceReflection() {
   const [feedbackTag, setFeedbackTag] = useState<string>('');
 
   const {
-    register,
+    control,
     setValue,
     watch,
     handleSubmit,
@@ -165,7 +165,7 @@ export default function ResonanceReflection() {
         <TextAreaField
           label="Share a thought"
           name="thought"
-          register={register}
+          control={control}
           placeholder="Share a thought (optional)...."
           error={errors.thought?.message}
           rows={5}

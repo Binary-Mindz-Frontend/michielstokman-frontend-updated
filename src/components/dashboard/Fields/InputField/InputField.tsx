@@ -4,38 +4,44 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { Eye, EyeOff } from 'lucide-react';
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
+import { Control, FieldValues, Path, useController } from 'react-hook-form';
 
-interface InputFieldProps {
+interface InputFieldProps<T extends FieldValues> {
   label: string;
-  name: string;
+  name: Path<T>;
+  control: Control<T>;
   type?: string;
   placeholder?: string;
   error?: any;
-  register: any;
   required?: boolean;
   readOnly?: boolean;
   className?: string;
 }
 
-const InputField: React.FC<InputFieldProps> = ({
+const InputField = <T extends FieldValues>({
   label,
   name,
+  control,
   type = 'text',
   placeholder,
   error,
-  register,
   required = false,
   readOnly = false,
-}) => {
+}: InputFieldProps<T>) => {
   const [showPassword, setShowPassword] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const {
+    field: { onChange, onBlur, value, ref: controllerRef },
+  } = useController({
+    name,
+    control,
+  });
 
   const isPassword = type === 'password';
   const isDate = type === 'date';
   const inputType = isPassword && showPassword ? 'text' : type;
-
-  const { ref, ...restRegister } = register(name);
 
   return (
     <div className="space-y-2">
@@ -48,9 +54,11 @@ const InputField: React.FC<InputFieldProps> = ({
           type={inputType}
           placeholder={placeholder}
           readOnly={readOnly}
-          {...restRegister}
+          onChange={onChange}
+          onBlur={onBlur}
+          value={value ?? ''}
           ref={(e) => {
-            ref(e);
+            controllerRef(e);
             inputRef.current = e;
           }}
           onClick={() => !readOnly && isDate && inputRef.current?.showPicker()}
@@ -79,7 +87,6 @@ const InputField: React.FC<InputFieldProps> = ({
           </button>
         )}
       </div>
-
       {error && <p className="text-error text-xs font-medium">{error}</p>}
     </div>
   );

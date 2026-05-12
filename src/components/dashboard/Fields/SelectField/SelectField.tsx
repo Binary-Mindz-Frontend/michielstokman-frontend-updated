@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import { Label } from '@/components/ui/label';
 import {
@@ -9,22 +8,21 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import React from 'react';
-import { Control, useController } from 'react-hook-form';
+import { Control, FieldValues, Path, useController } from 'react-hook-form';
 
-interface SelectFieldProps {
+interface SelectFieldProps<T extends FieldValues> {
   label: string;
-  name: string;
+  name: Path<T>;
   options: { value: string; label: string }[];
   error?: string;
-  control: Control<any>;
+  control: Control<T>;
   required?: boolean;
   placeholder?: string;
   maxHeight?: string;
   readOnly?: boolean;
 }
 
-const SelectField: React.FC<SelectFieldProps> = ({
+const SelectField = <T extends FieldValues>({
   label,
   name,
   options,
@@ -34,7 +32,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
   maxHeight,
   placeholder = 'Select an option',
   readOnly = false,
-}) => {
+}: SelectFieldProps<T>) => {
   const {
     field: { onChange, value },
   } = useController({
@@ -48,7 +46,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
         {label} {required && <span className="text-error">*</span>}
       </Label>
 
-      <Select onValueChange={onChange} value={value} disabled={readOnly}>
+      <Select onValueChange={onChange} value={value || ''} disabled={readOnly}>
         <SelectTrigger
           className={cn(
             'focus-visible:border-primary/60 text-primary h-auto w-full p-3 py-6 shadow-none transition-all focus-visible:ring-0',
