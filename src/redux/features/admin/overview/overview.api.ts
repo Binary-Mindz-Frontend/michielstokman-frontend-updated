@@ -5,7 +5,7 @@ const adminOverviewStatsApi = apiClient.injectEndpoints({
     // Admin Dashboard Figma Stats
     getFigmaStats: builder.query({
       query: () => ({
-        url: '/v1/admin/dashboard/figma-stats',
+        url: '/admin/dashboard/figma-stats',
         method: 'GET',
       }),
       providesTags: ['AdminStats'],
@@ -14,7 +14,7 @@ const adminOverviewStatsApi = apiClient.injectEndpoints({
     // Admin Dashboard Stats
     getDashboardStats: builder.query({
       query: () => ({
-        url: '/v1/admin/dashboard/stats',
+        url: '/admin/dashboard/stats',
         method: 'GET',
       }),
       providesTags: ['AdminStats'],
@@ -23,7 +23,7 @@ const adminOverviewStatsApi = apiClient.injectEndpoints({
     // Admin Dashboard Demo
     getDashboardDemo: builder.query({
       query: () => ({
-        url: '/v1/admin/dashboard/demo',
+        url: '/admin/dashboard/demo',
         method: 'GET',
       }),
       providesTags: ['AdminStats'],
