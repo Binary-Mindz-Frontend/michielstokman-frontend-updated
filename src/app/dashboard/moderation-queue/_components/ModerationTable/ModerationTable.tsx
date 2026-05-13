@@ -8,8 +8,9 @@ import DynamicBadge from '@/components/dashboard/DynamicBadge/DynamicBadge';
 import SearchField from '@/components/dashboard/Fields/SearchField/SearchField';
 import FilterTabs from '@/components/dashboard/FilterTabs/FilterTabs';
 import { Button } from '@/components/ui/button';
-import { IModerationData } from '@/types/moderationData.type';
+
 import {
+  AlertTriangle,
   Check,
   CheckCircle2,
   Clock3,
@@ -21,10 +22,26 @@ import {
   XCircle,
 } from 'lucide-react';
 import Image from 'next/image';
-import { moderationData } from './data/ModerationTable.data';
 
-function ModerationTable() {
-  const tableConfig: TColumn<IModerationData>[] = [
+import { useGetModerationQueueQuery } from '@/redux/features/admin/adminModeration/adminModeration.api';
+import img from '@/assets/table_placeholder_image.jpg';
+
+interface IModerationStory {
+  id: string;
+  title: string;
+  story_type: string;
+  author: string; // email in your JSON
+  created_at: string;
+  moderation_status: 'pending' | 'flagged' | 'approved' | 'rejected';
+  cover_image_url: string | null;
+}
+
+const ModerationTable = () => {
+  // useGetModerationQueueQuery
+  const { data } = useGetModerationQueueQuery(undefined);
+  console.log(data?.data.stories[0], 'data');
+
+  const tableConfig: TColumn<IModerationStory>[] = [
     {
       header: 'Sl',
       accessor: 'id',
@@ -34,12 +51,7 @@ function ModerationTable() {
       cell: (row) => (
         <div className="flex max-w-md items-center gap-3">
           <div className="relative h-12 w-16 shrink-0 overflow-hidden rounded bg-gray-100">
-            <Image
-              src={row?.image || '/placeholder.png'}
-              alt="thumb"
-              fill
-              className="object-cover"
-            />
+            <Image src={row?.cover_image_url || img} alt="thumb" fill className="object-cover" />
           </div>
           <p className="text-dark-primary line-clamp-2 leading-snug font-semibold">{row?.title}</p>
         </div>
@@ -47,7 +59,7 @@ function ModerationTable() {
     },
     {
       header: 'Type',
-      accessor: 'type',
+      accessor: 'story_type',
     },
     {
       header: 'Author',
@@ -55,26 +67,23 @@ function ModerationTable() {
     },
     {
       header: 'Date',
-      accessor: 'date',
+      accessor: 'created_at',
     },
     {
       header: 'Status',
       cell: (row) => {
-        return (
-          <DynamicBadge
-            text={row?.status}
-            icon={
-              row?.status === 'Approved' ? Check : row?.status === 'Rejected' ? XCircle : Clock3
-            }
-            color={
-              row?.status === 'Approved'
-                ? '#149443'
-                : row?.status === 'Rejected'
-                  ? '#C82323'
-                  : '#503225'
-            }
-          />
-        );
+        const status = row?.moderation_status?.toLowerCase() || 'pending';
+
+        const statusConfig = {
+          approved: { color: '#149443', icon: Check, label: 'Approved' },
+          rejected: { color: '#C82323', icon: XCircle, label: 'Rejected' },
+          flagged: { color: '#EAB308', icon: AlertTriangle, label: 'Flagged' },
+          pending: { color: '#503225', icon: Clock3, label: 'Pending' },
+        };
+
+        const current = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
+
+        return <DynamicBadge text={current.label} icon={current.icon} color={current.color} />;
       },
     },
     {
@@ -139,9 +148,9 @@ function ModerationTable() {
       <FilterTabs tabs={tabsData} />
 
       {/* Custom Table with Header Styling */}
-      <CustomTable columns={tableConfig} data={moderationData} />
+      <CustomTable columns={tableConfig} data={data?.data?.stories} />
     </div>
   );
-}
+};
 
 export default ModerationTable;

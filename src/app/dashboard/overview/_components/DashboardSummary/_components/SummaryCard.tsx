@@ -3,16 +3,16 @@ import { LucideIcon } from 'lucide-react';
 interface SummaryCardProps {
   title: string;
   value: string | number;
-  subValue?: string;
+  trend?: string;
   icon: LucideIcon;
 }
 
-export const SummaryCard = ({ title, value, subValue, icon: Icon }: SummaryCardProps) => {
+export const SummaryCard = ({ title, value, trend, icon: Icon }: SummaryCardProps) => {
   return (
     <div className="space-y-5 rounded-md bg-[#F5F2F0] p-6">
       <div className="flex items-start justify-between">
         <Icon size={22} strokeWidth={1.5} className="text-dark-primary" />
-        {subValue && <span className="text-success text-sm font-medium">{subValue}</span>}
+        {trend && <span className="text-success text-sm font-medium">{trend}</span>}
       </div>
       <div>
         <h3 className="text-primary mb-2 text-2xl font-semibold sm:text-3xl">{value}</h3>

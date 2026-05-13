@@ -166,3 +166,9 @@ After updating, run `npm install` to apply the changes. Test your application to
 Repeat this for each package that needs a major update.
 
 ---
+
+## 🚀 Deployment
+This project is automatically deployed to AWS EC2 via GitHub Actions.
+
+- **Frontend URL**: [http://34.255.26.146:3000](http://34.255.26.146:3000)
+- **Deployment Status**: Automated via Docker Hub.
