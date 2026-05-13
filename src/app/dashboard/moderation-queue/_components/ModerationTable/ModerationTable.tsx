@@ -28,6 +28,7 @@ import img from '@/assets/table_placeholder_image.jpg';
 import useSetSearchQueryInURL from '@/hooks/useSetSearchQueryInURL';
 import TableSkeleton from '@/components/dashboard/CustomTable/TableSkeleton';
 import TableEmptyState from '@/components/dashboard/CustomTable/TableEmptyState';
+import ModerationPagination from './ModerationPagination';
 
 interface IModerationStory {
   id: string;
@@ -43,17 +44,22 @@ const ModerationTable = () => {
   const { getQueryObject, searchParams } = useSetSearchQueryInURL();
   const query = getQueryObject();
 
-  // Dynamic API fetching based on URL state
+  const limit = 10;
+  const currentOffset = parseInt(searchParams.get('offset') || '0');
   const currentStatus = searchParams.get('status');
+
   const { data, isLoading } = useGetModerationQueueQuery({
     search: Array.isArray(query.search) ? query.search[0] : query.search || undefined,
     status: currentStatus === 'all' ? undefined : currentStatus || 'pending',
-    limit: 20,
-    offset: 0,
+    limit: limit,
+    offset: currentOffset,
   });
 
   const stories = data?.data?.stories || [];
   const stats = data?.data;
+
+  const activeTab = currentStatus || 'pending';
+  const totalCount = stats?.[activeTab] || stats?.all || 0;
 
   const tableConfig: TColumn<IModerationStory>[] = [
     {
@@ -170,6 +176,9 @@ const ModerationTable = () => {
         />
       ) : (
         <CustomTable columns={tableConfig} data={stories} />
+      )}
+      {!isLoading && stories.length > 0 && (
+        <ModerationPagination totalItems={totalCount} limit={limit} />
       )}
     </div>
   );
