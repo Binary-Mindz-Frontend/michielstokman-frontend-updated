@@ -2,10 +2,13 @@
 
 import DynamicSectionHeader from '@/components/main/DynamicSectionHeader/DynamicSectionHeader';
 import GrowthSlider from '@/components/main/GrowthSlider/GrowthSlider';
+import ProfileSkeleton from '@/components/main/Skeletons/ProfileSkeleton';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useLogout } from '@/hooks/useLogout';
 import { useGetProfileQuery } from '@/redux/features/userProfile/userProfile.api';
+import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
+import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -13,12 +16,9 @@ export default function ProfilePage() {
   const router = useRouter();
   const logout = useLogout();
 
-  // Fetching currently logged in user's profile
   const { data, isLoading } = useGetProfileQuery(undefined);
-
   const profileData = data?.data;
 
-  // State for growth focus values (Read-only view)
   const [growthFocusValues, setGrowthFocusValues] = useState<Record<string, number>>({
     'Desire & Relationship': 0,
     'Life & Purpose': 0,
@@ -30,7 +30,6 @@ export default function ProfilePage() {
     Enlightenment: 0,
   });
 
-  // Sync API data to state
   useEffect(() => {
     if (profileData) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -40,7 +39,7 @@ export default function ProfilePage() {
         'Career & Money': profileData?.slider_career_money || 0,
         'Show Your True Self': profileData?.slider_true_self || 0,
         'Sexuality & Life Energy': profileData?.slider_sexuality_life_energy || 0,
-        'Fear & Freedom': profileData?.slider_free_freedom || 0,
+        'Fear & Freedom': profileData?.slider_fear_freedom || 0,
         'Health & Body': profileData?.slider_health_body || 0,
         Enlightenment: profileData?.slider_enlightenment || 0,
       });
@@ -52,7 +51,7 @@ export default function ProfilePage() {
     router.push('/');
   };
 
-  if (isLoading) return <div className="py-20 text-center">Loading Profile...</div>;
+  if (isLoading) return <ProfileSkeleton />;
 
   const personalDetails = [
     { label: 'Age', value: profileData?.age?.toString() },
@@ -66,14 +65,21 @@ export default function ProfilePage() {
   ];
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-12">
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={FADE_IN_UP_CONTAINER}
+      className="mx-auto max-w-3xl px-4 py-12"
+    >
       {/* Header Section */}
-      <DynamicSectionHeader
-        title={profileData?.true_name || 'User'}
-        description={profileData?.life_phase || 'Discovering'}
-      />
+      <motion.div variants={FADE_IN_UP_ITEM}>
+        <DynamicSectionHeader
+          title={profileData?.true_name || 'User'}
+          description={profileData?.life_phase || 'Discovering'}
+        />
+      </motion.div>
 
-      <div className="space-y-4">
+      <motion.div variants={FADE_IN_UP_ITEM} className="space-y-4">
         {/* Daily Credits Card */}
         <div className="border-primary/20 rounded-md border p-6">
           <div className="mb-3 flex items-center justify-between">
@@ -105,16 +111,17 @@ export default function ProfilePage() {
             <p className="text-secondary mt-1 text-[12px]">Avg Resonance</p>
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Personal Details Grid (Read Only) */}
-      <div className="grid grid-cols-2 gap-x-12 gap-y-8 pt-2.5">
+      {/* Personal Details Grid */}
+      <motion.div variants={FADE_IN_UP_ITEM} className="grid grid-cols-2 gap-x-12 gap-y-8 pt-6">
         {personalDetails.map((detail, idx) => (
           <DetailItem key={idx} label={detail?.label} value={detail?.value || 'N/A'} />
         ))}
-      </div>
+      </motion.div>
 
-      <div className="space-y-6 pt-6">
+      {/* Growth Focus Section */}
+      <motion.div variants={FADE_IN_UP_ITEM} className="space-y-6 pt-10">
         <h2 className="text-dark-primary border-muted/20 border-b pb-4 font-serif text-xl font-bold">
           Your Growth Focus
         </h2>
@@ -124,10 +131,10 @@ export default function ProfilePage() {
             <GrowthSlider key={key} label={key} value={val} />
           ))}
         </div>
-      </div>
+      </motion.div>
 
       {/* Action Buttons */}
-      <div className="space-y-4 pt-8">
+      <motion.div variants={FADE_IN_UP_ITEM} className="space-y-4 pt-12">
         <Button className="btn-styles" onClick={() => router.push('/register/stepper')}>
           Update Preferences
         </Button>
@@ -138,16 +145,16 @@ export default function ProfilePage() {
         >
           Logout
         </Button>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
 function DetailItem({ label, value }: { label: string; value: string }) {
   return (
     <div className="space-y-1">
-      <p className="text-primary font-medium">{label}</p>
-      <p className="text-dark-primary font-serif text-xl font-semibold">{value}</p>
+      <p className="text-primary text-sm font-medium">{label}</p>
+      <p className="text-dark-primary font-serif text-xl leading-tight font-semibold">{value}</p>
     </div>
   );
 }

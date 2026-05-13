@@ -1,4 +1,7 @@
+'use client';
 import BGImage from '@/assets/home/bgImage.png';
+import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
+import { motion } from 'framer-motion';
 import HeroContent from './_components/HeroContent/HeroContent';
 import ResonanceGrid from './_components/ResonanceGrid/ResonanceGrid';
 
@@ -15,7 +18,7 @@ const Homepage = () => {
         }}
       />
 
-      {/* Overlay Layer - Image ta ektu soft korar jonno */}
+      {/* Overlay Layer */}
       <div
         className="pointer-events-none absolute inset-0 z-1"
         style={{
@@ -31,10 +34,20 @@ const Homepage = () => {
       />
 
       {/* Content Area */}
-      <div className="relative z-10 mx-auto max-w-400 space-y-10 px-4 py-20 lg:space-y-20">
-        <HeroContent />
-        <ResonanceGrid />
-      </div>
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={FADE_IN_UP_CONTAINER}
+        className="relative z-10 mx-auto max-w-400 space-y-10 px-4 py-20 lg:space-y-20"
+      >
+        <motion.div variants={FADE_IN_UP_ITEM}>
+          <HeroContent />
+        </motion.div>
+
+        <motion.div variants={FADE_IN_UP_ITEM}>
+          <ResonanceGrid />
+        </motion.div>
+      </motion.div>
     </section>
   );
 };
