@@ -27,7 +27,7 @@ const DynamicModal: React.FC<DynamicModalProps> = ({
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={`border-mute/20 bg-secondary max-w-137.5 gap-0 p-4 ${className}`}>
+      <DialogContent className={`border-mute/20 max-w-137.5 gap-0 p-4 ${className}`}>
         {!title && (
           <>
             <DialogTitle>Modal Dialog</DialogTitle>

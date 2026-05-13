@@ -42,10 +42,10 @@ const TextAreaField = <T extends FieldValues>({
             readOnly={readOnly}
             rows={rows}
             className={cn(
-              'min-h-24 w-full resize-none rounded-md p-3 shadow-none transition-all',
-              'border placeholder:text-[#978279]',
+              'max-h-75 min-h-30 w-full overflow-y-auto rounded-md p-3 shadow-none transition-all',
+              'resize-none border leading-relaxed placeholder:text-[#978279]',
               'focus-visible:border-primary/60 focus-visible:ring-0 focus-visible:ring-offset-0',
-              'text-primary',
+              'text-primary custom-scrollbar', // Add a custom class if you want to style the bar
               {
                 'cursor-default bg-[#F5F2F0] opacity-60': readOnly,
                 'bg-[#F5F2F0]': !readOnly,
