@@ -5,7 +5,7 @@ const adminModerationApi = apiClient.injectEndpoints({
     // Get Moderation Queue
     getModerationQueue: builder.query({
       query: () => ({
-        url: '/v1/admin/moderation/queue',
+        url: '/admin/moderation/queue',
         method: 'GET',
       }),
       providesTags: ['ModerationQueue'],
@@ -14,7 +14,7 @@ const adminModerationApi = apiClient.injectEndpoints({
     // Get Story Details
     getStoryDetails: builder.query({
       query: (storyId) => ({
-        url: `/v1/admin/moderation/story/${storyId}`,
+        url: `/admin/moderation/story/${storyId}`,
         method: 'GET',
       }),
       providesTags: (storyId) => [{ type: 'Story', id: storyId }],
@@ -23,7 +23,7 @@ const adminModerationApi = apiClient.injectEndpoints({
     // Update Story Details
     updateStory: builder.mutation({
       query: ({ storyId, ...patch }) => ({
-        url: `/v1/admin/moderation/story/${storyId}`,
+        url: `/admin/moderation/story/${storyId}`,
         method: 'PUT',
         body: patch,
       }),
@@ -33,7 +33,7 @@ const adminModerationApi = apiClient.injectEndpoints({
     // Delete Story
     deleteStory: builder.mutation({
       query: (storyId) => ({
-        url: `/v1/admin/moderation/story/${storyId}`,
+        url: `/admin/moderation/story/${storyId}`,
         method: 'DELETE',
       }),
       invalidatesTags: ['ModerationQueue', 'Story'],
@@ -42,7 +42,7 @@ const adminModerationApi = apiClient.injectEndpoints({
     // Approve Story
     approveStory: builder.mutation({
       query: (storyId) => ({
-        url: `/v1/admin/moderation/story/${storyId}/approve`,
+        url: `/admin/moderation/story/${storyId}/approve`,
         method: 'POST',
       }),
       invalidatesTags: (storyId) => [{ type: 'Story', id: storyId }, 'ModerationQueue'],
@@ -51,7 +51,7 @@ const adminModerationApi = apiClient.injectEndpoints({
     // Reject Story
     rejectStory: builder.mutation({
       query: (storyId) => ({
-        url: `/v1/admin/moderation/story/${storyId}/reject`,
+        url: `/admin/moderation/story/${storyId}/reject`,
         method: 'POST',
       }),
       invalidatesTags: (storyId) => [{ type: 'Story', id: storyId }, 'ModerationQueue'],
