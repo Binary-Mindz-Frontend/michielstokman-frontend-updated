@@ -1,6 +1,7 @@
 'use client';
 
 import cardImage6 from '@/assets/home/card6.png';
+import CardGridSkeleton from '@/components/main/Skeletons/CardGridSkeleton';
 import { Button } from '@/components/ui/button';
 import { useGetDiscoveryFeedQuery } from '@/redux/features/discoveryFeed/discoveryFeed.api';
 import { TDiscoveryItemType } from '@/types/discoveryFeed.types';
@@ -8,8 +9,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 const CardGrid = () => {
-  const { data } = useGetDiscoveryFeedQuery(undefined);
+  const { data, isLoading, isFetching } = useGetDiscoveryFeedQuery(undefined);
   const feedData = data?.data?.items;
+
+  if (isLoading || isFetching) {
+    return <CardGridSkeleton />;
+  }
 
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

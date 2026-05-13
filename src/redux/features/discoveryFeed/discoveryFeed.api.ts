@@ -2,14 +2,33 @@ import { apiClient } from '@/redux/apiClient/apiClient';
 
 const discoveryFeedApi = apiClient.injectEndpoints({
   endpoints: (builder) => ({
-    // 1. Get discovery feed
     getDiscoveryFeed: builder.query({
       query: () => ({
         url: '/dashboard/feed',
         method: 'GET',
       }),
+      providesTags: ['DISCOVERY_FEED'],
+    }),
+
+    getStoryDetails: builder.query({
+      query: (storyId) => ({
+        url: `/stories/${storyId}`,
+        method: 'GET',
+      }),
+      providesTags: (result, error, id) => [{ type: 'DISCOVERY_FEED', id }],
+    }),
+
+    submitStoryFeedback: builder.mutation({
+      query: ({ storyId, body }) => ({
+        url: `/stories/${storyId}/feedback`,
+        method: 'POST',
+        body: body,
+      }),
+
+      invalidatesTags: (result, error, { storyId }) => [{ type: 'DISCOVERY_FEED', id: storyId }],
     }),
   }),
 });
 
-export const { useGetDiscoveryFeedQuery } = discoveryFeedApi;
+export const { useGetDiscoveryFeedQuery, useGetStoryDetailsQuery, useSubmitStoryFeedbackMutation } =
+  discoveryFeedApi;
