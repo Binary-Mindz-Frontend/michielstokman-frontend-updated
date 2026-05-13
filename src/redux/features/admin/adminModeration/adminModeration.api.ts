@@ -1,12 +1,23 @@
 import { apiClient } from '@/redux/apiClient/apiClient';
+type ModerationQueueParams = {
+  status?: string;
+  search?: string;
+  limit?: number;
+  offset?: number;
+};
 
 const adminModerationApi = apiClient.injectEndpoints({
   endpoints: (builder) => ({
     // Get Moderation Queue
     getModerationQueue: builder.query({
-      query: () => ({
+      query: ({ status, search, limit = 20, offset = 0 }: ModerationQueueParams = {}) => ({
         url: '/admin/moderation/queue',
-        method: 'GET',
+        params: {
+          moderation_status: status,
+          search,
+          limit,
+          offset,
+        },
       }),
       providesTags: ['ModerationQueue'],
     }),

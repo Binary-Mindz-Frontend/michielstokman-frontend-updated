@@ -25,21 +25,35 @@ import Image from 'next/image';
 
 import { useGetModerationQueueQuery } from '@/redux/features/admin/adminModeration/adminModeration.api';
 import img from '@/assets/table_placeholder_image.jpg';
+import useSetSearchQueryInURL from '@/hooks/useSetSearchQueryInURL';
+import TableSkeleton from '@/components/dashboard/CustomTable/TableSkeleton';
+import TableEmptyState from '@/components/dashboard/CustomTable/TableEmptyState';
 
 interface IModerationStory {
   id: string;
   title: string;
   story_type: string;
-  author: string; // email in your JSON
+  author: string;
   created_at: string;
   moderation_status: 'pending' | 'flagged' | 'approved' | 'rejected';
   cover_image_url: string | null;
 }
 
 const ModerationTable = () => {
-  // useGetModerationQueueQuery
-  const { data } = useGetModerationQueueQuery(undefined);
-  console.log(data?.data.stories[0], 'data');
+  const { getQueryObject, searchParams } = useSetSearchQueryInURL();
+  const query = getQueryObject();
+
+  // Dynamic API fetching based on URL state
+  const currentStatus = searchParams.get('status');
+  const { data, isLoading } = useGetModerationQueueQuery({
+    search: Array.isArray(query.search) ? query.search[0] : query.search || undefined,
+    status: currentStatus === 'all' ? undefined : currentStatus || 'pending',
+    limit: 20,
+    offset: 0,
+  });
+
+  const stories = data?.data?.stories || [];
+  const stats = data?.data;
 
   const tableConfig: TColumn<IModerationStory>[] = [
     {
@@ -125,13 +139,13 @@ const ModerationTable = () => {
     },
   ];
 
-  // Tab data for the filter tabs
+  // Dynamically populated counts from API response
   const tabsData = [
-    { label: 'All', value: 'all', count: 102 },
-    { label: 'Pending', value: 'pending', count: 0 },
-    { label: 'Flagged', value: 'flagged', count: 0 },
-    { label: 'Approved', value: 'approved', count: 0 },
-    { label: 'Rejected', value: 'rejected', count: 0 },
+    { label: 'All', value: 'all', count: stats?.all || 0 },
+    { label: 'Pending', value: 'pending', count: stats?.pending || 0 },
+    { label: 'Flagged', value: 'flagged', count: stats?.flagged || 0 },
+    { label: 'Approved', value: 'approved', count: stats?.approved || 0 },
+    { label: 'Rejected', value: 'rejected', count: stats?.rejected || 0 },
   ];
 
   return (
@@ -147,8 +161,16 @@ const ModerationTable = () => {
       {/* Tabs */}
       <FilterTabs tabs={tabsData} />
 
-      {/* Custom Table with Header Styling */}
-      <CustomTable columns={tableConfig} data={data?.data?.stories} />
+      {/* Custom Table with Dynamic Data and Loading state */}
+      {isLoading ? (
+        <TableSkeleton />
+      ) : stories.length === 0 ? (
+        <TableEmptyState
+          message={`No ${currentStatus || 'pending'} stories found matching your criteria.`}
+        />
+      ) : (
+        <CustomTable columns={tableConfig} data={stories} />
+      )}
     </div>
   );
 };
