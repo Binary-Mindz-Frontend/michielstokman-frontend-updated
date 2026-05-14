@@ -1,12 +1,23 @@
 import { apiClient } from '@/redux/apiClient/apiClient';
+type ModerationQueueParams = {
+  status?: string;
+  search?: string;
+  limit?: number;
+  offset?: number;
+};
 
 const adminModerationApi = apiClient.injectEndpoints({
   endpoints: (builder) => ({
     // Get Moderation Queue
     getModerationQueue: builder.query({
-      query: () => ({
+      query: ({ status, search, limit = 20, offset = 0 }: ModerationQueueParams = {}) => ({
         url: '/admin/moderation/queue',
-        method: 'GET',
+        params: {
+          moderation_status: status,
+          search,
+          limit,
+          offset,
+        },
       }),
       providesTags: ['ModerationQueue'],
     }),
@@ -25,9 +36,12 @@ const adminModerationApi = apiClient.injectEndpoints({
       query: ({ storyId, ...patch }) => ({
         url: `/admin/moderation/story/${storyId}`,
         method: 'PUT',
-        body: patch,
+        body: patch, // This will now be { title, story_type, story_text }
       }),
-      invalidatesTags: ({ storyId }) => [{ type: 'Story', id: storyId }, 'ModerationQueue'],
+      invalidatesTags: (result, error, { storyId }) => [
+        { type: 'Story', id: storyId },
+        'ModerationQueue',
+      ],
     }),
 
     // Delete Story
@@ -50,9 +64,10 @@ const adminModerationApi = apiClient.injectEndpoints({
 
     // Reject Story
     rejectStory: builder.mutation({
-      query: (storyId) => ({
+      query: ({ data, storyId }) => ({
         url: `/admin/moderation/story/${storyId}/reject`,
         method: 'POST',
+        body: data,
       }),
       invalidatesTags: (storyId) => [{ type: 'Story', id: storyId }, 'ModerationQueue'],
     }),
