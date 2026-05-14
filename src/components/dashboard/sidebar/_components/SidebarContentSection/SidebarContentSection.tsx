@@ -7,7 +7,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { FileSearch, Images, LayoutGrid, MessageSquare, Mic2 } from 'lucide-react';
+import { FileSearch, FileText, Images, LayoutGrid, MessageSquare, Mic2, Route } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -23,6 +23,8 @@ function SidebarContentSection() {
         { title: 'Metrics Chat', url: '/dashboard/metrics-chat', icon: MessageSquare },
         { title: 'Voice Review', url: '/dashboard/voice-review', icon: Mic2 },
         { title: 'Photo Management', url: '/dashboard/photo-management', icon: Images },
+        { title: 'Journey Management', url: '/dashboard/journey-management', icon: Route },
+        { title: 'Order History', url: '/dashboard/order-history', icon: FileText },
       ],
     },
   ];

@@ -1,10 +1,10 @@
 // _components/SummaryCardSkeleton.tsx
 export const SummaryCardSkeleton = () => {
   return (
-    <div className="animate-pulse rounded-xl bg-[#f5f2f0ce] p-6 shadow-sm">
+    <div className="animate-pulse rounded-md bg-[#f5f2f0ce] p-6">
       <div className="flex items-center justify-between">
         {/* Icon Circle Skeleton */}
-        <div className="h-10 w-10 rounded-lg bg-gray-200" />
+        <div className="h-10 w-10 rounded-md bg-gray-200" />
         {/* SubValue/Trend Skeleton */}
         <div className="h-4 w-12 rounded bg-gray-200" />
       </div>
