@@ -1,9 +1,9 @@
 'use client';
 import DynamicPageHeader from '@/components/dashboard/DynamicPageHeader/DynamicPageHeader';
-import DashboardSummary from '../DashboardSummary/DashboardSummary';
-import WeeklyTrends from '../WeeklyTrends/WeeklyTrends';
-import TopResonanceContent from '../TopResonanceContent/TopResonanceContent';
 import { useGetFigmaStatsQuery } from '@/redux/features/admin/overview/overview.api';
+import DashboardSummary from '../DashboardSummary/DashboardSummary';
+import TopResonanceContent from '../TopResonanceContent/TopResonanceContent';
+import WeeklyTrends from '../WeeklyTrends/WeeklyTrends';
 
 const OverViewWrapper = () => {
   const { data: overviewStats, isLoading } = useGetFigmaStatsQuery(undefined);

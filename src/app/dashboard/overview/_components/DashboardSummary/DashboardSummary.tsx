@@ -1,7 +1,7 @@
 'use client';
 import { BarChart3, Eye, Share2, TrendingUp } from 'lucide-react';
-import { SummaryCard } from './_components/SummaryCard';
 import { SummaryCardSkeleton } from '../OverViewSkeleton/OverViewSkeleton';
+import { SummaryCard } from './_components/SummaryCard';
 
 interface DashboardSummaryProps {
   views: {
