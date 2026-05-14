@@ -1,13 +1,18 @@
 'use client';
 
-import React, { useState } from 'react';
+import img from '@/assets/table_placeholder_image.jpg';
 import CustomTable from '@/components/dashboard/CustomTable/CustomTable';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { TColumn } from '@/types/custom-table.types';
+import TableEmptyState from '@/components/dashboard/CustomTable/TableEmptyState';
+import TableSkeleton from '@/components/dashboard/CustomTable/TableSkeleton';
 import DynamicBadge from '@/components/dashboard/DynamicBadge/DynamicBadge';
+import DynamicModal from '@/components/dashboard/DynamicModal/DynamicModal';
 import SearchField from '@/components/dashboard/Fields/SearchField/SearchField';
 import FilterTabs from '@/components/dashboard/FilterTabs/FilterTabs';
 import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import useSetSearchQueryInURL from '@/hooks/useSetSearchQueryInURL';
+import { useGetModerationQueueQuery } from '@/redux/features/admin/adminModeration/adminModeration.api';
+import { TColumn } from '@/types/custom-table.types';
 import {
   AlertTriangle,
   Check,
@@ -21,16 +26,11 @@ import {
   XCircle,
 } from 'lucide-react';
 import Image from 'next/image';
-import { useGetModerationQueueQuery } from '@/redux/features/admin/adminModeration/adminModeration.api';
-import img from '@/assets/table_placeholder_image.jpg';
-import useSetSearchQueryInURL from '@/hooks/useSetSearchQueryInURL';
-import TableSkeleton from '@/components/dashboard/CustomTable/TableSkeleton';
-import TableEmptyState from '@/components/dashboard/CustomTable/TableEmptyState';
-import ModerationPagination from './ModerationPagination';
-import DynamicModal from '@/components/dashboard/DynamicModal/DynamicModal';
-import { ReviewDetails } from '../ReviewDetails/ReviewDetails';
+import { useState } from 'react';
 import { ApproveAction, DeleteAction, RejectAction } from '../ApproveAction/ApproveAction';
 import EditAction from '../EditModeration/EditModeration';
+import { ReviewDetails } from '../ReviewDetails/ReviewDetails';
+import ModerationPagination from './ModerationPagination';
 // import { EditAction } from '../EditModeration/EditModeration';
 
 interface IModerationStory {
@@ -69,18 +69,18 @@ const ModerationTable = () => {
 
   const limit = 10;
   const currentOffset = parseInt(searchParams.get('offset') || '0');
-  const currentStatus = searchParams.get('status');
+  const currentStatus = searchParams.get('status') || 'all';
 
   const { data, isLoading } = useGetModerationQueueQuery({
     search: Array.isArray(query.search) ? query.search[0] : query.search || undefined,
-    status: currentStatus === 'all' ? undefined : currentStatus || 'pending',
+    status: currentStatus === 'all' ? undefined : currentStatus,
     limit: limit,
     offset: currentOffset,
   });
 
   const stories = data?.data?.stories || [];
   const stats = data?.data;
-  const activeTab = currentStatus || 'pending';
+  const activeTab = currentStatus;
   const totalCount = stats?.[activeTab] || stats?.all || 0;
 
   const tableConfig: TColumn<IModerationStory>[] = [
