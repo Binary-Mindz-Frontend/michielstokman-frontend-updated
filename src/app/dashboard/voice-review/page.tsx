@@ -1,6 +1,6 @@
 import DynamicPageHeader from '@/components/dashboard/DynamicPageHeader/DynamicPageHeader';
-import VoiceReviewTable from './_components/VoiceReviewTable/VoiceReviewTable';
 import { Suspense } from 'react';
+import VoiceReviewTable from './_components/VoiceReviewTable/VoiceReviewTable';
 
 function DashboardVoiceReviewPage() {
   return (
