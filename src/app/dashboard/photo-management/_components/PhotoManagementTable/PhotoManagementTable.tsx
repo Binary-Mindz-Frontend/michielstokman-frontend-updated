@@ -36,31 +36,6 @@ function PhotoManagementTable() {
     {
       header: 'Action',
       cell: () => (
-        // <Popover>
-        //   <PopoverTrigger asChild>
-        //     <button className="rounded-full p-2 transition-colors hover:bg-gray-100">
-        //       <MoreVertical size={20} className="text-secondary cursor-pointer" />
-        //     </button>
-        //   </PopoverTrigger>
-        //   <PopoverContent
-        //     align="end"
-        //     className="w-44 rounded-md border-none bg-[#FAF7F5] p-1 shadow-lg ring-1 ring-black/5"
-        //   >
-        //     <div className="flex flex-col">
-        //       <button className="text-dark-primary hover:bg-primary/5 flex cursor-pointer items-center gap-3 px-3 py-2.5 text-sm font-medium transition-all">
-        //         <Eye size={16} className="text-primary" /> View Details
-        //       </button>
-        //       <div className="mx-2 my-1 h-px bg-[#F1E9E4]" />
-        //       <button className="text-dark-primary hover:bg-primary/5 flex cursor-pointer items-center gap-3 px-3 py-2.5 text-sm font-medium transition-all">
-        //         <Edit3 size={16} className="text-secondary" /> Edit
-        //       </button>
-        //       <div className="mx-2 my-1 h-px bg-[#F1E9E4]" />
-        //       <button className="text-error flex cursor-pointer items-center gap-3 px-3 py-2.5 text-sm font-medium transition-all hover:bg-red-50">
-        //         <Trash2 size={16} className="text-error" /> Remove
-        //       </button>
-        //     </div>
-        //   </PopoverContent>
-        // </Popover>
         <Popover>
           <PopoverTrigger asChild>
             <button className="rounded-full p-1 transition-colors hover:bg-gray-100">
