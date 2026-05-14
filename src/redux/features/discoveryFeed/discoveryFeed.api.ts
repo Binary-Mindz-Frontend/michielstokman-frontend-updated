@@ -3,10 +3,15 @@ import { apiClient } from '@/redux/apiClient/apiClient';
 const discoveryFeedApi = apiClient.injectEndpoints({
   endpoints: (builder) => ({
     getDiscoveryFeed: builder.query({
-      query: () => ({
-        url: '/dashboard/feed',
-        method: 'GET',
-      }),
+      query: (storyTypes: string[]) => {
+        const params = new URLSearchParams();
+        storyTypes.forEach((type) => params.append('story_type', type.toLowerCase()));
+
+        return {
+          url: `/dashboard/feed?${params.toString()}`,
+          method: 'GET',
+        };
+      },
       providesTags: ['DISCOVERY_FEED'],
     }),
 
