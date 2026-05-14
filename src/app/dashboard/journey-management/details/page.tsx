@@ -2,13 +2,16 @@
 
 import DynamicPageHeader from '@/components/dashboard/DynamicPageHeader/DynamicPageHeader';
 import InputField from '@/components/dashboard/Fields/InputField/InputField';
+import TextAreaField from '@/components/dashboard/Fields/TextAreaField/TextAreaField';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Plus, X } from 'lucide-react';
+import Underline from '@tiptap/extension-underline';
+import { EditorContent, useEditor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import { Bold, Heading2, Italic, List, ListOrdered, Plus, UnderlineIcon, X } from 'lucide-react';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-
 import * as z from 'zod';
 
 export const journeySchema = z.object({
@@ -16,14 +19,14 @@ export const journeySchema = z.object({
   price: z.string().min(1, 'Price is required'),
   daysCount: z.string().min(1, 'Days count is required'),
   description: z.string().optional(),
-  whatToExpect: z.string().optional(),
+  whatToExpect: z.array(z.string()).optional(),
 
   days: z
     .array(
       z.object({
         dayTitle: z.string().min(1, 'Day title is required'),
-        whatToDo: z.array(z.string()).min(1, 'Add at least one point'),
-        whyThisExercise: z.array(z.string()).min(1, 'Add at least one point'),
+        whatToDo: z.string().min(1, 'What to do is required'),
+        whyThisExercise: z.string().min(1, 'Why this exercise is required'),
       }),
     )
     .length(7),
@@ -47,8 +50,8 @@ export default function JourneyForm() {
       price: '',
       daysCount: '',
       description: '',
-      whatToExpect: '',
-      days: Array(7).fill({ dayTitle: '', whatToDo: [], whyThisExercise: [] }),
+      whatToExpect: [],
+      days: Array(7).fill({ dayTitle: '', whatToDo: '', whyThisExercise: '' }),
     },
   });
 
@@ -80,6 +83,7 @@ export default function JourneyForm() {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        {/* ── Basic Info Tab ── */}
         {activeTab === 'Basic Info' && (
           <div className="space-y-6">
             <InputField
@@ -106,21 +110,36 @@ export default function JourneyForm() {
               required
               error={errors.daysCount?.message}
             />
-            <InputField
+
+            <TextAreaField
               label="Description"
               name="description"
               control={control}
               placeholder="Enter Description"
+              error={errors.description?.message}
             />
-            <InputField
-              label="What to Expect"
+
+            {/* What to Expect */}
+            <Controller
               name="whatToExpect"
               control={control}
-              placeholder="Enter What to Expect"
+              render={({ field }) => (
+                <DynamicListInput
+                  label="What to Expect"
+                  value={field.value ?? []}
+                  onChange={field.onChange}
+                  error={
+                    Array.isArray(errors.whatToExpect)
+                      ? errors.whatToExpect[0]?.message
+                      : (errors.whatToExpect as { message?: string } | undefined)?.message
+                  }
+                />
+              )}
             />
           </div>
         )}
 
+        {/* ── Day Tabs ── */}
         {tabs.slice(1).map(
           (tab, index) =>
             activeTab === tab && (
@@ -138,8 +157,8 @@ export default function JourneyForm() {
                   name={`days.${index}.whatToDo`}
                   control={control}
                   render={({ field }) => (
-                    <DynamicListInput
-                      label="What to do"
+                    <TiptapEditor
+                      label="What to Do"
                       value={field.value}
                       onChange={field.onChange}
                       error={errors.days?.[index]?.whatToDo?.message}
@@ -151,8 +170,8 @@ export default function JourneyForm() {
                   name={`days.${index}.whyThisExercise`}
                   control={control}
                   render={({ field }) => (
-                    <DynamicListInput
-                      label="Why this exercise"
+                    <TiptapEditor
+                      label="Why This Exercise"
                       value={field.value}
                       onChange={field.onChange}
                       error={errors.days?.[index]?.whyThisExercise?.message}
@@ -163,7 +182,7 @@ export default function JourneyForm() {
             ),
         )}
 
-        <Button type="submit" className="btn-styles w-full px-12 md:w-auto">
+        <Button type="submit" className="btn-styles">
           Submit Journey
         </Button>
       </form>
@@ -171,8 +190,19 @@ export default function JourneyForm() {
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const DynamicListInput = ({ label, value, onChange, error }: any) => {
+//  DynamicListInput
+const DynamicListInput = ({
+  label,
+  value,
+  onChange,
+  error,
+}: {
+  label: string;
+  value: string[];
+  // eslint-disable-next-line no-unused-vars
+  onChange: (val: string[]) => void;
+  error?: string;
+}) => {
   const [text, setText] = useState('');
 
   const handleAdd = () => {
@@ -206,21 +236,149 @@ const DynamicListInput = ({ label, value, onChange, error }: any) => {
       </div>
 
       <div className="flex flex-wrap gap-2 pt-1">
-        {value.map((item: string, idx: number) => (
+        {value.map((item, idx) => (
           <div
             key={idx}
-            className="border-primary/10 text-primary animate-in fade-in zoom-in flex items-center gap-2 rounded border bg-white px-3 py-1.5 text-sm duration-300"
+            className="border-primary/10 text-primary animate-in fade-in zoom-in flex items-center gap-2 border bg-white px-3 py-1.5 text-sm duration-300"
           >
             <span>{item}</span>
             <X
               size={14}
               className="text-error cursor-pointer transition-transform hover:scale-125"
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onClick={() => onChange(value.filter((_: any, i: number) => i !== idx))}
+              onClick={() => onChange(value.filter((_, i) => i !== idx))}
             />
           </div>
         ))}
       </div>
+      {error && <p className="text-error text-xs font-medium">{error}</p>}
+    </div>
+  );
+};
+
+//  TiptapEditor
+const TiptapEditor = ({
+  label,
+  value,
+  onChange,
+  error,
+}: {
+  label: string;
+  value: string;
+  // eslint-disable-next-line no-unused-vars
+  onChange: (val: string) => void;
+  error?: string;
+}) => {
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        heading: { levels: [1, 2, 3] },
+        bulletList: {},
+        orderedList: {},
+      }),
+      Underline,
+    ],
+    content: value,
+    onUpdate: ({ editor }) => {
+      onChange(editor.getHTML());
+    },
+    editorProps: {
+      attributes: {
+        class:
+          'min-h-[140px] w-full rounded-b-md border-x border-b border-primary/10 bg-[#F5F2F0] p-3 text-sm text-primary outline-none',
+      },
+    },
+  });
+
+  if (!editor) return null;
+
+  const toolbarBtn = (active: boolean) =>
+    cn(
+      'rounded p-1.5 transition-colors hover:bg-primary/10 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer',
+      active ? 'bg-primary/15 text-primary' : 'text-dark-primary',
+    );
+
+  return (
+    <div className="space-y-1.5">
+      <label className="block text-sm font-medium">
+        {label} <span className="text-error">*</span>
+      </label>
+
+      {/* Toolbar */}
+      <div className="border-primary/10 flex flex-wrap items-center gap-1 rounded-t-md border border-b-0 bg-white px-2 py-1.5">
+        <button
+          type="button"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            editor.chain().focus().toggleBold().run();
+          }}
+          className={toolbarBtn(editor.isActive('bold'))}
+          title="Bold"
+        >
+          <Bold size={15} />
+        </button>
+        <button
+          type="button"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            editor.chain().focus().toggleItalic().run();
+          }}
+          className={toolbarBtn(editor.isActive('italic'))}
+          title="Italic"
+        >
+          <Italic size={15} />
+        </button>
+        <button
+          type="button"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            editor.chain().focus().toggleUnderline().run();
+          }}
+          className={toolbarBtn(editor.isActive('underline'))}
+          title="Underline"
+        >
+          <UnderlineIcon size={15} />
+        </button>
+
+        <div className="bg-primary/10 mx-1 h-5 w-px" />
+
+        <button
+          type="button"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            editor.chain().focus().toggleHeading({ level: 2 }).run();
+          }}
+          className={toolbarBtn(editor.isActive('heading', { level: 2 }))}
+          title="Heading"
+        >
+          <Heading2 size={15} />
+        </button>
+        <button
+          type="button"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            editor.chain().focus().toggleBulletList().run();
+          }}
+          className={toolbarBtn(editor.isActive('bulletList'))}
+          title="Bullet List"
+        >
+          <List size={15} />
+        </button>
+        <button
+          type="button"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            editor.chain().focus().toggleOrderedList().run();
+          }}
+          className={toolbarBtn(editor.isActive('orderedList'))}
+          title="Ordered List"
+        >
+          <ListOrdered size={15} />
+        </button>
+      </div>
+
+      {/* Editor */}
+      <EditorContent editor={editor} />
+
       {error && <p className="text-error text-xs font-medium">{error}</p>}
     </div>
   );
