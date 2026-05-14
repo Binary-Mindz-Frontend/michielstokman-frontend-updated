@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { useGetLiberationDetailsQuery } from '@/redux/features/discoveryFeed/discoveryFeed.api';
 import { Check } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -8,13 +9,14 @@ import { useParams } from 'next/navigation';
 import { cardData } from '../../(home)/_components/ResonanceGrid/_components/data/cardData.data';
 
 export default function JourneyDetailPage() {
-  const { id } = useParams();
+  const params = useParams();
+  const storyId = params?.id as string;
+  // Hooks
+  const { data: response } = useGetLiberationDetailsQuery(storyId);
+  const librationData = response?.data;
 
   // Data find logic
-  const journey = cardData.find((item) => item.id.toString() === id);
-
-  if (!journey)
-    return <div className="p-20 text-center font-serif text-[#4A3F35]">Journey not found</div>;
+  const journey = cardData.find((item) => item.id.toString() === storyId);
 
   const expectations = [
     'Daily 15-minute guided practices',
@@ -30,8 +32,8 @@ export default function JourneyDetailPage() {
       {/* Hero Section - Matching Story Page */}
       <div className="relative h-[60vh] w-full overflow-hidden">
         <Image
-          src={journey?.image}
-          alt={journey?.title}
+          src={'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=1200'}
+          alt={librationData?.title}
           fill
           className="object-cover"
           style={{ objectPosition: '50% 50%' }}
@@ -72,16 +74,21 @@ export default function JourneyDetailPage() {
             <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
               <div className="w-full space-y-4">
                 <h1 className="text-dark-primary font-serif text-2xl font-semibold sm:text-3xl md:text-4xl lg:text-5xl">
-                  {journey?.title || 'Feel More Vital – 7 Days to More Life Energy'}
+                  {librationData?.title || 'Not available'}
                 </h1>
 
                 <div className="flex items-center gap-3">
-                  <span className="border-primary/40 text-primary rounded-sm border bg-transparent px-4 py-1.5 text-xs transition-all hover:bg-transparent">
-                    30 Days
-                  </span>
-                  <div className="border-primary/40 text-primary rounded-sm border bg-transparent px-4 py-1.5 text-xs transition-all hover:bg-transparent">
-                    Rating 4.3
-                  </div>
+                  {librationData?.total_days && (
+                    <span className="border-primary/40 text-primary rounded-sm border bg-transparent px-4 py-1.5 text-xs transition-all hover:bg-transparent">
+                      {librationData?.total_days} Days
+                    </span>
+                  )}
+
+                  {librationData?.rating && (
+                    <div className="border-primary/40 text-primary rounded-sm border bg-transparent px-4 py-1.5 text-xs transition-all hover:bg-transparent">
+                      Rating {librationData?.rating}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -92,9 +99,7 @@ export default function JourneyDetailPage() {
           {/* Description Text - Matching Story Page Typography */}
           <div className="max-w-4xl">
             <p className="text-dark-primary/90 space-y-4 text-lg font-light">
-              This Liberation gently guides you through 7 days of simple body-mind practices. Each
-              day builds on the last — waking up your breath, softening tension, and opening space
-              for genuine vitality to return.
+              {librationData?.description || 'Not available'}
             </p>
           </div>
 

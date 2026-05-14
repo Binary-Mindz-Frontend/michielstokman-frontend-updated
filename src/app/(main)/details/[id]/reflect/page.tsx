@@ -17,7 +17,7 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import ShareSection from './_components/ShareSection/ShareSection';
 
-//  Zod Schema
+// Zod Schema
 const resonanceSchema = z.object({
   resonanceScore: z.number().min(0).max(10),
   selectedTags: z.array(z.string()).optional(),
@@ -27,8 +27,16 @@ const resonanceSchema = z.object({
 
 type ResonanceFormData = z.infer<typeof resonanceSchema>;
 
-//  Static Data
+// Static Data
 const FEEDBACK_TAGS = ['Love this', 'More like this', 'Too Intense', 'Not my vibe'];
+
+// Message Mapping
+const FEEDBACK_MESSAGES: Record<string, string> = {
+  'Love this': 'I absolutely love this story! It really spoke to me.',
+  'More like this': "I'd love to read more content like this. Great work!",
+  'Too Intense': 'This was quite intense and powerful for me today.',
+  'Not my vibe': "This one didn't quite resonate with me this time.",
+};
 
 const HIGH_TAGS = [
   { emoji: '🔥', label: 'Voice' },
@@ -40,7 +48,7 @@ const HIGH_TAGS = [
 
 const LOW_TAGS = [{ emoji: '🔵', label: "Didn't Connect" }];
 
-//  Helpers
+// Helpers
 const getSliderLabel = (value: number): string => {
   if (value === 0) return 'Closed';
   if (value <= 5) return 'Quiet';
@@ -59,7 +67,6 @@ const getDynamicTags = (value: number) => {
   return HIGH_TAGS;
 };
 
-//  Component
 export default function ResonanceReflection() {
   const params = useParams();
   const router = useRouter();
@@ -67,8 +74,9 @@ export default function ResonanceReflection() {
 
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [feedbackTag, setFeedbackTag] = useState<string>('');
+  const [starRating, setStarRating] = useState<number>(5);
+  const [hoverRating, setHoverRating] = useState<number>(0);
 
-  // RTK Query Mutation Hook
   const [submitFeedback, { isLoading }] = useSubmitStoryFeedbackMutation();
 
   const {
@@ -98,20 +106,26 @@ export default function ResonanceReflection() {
     setValue('selectedTags', updated, { shouldValidate: true });
   };
 
+  // Feedback Tag Click Logic with Professional Messages
   const handleFeedbackTag = (tag: string) => {
-    const updated = feedbackTag === tag ? '' : tag;
-    setFeedbackTag(updated);
-    setValue('feedbackTag', updated, { shouldValidate: true });
+    const isDeselecting = feedbackTag === tag;
+    const updatedTag = isDeselecting ? '' : tag;
+
+    setFeedbackTag(updatedTag);
+    setValue('feedbackTag', updatedTag, { shouldValidate: true });
+
+    // Set professional message in textarea
+    const messageToSet = isDeselecting ? '' : FEEDBACK_MESSAGES[tag] || tag;
+    setValue('thought', messageToSet, { shouldValidate: true });
   };
 
-  // --- API Submit Function ---
   const onSubmit = async (data: ResonanceFormData) => {
     try {
       const payload = {
         storyId,
         body: {
           touch_score: data.resonanceScore,
-          star_rating: 0,
+          star_rating: starRating,
           resonance_tags: selectedTags,
           reaction: feedbackTag,
           feedback_text: data.thought || '',
@@ -165,14 +179,41 @@ export default function ResonanceReflection() {
           />
         </motion.div>
 
-        {/* Star Rating Section */}
-        <motion.div variants={FADE_IN_UP_ITEM} className="flex items-center gap-1.5">
-          {[1, 2, 3, 4, 5].map((star) => (
-            <span key={star} className="text-2xl leading-none text-amber-400">
-              ★
-            </span>
-          ))}
-          <span className="text-dark-primary ml-1 font-medium">4.3</span>
+        {/* Professional Star Rating Section */}
+        <motion.div variants={FADE_IN_UP_ITEM} className="flex flex-col gap-2">
+          <label className="text-secondary text-sm font-medium">Your Rating</label>
+          <div className="flex items-center gap-1">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                type="button"
+                onMouseEnter={() => setHoverRating(star)}
+                onMouseLeave={() => setHoverRating(0)}
+                onClick={() => setStarRating(star)}
+                className="relative p-1 transition-transform hover:scale-110 active:scale-90"
+              >
+                <span
+                  className={cn(
+                    'text-3xl leading-none transition-all duration-200 ease-in-out',
+                    (hoverRating || starRating) >= star
+                      ? 'text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]'
+                      : 'text-gray-300',
+                  )}
+                >
+                  ★
+                </span>
+              </button>
+            ))}
+
+            <motion.span
+              key={hoverRating || starRating}
+              initial={{ opacity: 0, x: -5 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="text-dark-primary ml-2 min-w-10 font-semibold"
+            >
+              {(hoverRating || starRating).toFixed(1)}
+            </motion.span>
+          </div>
         </motion.div>
 
         {/* Dynamic Tags */}
@@ -198,14 +239,38 @@ export default function ResonanceReflection() {
         </motion.div>
 
         <motion.div variants={FADE_IN_UP_ITEM}>
-          <TextAreaField
-            label="Share a thought"
-            name="thought"
-            control={control}
-            placeholder="Share a thought (optional)...."
-            error={errors.thought?.message}
-            rows={5}
-          />
+          {/* Feedback Tags */}
+          <div className="border-primary/10 space-y-3 border-t pt-6">
+            <label className="block font-medium">How did this feel?</label>
+            <div className="flex flex-wrap gap-2">
+              {FEEDBACK_TAGS.map((tag) => (
+                <Button
+                  key={tag}
+                  type="button"
+                  onClick={() => handleFeedbackTag(tag)}
+                  className={cn(
+                    'rounded-sm border bg-transparent px-4 py-2 text-sm transition-all hover:bg-transparent',
+                    feedbackTag === tag
+                      ? 'border-primary/50 text-primary'
+                      : 'border-primary/20 text-secondary',
+                  )}
+                >
+                  {tag}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <TextAreaField
+              label="Share a thought"
+              name="thought"
+              control={control}
+              placeholder="Share a thought (optional)...."
+              error={errors.thought?.message}
+              rows={5}
+            />
+          </div>
         </motion.div>
 
         {/* Submit / Skip Buttons */}
@@ -226,31 +291,6 @@ export default function ResonanceReflection() {
           <p className="text-secondary text-center text-sm">
             All submissions are reviewed with care before publishing.
           </p>
-        </motion.div>
-
-        {/* Feedback Tags */}
-        <motion.div
-          variants={FADE_IN_UP_ITEM}
-          className="border-primary/10 space-y-3 border-t pt-6"
-        >
-          <label className="block font-medium">How did this feel?</label>
-          <div className="flex flex-wrap gap-2">
-            {FEEDBACK_TAGS.map((tag) => (
-              <Button
-                key={tag}
-                type="button"
-                onClick={() => handleFeedbackTag(tag)}
-                className={cn(
-                  'rounded-sm border bg-transparent px-4 py-2 text-sm transition-all hover:bg-transparent',
-                  feedbackTag === tag
-                    ? 'border-primary/50 text-primary'
-                    : 'border-primary/20 text-secondary',
-                )}
-              >
-                {tag}
-              </Button>
-            ))}
-          </div>
         </motion.div>
 
         {/* Social Share Section */}

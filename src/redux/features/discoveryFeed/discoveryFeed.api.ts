@@ -2,14 +2,21 @@ import { apiClient } from '@/redux/apiClient/apiClient';
 
 const discoveryFeedApi = apiClient.injectEndpoints({
   endpoints: (builder) => ({
+    // Get Discovery Feed
     getDiscoveryFeed: builder.query({
-      query: () => ({
-        url: '/dashboard/feed',
-        method: 'GET',
-      }),
+      query: (storyTypes: string[]) => {
+        const params = new URLSearchParams();
+        storyTypes.forEach((type) => params.append('story_type', type.toLowerCase()));
+
+        return {
+          url: `/dashboard/feed?${params.toString()}`,
+          method: 'GET',
+        };
+      },
       providesTags: ['DISCOVERY_FEED'],
     }),
 
+    // Get Story Details
     getStoryDetails: builder.query({
       query: (storyId) => ({
         url: `/stories/${storyId}`,
@@ -18,6 +25,16 @@ const discoveryFeedApi = apiClient.injectEndpoints({
       providesTags: (result, error, id) => [{ type: 'DISCOVERY_FEED', id }],
     }),
 
+    // Get Liberation Details
+    getLiberationDetails: builder.query({
+      query: (journey_code) => ({
+        url: `/liberation/catalog/${journey_code}`,
+        method: 'GET',
+      }),
+      providesTags: (result, error, id) => [{ type: 'DISCOVERY_FEED', id }],
+    }),
+
+    // Submit Story Feedback
     submitStoryFeedback: builder.mutation({
       query: ({ storyId, body }) => ({
         url: `/stories/${storyId}/feedback`,
@@ -30,5 +47,9 @@ const discoveryFeedApi = apiClient.injectEndpoints({
   }),
 });
 
-export const { useGetDiscoveryFeedQuery, useGetStoryDetailsQuery, useSubmitStoryFeedbackMutation } =
-  discoveryFeedApi;
+export const {
+  useGetDiscoveryFeedQuery,
+  useGetStoryDetailsQuery,
+  useGetLiberationDetailsQuery,
+  useSubmitStoryFeedbackMutation,
+} = discoveryFeedApi;
