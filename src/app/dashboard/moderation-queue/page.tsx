@@ -1,13 +1,13 @@
 import DynamicPageHeader from '@/components/dashboard/DynamicPageHeader/DynamicPageHeader';
-import ModerationTable from './_components/ModerationTable/ModerationTable';
 import { Suspense } from 'react';
+import ModerationTable from './_components/ModerationTable/ModerationTable';
 
 function DashboardModerationQueuePage() {
   // test
   return (
     <section>
       <DynamicPageHeader title="Moderation Queue" />
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense>
         <ModerationTable />
       </Suspense>
     </section>
