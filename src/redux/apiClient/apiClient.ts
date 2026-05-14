@@ -65,5 +65,5 @@ export const apiClient = createApi({
   reducerPath: 'apiClient',
   baseQuery: baseQuery,
   endpoints: () => ({}),
-  tagTypes: ['PROFILE', 'AdminStats', 'ModerationQueue', 'Story', 'VoiceReview'],
+  tagTypes: ['PROFILE', 'AdminStats', 'ModerationQueue', 'Story', 'VoiceReview', 'DISCOVERY_FEED'],
 });

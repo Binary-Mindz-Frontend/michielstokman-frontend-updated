@@ -1,0 +1,44 @@
+import { Skeleton } from '@/components/ui/skeleton';
+
+export default function CardGridSkeleton() {
+  return (
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {[...Array(8)].map((_, i) => (
+        <div key={i} className="relative flex flex-col overflow-hidden">
+          {/* Image Area with 4/5 Aspect Ratio matching your code */}
+          <div className="relative aspect-4/5 w-full">
+            <Skeleton className="h-full w-full rounded-none" />
+
+            {/* Rating & Days Badge Skeleton - Top Right */}
+            <div className="absolute top-4 right-4 z-10 flex gap-2">
+              <Skeleton className="h-6 w-16" />
+              <Skeleton className="h-6 w-20" />
+            </div>
+
+            {/* Text Content Skeleton (Overlay area) */}
+            <div className="absolute bottom-0 left-0 w-full space-y-3 p-5 pb-5">
+              {/* Category Label */}
+              <Skeleton className="h-3 w-20" />
+
+              {/* Title Line */}
+              <Skeleton className="h-7 w-3/4" />
+
+              {/* Description Lines */}
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+              </div>
+
+              {/* Footer Section  */}
+              <div className="space-y-3 pt-4">
+                <Skeleton className="h-4 w-40" />
+                {/* Optional: Button */}
+                <Skeleton className="h-10 w-full" />
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}

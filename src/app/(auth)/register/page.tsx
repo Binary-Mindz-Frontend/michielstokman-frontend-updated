@@ -9,8 +9,10 @@ import { setAuth } from '@/redux/features/auth/authSlice';
 import { useAppDispatch } from '@/redux/hooks';
 import { setUserProfile } from '@/services/auth/auth.service';
 import { TLoginUser } from '@/types/userRole.types';
+import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
 import { catchAsyncMutation } from '@/utils/apiReqRes.utils';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { motion } from 'framer-motion'; // motion এবং Variants ইমপোর্ট করুন
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -43,7 +45,6 @@ export default function RegisterPage() {
   });
 
   const onSubmit = async (data: RegisterFormData) => {
-    console.log('Register Data:', data);
     const userInfo = {
       email: data.email,
       password: data.password,
@@ -68,18 +69,30 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="animate-in fade-in flex min-h-screen flex-col items-center justify-center px-4 py-12 duration-700">
-      <h2 className="text-primary mb-16 font-serif text-2xl tracking-wide md:text-3xl">
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={FADE_IN_UP_CONTAINER}
+      className="flex min-h-screen flex-col items-center justify-center px-4 py-12"
+    >
+      <motion.h2
+        variants={FADE_IN_UP_ITEM}
+        className="text-primary mb-16 font-serif text-2xl tracking-wide md:text-3xl"
+      >
         Transform to Liberation
-      </h2>
+      </motion.h2>
 
-      <div className="w-full max-w-120 space-y-8 text-center">
+      <motion.div variants={FADE_IN_UP_ITEM} className="w-full max-w-120 space-y-8 text-center">
         <DynamicSectionHeader
           title="Join the Journey"
           description=" Create an account to save your reflections, get personalized content, and share your own stories."
         />
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 text-left">
+        <motion.form
+          variants={FADE_IN_UP_ITEM}
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-5 text-left"
+        >
           <InputField
             label="Your email"
             name="email"
@@ -107,17 +120,19 @@ export default function RegisterPage() {
           >
             {isSubmitting ? 'Creating Account...' : 'Create Account'}
           </Button>
-        </form>
+        </motion.form>
 
-        <div className="relative flex items-center">
+        {/* Divider */}
+        <motion.div variants={FADE_IN_UP_ITEM} className="relative flex items-center">
           <div className="border-primary/30 grow border-t"></div>
           <span className="text-primary mx-4 shrink text-xs tracking-widest uppercase">
             or continue with
           </span>
           <div className="border-primary/30 grow border-t"></div>
-        </div>
+        </motion.div>
 
-        <div className="space-y-3">
+        {/* Social Actions */}
+        <motion.div variants={FADE_IN_UP_ITEM} className="space-y-3">
           <Button
             type="button"
             className="btn-styles border-primary/20 flex items-center justify-center gap-3 border bg-transparent hover:bg-[#F5F1EA]"
@@ -136,9 +151,10 @@ export default function RegisterPage() {
             />
             <span className="font-medium text-white">Sign in with Apple</span>
           </Button>
-        </div>
+        </motion.div>
 
-        <div className="space-y-3">
+        {/* Footer Link */}
+        <motion.div variants={FADE_IN_UP_ITEM} className="space-y-3">
           <p className="text-dark-primary text-sm">
             Already have an account?{' '}
             <Link href="/login" className="text-primary font-bold hover:underline">
@@ -146,8 +162,8 @@ export default function RegisterPage() {
             </Link>
           </p>
           <p className="text-dark-primary text-sm">Continue as guest — 1 item every other day</p>
-        </div>
-      </div>
-    </div>
+        </motion.div>
+      </motion.div>
+    </motion.div>
   );
 }
