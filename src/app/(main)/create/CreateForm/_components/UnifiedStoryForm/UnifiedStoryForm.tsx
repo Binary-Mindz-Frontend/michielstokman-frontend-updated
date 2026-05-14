@@ -8,7 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import { useGenerateStoryMutation } from '@/redux/features/aiStory/aiStory.api';
+import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -106,8 +108,14 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
 
   return (
     <>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-        <div className="space-y-4 sm:space-y-6">
+      <motion.form
+        initial="hidden"
+        animate="visible"
+        variants={FADE_IN_UP_CONTAINER}
+        onSubmit={handleSubmit(onSubmit)}
+        className="space-y-8"
+      >
+        <motion.div variants={FADE_IN_UP_ITEM} className="space-y-4 sm:space-y-6">
           <InputField
             label="Title"
             name="title"
@@ -145,9 +153,9 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
               {contentValue.length}/5000
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="space-y-4 sm:space-y-6">
+        <motion.div variants={FADE_IN_UP_ITEM} className="space-y-4 sm:space-y-6">
           <div className="space-y-3">
             <label className="block font-medium">
               Growth areas <span className="text-error">*</span>
@@ -226,16 +234,20 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
               onCheckedChange={(val) => setValue('sensitiveContent', val)}
             />
           </div>
-        </div>
+        </motion.div>
 
-        <Button
-          disabled={isGenerating}
-          type="submit"
-          className="bg-primary/90 hover:bg-primary w-full rounded-md py-5 font-medium text-white disabled:opacity-50 sm:py-6 sm:text-lg"
-        >
-          {isGenerating ? 'Submitting...' : `Submit ${isConfession ? 'Confession' : 'Meditation'}`}
-        </Button>
-      </form>
+        <motion.div variants={FADE_IN_UP_ITEM}>
+          <Button
+            disabled={isGenerating}
+            type="submit"
+            className="bg-primary/90 hover:bg-primary w-full rounded-md py-5 font-medium text-white disabled:opacity-50 sm:py-6 sm:text-lg"
+          >
+            {isGenerating
+              ? 'Submitting...'
+              : `Submit ${isConfession ? 'Confession' : 'Meditation'}`}
+          </Button>
+        </motion.div>
+      </motion.form>
 
       <SuccessModal isOpen={isSuccess} onClose={() => setIsSuccess(false)} />
     </>
