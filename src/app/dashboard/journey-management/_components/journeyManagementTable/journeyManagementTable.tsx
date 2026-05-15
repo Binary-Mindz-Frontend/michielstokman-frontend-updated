@@ -1,83 +1,47 @@
 'use client';
 
 import CustomTable from '@/components/dashboard/CustomTable/CustomTable';
+import TableEmptyState from '@/components/dashboard/CustomTable/TableEmptyState';
+import TableSkeleton from '@/components/dashboard/CustomTable/TableSkeleton';
+import DynamicBadge from '@/components/dashboard/DynamicBadge/DynamicBadge';
 import SearchField from '@/components/dashboard/Fields/SearchField/SearchField';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-// import {
-//   DropdownMenu,
-//   DropdownMenuContent,
-//   DropdownMenuItem,
-//   DropdownMenuTrigger,
-// } from '@/components/ui/dropdown-menu';
+import { useGetAllLiberationsQuery } from '@/redux/features/admin/journeyManagement/journeyManagement.api';
+
 import { TColumn } from '@/types/custom-table.types';
 import { Edit3, Eye, MoreVertical, Trash2 } from 'lucide-react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
-interface IJourneyData {
-  id: number;
+// Liberation Data type
+interface ILiberationData {
+  id: string;
   title: string;
-  date: string;
-  days: number;
-  price: string;
+  created_at: string;
+  total_days: number;
+  price_cents: number;
+  currency: string;
+  is_active: boolean;
 }
 
 function JourneyManagementTable() {
-  const journeyData: IJourneyData[] = [
-    {
-      id: 1,
-      title: 'Feel More Vital – 7 Days to More Life Energy',
-      date: '12 Jan 26',
-      days: 7,
-      price: '$50',
-    },
-    {
-      id: 2,
-      title: 'Feel More Vital – 7 Days to More Life Energy',
-      date: '12 Jan 26',
-      days: 7,
-      price: '$50',
-    },
-    {
-      id: 3,
-      title: 'Feel More Vital – 7 Days to More Life Energy',
-      date: '12 Jan 26',
-      days: 7,
-      price: '$50',
-    },
-    {
-      id: 4,
-      title: 'Feel More Vital – 7 Days to More Life Energy',
-      date: '12 Jan 26',
-      days: 7,
-      price: '$50',
-    },
-    {
-      id: 5,
-      title: 'Feel More Vital – 7 Days to More Life Energy',
-      date: '12 Jan 26',
-      days: 7,
-      price: '$50',
-    },
-    {
-      id: 6,
-      title: 'Feel More Vital – 7 Days to More Life Energy',
-      date: '12 Jan 26',
-      days: 7,
-      price: '$50',
-    },
-    {
-      id: 7,
-      title: 'Feel More Vital – 7 Days to More Life Energy',
-      date: '12 Jan 26',
-      days: 7,
-      price: '$50',
-    },
-  ];
+  const searchParams = useSearchParams();
+  const searchTerm = searchParams.get('search') || '';
 
-  const tableConfig: TColumn<IJourneyData>[] = [
+  // API Hooks
+  const { data, isLoading, isFetching } = useGetAllLiberationsQuery({
+    limit: 50,
+    offset: 0,
+    search: searchTerm,
+  });
+
+  // Extracting journey data from the API response
+  const journeyData = data?.data?.definitions || [];
+
+  const tableConfig: TColumn<ILiberationData>[] = [
     {
       header: 'Sl',
-      cell: (row) => <span className="text-secondary">{row?.id}</span>,
+      cell: (_, index) => <span className="text-secondary">{(index || 0) + 1}</span>,
     },
     {
       header: 'Title',
@@ -89,15 +53,32 @@ function JourneyManagementTable() {
     },
     {
       header: 'Date',
-      accessor: 'date',
+      cell: (row) => (
+        <span>
+          {new Date(row?.created_at).toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'short',
+            year: '2-digit',
+          })}
+        </span>
+      ),
     },
     {
       header: 'Days',
-      accessor: 'days',
+      accessor: 'total_days',
     },
     {
       header: 'Price',
-      accessor: 'price',
+      cell: (row) => <span>${row?.price_cents}</span>,
+    },
+    {
+      header: 'Active',
+      cell: (row) => (
+        <DynamicBadge
+          text={row?.is_active ? 'Active' : 'Inactive'}
+          color={row?.is_active ? '#10B981' : '#EF4444'}
+        />
+      ),
     },
     {
       header: 'Action',
@@ -138,8 +119,15 @@ function JourneyManagementTable() {
     <div className="w-full space-y-6 rounded-md border border-[#F1E9E4] bg-[#F8F7F3] p-6">
       <SearchField placeholder="Search by Journey" queryKey="search" />
 
-      {/* Custom Table */}
-      <CustomTable columns={tableConfig} data={journeyData} />
+      <div>
+        {isLoading || isFetching ? (
+          <TableSkeleton />
+        ) : journeyData.length === 0 ? (
+          <TableEmptyState message="No journey found!" />
+        ) : (
+          <CustomTable columns={tableConfig} data={journeyData} />
+        )}
+      </div>
     </div>
   );
 }
