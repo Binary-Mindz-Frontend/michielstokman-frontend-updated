@@ -12,12 +12,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { TColumn } from '@/types/custom-table.types';
+import { FormatDateTime } from '@/utils/formatDateTime';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 interface IOrderHistory {
   id: string;
   plan_name: string;
-  amount_cents: number;
+  amount: number;
   currency: string;
   user_email: string;
   paid_at: string;
@@ -37,34 +38,21 @@ function OrderHistoryTable({ data, isLoading }: { data: IOrderHistory[]; isLoadi
   const tableConfig: TColumn<IOrderHistory>[] = [
     {
       header: 'Sl',
-      cell: (_, index) => <span className="text-secondary">{(index || 0) + 1}</span>,
+      cell: (row) => <span className="text-secondary">{row?.id}</span>,
     },
     {
       header: 'Name',
       cell: (row) => (
-        <p className="text-dark-primary line-clamp-1 font-semibold">{row?.plan_name}</p>
+        <p className="text-dark-primary line-clamp-1 font-semibold">{row?.plan_name || 'N/A'}</p>
       ),
     },
     {
       header: 'Price',
-      cell: (row) => (
-        <span>
-          {row?.currency === 'EUR' ? '€' : '$'}
-          {row?.amount_cents / 100}
-        </span>
-      ),
+      cell: (row) => <span>$ {row?.amount || '0.00'}</span>,
     },
     {
       header: 'Date',
-      cell: (row) => (
-        <span>
-          {new Date(row?.paid_at).toLocaleDateString('en-GB', {
-            day: '2-digit',
-            month: 'short',
-            year: '2-digit',
-          })}
-        </span>
-      ),
+      cell: (row) => <span>{FormatDateTime(row?.paid_at)}</span>,
     },
     {
       header: 'Email',
@@ -82,7 +70,7 @@ function OrderHistoryTable({ data, isLoading }: { data: IOrderHistory[]; isLoadi
         <div className="flex w-full items-center gap-3 md:w-auto">
           <Select value={currentDays} onValueChange={handlePeriodChange}>
             <SelectTrigger className="md:w-45">
-              <SelectValue placeholder="Select period" />
+              <SelectValue placeholder="Select period " />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="7">Last 7 Days</SelectItem>
@@ -95,7 +83,7 @@ function OrderHistoryTable({ data, isLoading }: { data: IOrderHistory[]; isLoadi
 
       <div>
         {isLoading ? (
-          <TableSkeleton />
+          <TableSkeleton SKELETON_COLS={5} />
         ) : data.length === 0 ? (
           <TableEmptyState message="No orders found!" />
         ) : (
