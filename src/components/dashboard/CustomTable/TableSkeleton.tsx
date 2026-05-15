@@ -1,7 +1,10 @@
-const SKELETON_ROWS = 6;
-const SKELETON_COLS = 7;
-
-const TableSkeleton = () => {
+const TableSkeleton = ({
+  SKELETON_ROWS = 6,
+  SKELETON_COLS = 7,
+}: {
+  SKELETON_ROWS?: number;
+  SKELETON_COLS?: number;
+}) => {
   return (
     <div className="text-secondary overflow-x-auto rounded-md bg-[#F5F2F0]">
       <table className="divide-primary/10 min-w-full divide-y">

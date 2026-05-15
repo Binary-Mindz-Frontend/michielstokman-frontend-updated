@@ -21,14 +21,9 @@ function OrderHistorySummary({
   ordersCount: number;
   isLoading: boolean;
 }) {
-  const formattedRevenue = new Intl.NumberFormat('en-DE', {
-    style: 'currency',
-    currency: 'EUR',
-  }).format(revenue / 100);
-
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
-      <SummaryCard label="Total Revenue" value={isLoading ? '...' : formattedRevenue} />
+      <SummaryCard label="Total Revenue" value={isLoading ? '...' : `$${revenue}`} />
       <SummaryCard label="Total Orders" value={isLoading ? '...' : ordersCount} />
     </div>
   );

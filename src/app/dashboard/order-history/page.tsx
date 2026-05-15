@@ -19,20 +19,22 @@ function DashboardOrderHistoryPage() {
     offset: 0,
   });
 
+  // Order Stats
   const orderStats = {
-    totalRevenue: data?.data?.total_revenue_cents || 0,
+    totalRevenue: data?.data?.total_revenue || 0,
     totalOrders: data?.data?.total_orders || 0,
   };
 
+  // Orders Data for Table
   const orders = data?.data?.orders || [];
 
   return (
     <div className="space-y-6">
       <DynamicPageHeader title="Order History" />
       <OrderHistorySummary
-        revenue={orderStats.totalRevenue}
-        ordersCount={orderStats.totalOrders}
-        isLoading={isLoading}
+        revenue={orderStats?.totalRevenue}
+        ordersCount={orderStats?.totalOrders}
+        isLoading={isLoading || isFetching}
       />
       <OrderHistoryTable data={orders} isLoading={isLoading || isFetching} />
     </div>

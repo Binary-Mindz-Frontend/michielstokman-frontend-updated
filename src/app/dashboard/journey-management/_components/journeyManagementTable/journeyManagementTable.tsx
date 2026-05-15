@@ -3,12 +3,13 @@
 import CustomTable from '@/components/dashboard/CustomTable/CustomTable';
 import TableEmptyState from '@/components/dashboard/CustomTable/TableEmptyState';
 import TableSkeleton from '@/components/dashboard/CustomTable/TableSkeleton';
-import DynamicBadge from '@/components/dashboard/DynamicBadge/DynamicBadge';
 import SearchField from '@/components/dashboard/Fields/SearchField/SearchField';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useGetAllLiberationsQuery } from '@/redux/features/admin/journeyManagement/journeyManagement.api';
 
+import { Switch } from '@/components/ui/switch';
 import { TColumn } from '@/types/custom-table.types';
+import { FormatDateTime } from '@/utils/formatDateTime';
 import { Edit3, Eye, MoreVertical, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -19,7 +20,7 @@ interface ILiberationData {
   title: string;
   created_at: string;
   total_days: number;
-  price_cents: number;
+  price: number;
   currency: string;
   is_active: boolean;
 }
@@ -53,15 +54,7 @@ function JourneyManagementTable() {
     },
     {
       header: 'Date',
-      cell: (row) => (
-        <span>
-          {new Date(row?.created_at).toLocaleDateString('en-GB', {
-            day: '2-digit',
-            month: 'short',
-            year: '2-digit',
-          })}
-        </span>
-      ),
+      cell: (row) => <span>{FormatDateTime(row?.created_at)}</span>,
     },
     {
       header: 'Days',
@@ -69,16 +62,11 @@ function JourneyManagementTable() {
     },
     {
       header: 'Price',
-      cell: (row) => <span>${row?.price_cents}</span>,
+      cell: (row) => <span>$ {row?.price}</span>,
     },
     {
-      header: 'Active',
-      cell: (row) => (
-        <DynamicBadge
-          text={row?.is_active ? 'Active' : 'Inactive'}
-          color={row?.is_active ? '#10B981' : '#EF4444'}
-        />
-      ),
+      header: 'Status',
+      cell: (row) => <Switch checked={row?.is_active} />,
     },
     {
       header: 'Action',
@@ -102,7 +90,7 @@ function JourneyManagementTable() {
               </Link>
               <div className="my-1 h-px bg-[#F1E9E4]" />
               <button className="text-dark-primary hover:bg-primary/5 flex cursor-pointer items-center gap-3 px-3 py-2.5 transition-all">
-                <Edit3 size={16} className="text-secondary" /> Edit
+                <Edit3 size={16} className="text-secondary" /> Update
               </button>
               <div className="my-1 h-px bg-[#F1E9E4]" />
               <button className="text-dark-primary hover:bg-primary/5 flex cursor-pointer items-center gap-3 px-3 py-2.5 transition-all">
