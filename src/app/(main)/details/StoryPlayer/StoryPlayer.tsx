@@ -25,7 +25,6 @@ export default function StoryPlayer({ story, onTimeUpdateCallback }: IStoryPlaye
   const audioSrc = `http://34.255.26.146:8000/${story}`;
 
   // toggle play
-
   const togglePlay = () => {
     if (audioRef.current) {
       if (isPlaying) {

@@ -70,10 +70,10 @@ export const apiClient = createApi({
     'AdminStats',
     'ModerationQueue',
     'Story',
-    'VoiceReview',
     'Discovery_Feed',
     'Liberations',
     'Orders_History',
     'Photos_Management',
+    'Voice_Review',
   ],
 });
