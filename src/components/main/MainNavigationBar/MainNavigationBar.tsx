@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import { useAuthState } from '@/redux/features/auth/authSlice';
@@ -75,33 +77,23 @@ function MainNavigationBar() {
             );
           })}
 
-          {/* 🔥 Auth-based item (controlled render) */}
           <li className="group relative">
-            {!isAuthChecked ? (
-              // ⏳ ছোট placeholder (no layout shift)
-              <span className="opacity-40">...</span>
-            ) : (
-              <>
-                <Link
-                  href={user ? '/profile' : '/login'}
-                  className={`whitespace-nowrap transition-colors duration-300 ${
-                    pathname === (user ? '/profile' : '/login')
-                      ? 'text-primary'
-                      : 'hover:text-primary text-dark-primary'
-                  }`}
-                >
-                  {user ? 'Profile' : 'Login/Signup'}
-                </Link>
+            <Link
+              href={user ? '/profile' : '/login'}
+              className={`whitespace-nowrap transition-colors duration-300 ${
+                pathname === (user ? '/profile' : '/login')
+                  ? 'text-primary'
+                  : 'hover:text-primary text-dark-primary'
+              }`}
+            >
+              {user ? 'Profile' : 'Login/Signup'}
+            </Link>
 
-                <div
-                  className={`bg-primary absolute bottom-0 left-1/2 h-[1.5px] -translate-x-1/2 transition-all duration-300 ${
-                    pathname === (user ? '/profile' : '/login')
-                      ? 'w-full'
-                      : 'w-0 group-hover:w-full'
-                  }`}
-                />
-              </>
-            )}
+            <div
+              className={`bg-primary absolute bottom-0 left-1/2 h-[1.5px] -translate-x-1/2 transition-all duration-300 ${
+                pathname === (user ? '/profile' : '/login') ? 'w-full' : 'w-0 group-hover:w-full'
+              }`}
+            />
           </li>
         </ul>
       </nav>
