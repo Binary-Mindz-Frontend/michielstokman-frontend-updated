@@ -94,8 +94,8 @@ const EditAction: React.FC<EditActionProps> = ({ id, onSuccess }) => {
         required
         placeholder="Choose category"
         options={[
-          { label: 'Meditations', value: 'meditation' },
-          { label: 'Confessions', value: 'confession' },
+          { label: 'Meditations', value: 'meditations' },
+          { label: 'Confessions', value: 'confessions' },
         ]}
         error={errors.story_type?.message}
       />

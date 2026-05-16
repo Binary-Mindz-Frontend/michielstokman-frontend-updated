@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import img from '@/assets/table_placeholder_image.jpg';
@@ -31,7 +33,6 @@ import { ApproveAction, DeleteAction, RejectAction } from '../ApproveAction/Appr
 import EditAction from '../EditModeration/EditModeration';
 import { ReviewDetails } from '../ReviewDetails/ReviewDetails';
 import ModerationPagination from './ModerationPagination';
-// import { EditAction } from '../EditModeration/EditModeration';
 
 interface IModerationStory {
   id: string;
@@ -195,9 +196,7 @@ const ModerationTable = () => {
         <CustomTable columns={tableConfig} data={stories} />
       )}
 
-      {!isLoading && stories.length > 0 && (
-        <ModerationPagination totalItems={totalCount} limit={limit} />
-      )}
+      {!isLoading && <ModerationPagination totalItems={totalCount} limit={limit} />}
 
       {/* --- Global Dynamic Modal --- */}
       <DynamicModal
@@ -207,7 +206,16 @@ const ModerationTable = () => {
       >
         {modalState.selectedStory && (
           <>
-            {modalState.type === 'review' && <ReviewDetails id={modalState.selectedStory.id} />}
+            {modalState.type === 'review' && (
+              <ReviewDetails
+                id={modalState.selectedStory.id}
+                onEdit={(id) => openModal('edit', modalState.selectedStory!)}
+                onApprove={(id) => openModal('approve', modalState.selectedStory!)}
+                onReject={(id) => openModal('reject', modalState.selectedStory!)}
+                onRemove={(id) => openModal('remove', modalState.selectedStory!)}
+                onClose={closeModal}
+              />
+            )}
 
             {modalState.type === 'approve' && (
               <ApproveAction id={modalState.selectedStory.id} onSuccess={closeModal} />

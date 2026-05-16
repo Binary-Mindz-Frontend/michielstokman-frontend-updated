@@ -22,9 +22,9 @@ const ModerationPagination = ({ totalItems, limit }: PaginationProps) => {
     }
   };
 
-  if (totalPages <= 1) return null;
+  if (totalPages <= 0) return null;
   return (
-    <div className="mt-4 flex items-center justify-between border-t border-[#F1E9E4] pt-6">
+    <div className="mt-4 flex items-center justify-between pt-6">
       <p className="text-secondary text-sm">
         Showing <span className="font-medium">{currentOffset + 1}</span> to{' '}
         <span className="font-medium">{Math.min(currentOffset + limit, totalItems)}</span> of{' '}
