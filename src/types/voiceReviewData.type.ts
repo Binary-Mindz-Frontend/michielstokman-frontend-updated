@@ -1,8 +1,9 @@
 export interface IVoiceReviewData {
-  id: number;
+  id: string;
   title: string;
-  type: string;
-  voice: string;
-  duration: string;
-  generated: string;
+  story_type: string;
+  voice_name: string;
+  audio_duration: string;
+  created_at: string;
+  audio_path: string;
 }

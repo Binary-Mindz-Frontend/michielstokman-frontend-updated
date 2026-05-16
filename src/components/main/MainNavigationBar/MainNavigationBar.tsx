@@ -33,10 +33,12 @@ function MainNavigationBar() {
   const navItems: INavItem[] = [
     { label: 'Home', href: '/' },
     { label: 'Create', href: '/create' },
+    { label: 'About', href: '/about' },
+    { label: 'Safety Rules', href: '/safety-freedom-rules' },
   ];
 
   return (
-    <header className="w-full bg-[#FDFCFB]">
+    <header className="z-50 w-full bg-[#FDFCFB]">
       {/* Top Title */}
       <div
         className={`py-2.5 text-center transition-all duration-500 ${

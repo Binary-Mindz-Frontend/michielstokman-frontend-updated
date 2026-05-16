@@ -6,7 +6,7 @@ function DashboardVoiceReviewPage() {
   return (
     <section>
       <DynamicPageHeader title="Voice Review — AI Generated Audio" />
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense>
         <VoiceReviewTable />
       </Suspense>
     </section>
