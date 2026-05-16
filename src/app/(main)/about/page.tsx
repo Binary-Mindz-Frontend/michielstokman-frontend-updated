@@ -1,19 +1,29 @@
 'use client';
 
+import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
+import { motion } from 'framer-motion';
 import { Play } from 'lucide-react';
 import Link from 'next/link';
 
 function WhyTransformToLiberationPage() {
   return (
-    <div className="min-h-screen w-full px-4 py-10">
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={FADE_IN_UP_CONTAINER}
+      className="min-h-screen w-full px-4 py-10"
+    >
       <div className="mx-auto max-w-3xl space-y-8 text-left">
         {/* Main Title */}
-        <h1 className="text-primary font-serif text-3xl font-medium tracking-wide italic md:text-4xl">
+        <motion.h1
+          variants={FADE_IN_UP_ITEM}
+          className="text-primary font-serif text-3xl font-medium tracking-wide italic md:text-4xl"
+        >
           Why Transform to Liberation?
-        </h1>
+        </motion.h1>
 
         {/* --- Section 1: The Sovereign Truth --- */}
-        <div className="space-y-4">
+        <motion.div variants={FADE_IN_UP_ITEM} className="space-y-4">
           <h2 className="text-primary font-serif text-xl font-medium md:text-2xl">
             The Sovereign Truth: Why Transform to Liberation?
           </h2>
@@ -28,10 +38,10 @@ function WhyTransformToLiberationPage() {
               moment of silent realization: This friction is not all there is.
             </p>
           </div>
-        </div>
+        </motion.div>
 
         {/* --- Interactive Play Button --- */}
-        <div>
+        <motion.div variants={FADE_IN_UP_ITEM}>
           <button
             onClick={() => console.log('Play Video')}
             className="bg-primary flex cursor-pointer items-center gap-2 rounded-full px-8 py-3.5 text-sm font-medium text-white shadow-md transition-all duration-300 hover:bg-[#A65D3D] hover:shadow-lg active:scale-95"
@@ -39,10 +49,10 @@ function WhyTransformToLiberationPage() {
             <Play size={14} fill="white" strokeWidth={0} />
             <span>Why I started Transform to Liberation</span>
           </button>
-        </div>
+        </motion.div>
 
         {/* --- Section 2: The Cost of Adaptation --- */}
-        <div className="space-y-4">
+        <motion.div variants={FADE_IN_UP_ITEM} className="space-y-4">
           <h2 className="text-primary font-serif text-xl font-medium md:text-2xl">
             The Cost of Adaptation
           </h2>
@@ -58,10 +68,10 @@ function WhyTransformToLiberationPage() {
               question that can no longer be silenced: &quot;What is actually true for me?&quot;
             </p>
           </div>
-        </div>
+        </motion.div>
 
         {/* --- Section 3: The Return to Vitality --- */}
-        <div className="space-y-4">
+        <motion.div variants={FADE_IN_UP_ITEM} className="space-y-4">
           <h2 className="text-primary font-serif text-xl font-medium md:text-2xl">
             The Return to Vitality
           </h2>
@@ -83,10 +93,10 @@ function WhyTransformToLiberationPage() {
               masculine frame—a state where we no longer just manage life, but actually live it.
             </p>
           </div>
-        </div>
+        </motion.div>
 
         {/* --- Section 4: The Space to Be Seen --- */}
-        <div className="space-y-4">
+        <motion.div variants={FADE_IN_UP_ITEM} className="space-y-4">
           <h2 className="text-primary font-serif text-xl font-medium md:text-2xl">
             The Space to Be Seen
           </h2>
@@ -103,10 +113,10 @@ function WhyTransformToLiberationPage() {
               reactions. We cannot wait for wise elders. We must become them.
             </p>
           </div>
-        </div>
+        </motion.div>
 
         {/* --- Section 5: Your Invitation --- */}
-        <div className="space-y-4">
+        <motion.div variants={FADE_IN_UP_ITEM} className="space-y-4">
           <h2 className="text-primary font-serif text-xl font-medium md:text-2xl">
             Your Invitation
           </h2>
@@ -125,7 +135,7 @@ function WhyTransformToLiberationPage() {
               shine?
             </p>
           </div>
-        </div>
+        </motion.div>
 
         {/* --- Footer Link --- */}
         <div className="pt-2 text-center">
@@ -137,7 +147,7 @@ function WhyTransformToLiberationPage() {
           </Link>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
