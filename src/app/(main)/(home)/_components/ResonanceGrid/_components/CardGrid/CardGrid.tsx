@@ -101,7 +101,7 @@ const CardGrid = () => {
                       {isJourney ? (
                         <div className="space-y-4">
                           <p className="text-2xl font-semibold text-white">
-                            ${card?.price_display?.toFixed(2) || '0.00'}
+                            €{card?.price_display || '0.00'}
                           </p>
 
                           <Button className="btn-styles">Begin Your Liberation</Button>
