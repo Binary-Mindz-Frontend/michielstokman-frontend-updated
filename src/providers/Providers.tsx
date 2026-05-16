@@ -15,7 +15,7 @@ const Providers = async ({ children }: { children: React.ReactNode }) => {
     }
   }
   return (
-    <StoreProvider>
+    <StoreProvider user={user}>
       <ReduxInitializer user={user} />
       {children}
     </StoreProvider>
