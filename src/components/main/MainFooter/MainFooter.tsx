@@ -17,7 +17,7 @@ function MainFooter() {
 
           {/* Navigation Links */}
           <nav>
-            <ul className="text-dark-primary flex items-center gap-6 text-xs font-semibold tracking-wider md:gap-10">
+            <ul className="text-dark-primary flex flex-wrap items-center justify-center gap-6 text-center text-xs font-medium tracking-wider md:gap-10">
               <li>
                 <Link href="/" className="hover:text-primary transition-colors">
                   HOME
@@ -26,6 +26,16 @@ function MainFooter() {
               <li>
                 <Link href="/create" className="hover:text-primary transition-colors">
                   CREATE
+                </Link>
+              </li>
+              <li>
+                <Link href="/about" className="hover:text-primary transition-colors">
+                  ABOUT
+                </Link>
+              </li>
+              <li>
+                <Link href="/safety-freedom-rules" className="hover:text-primary transition-colors">
+                  SAFETY RULES
                 </Link>
               </li>
               <li>
