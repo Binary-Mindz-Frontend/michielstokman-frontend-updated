@@ -12,16 +12,19 @@ const SummaryCard = ({ label, value }: SummaryCardProps) => (
   </div>
 );
 
-function OrderHistorySummary() {
-  const summaryData = {
-    totalRevenue: '$284,920',
-    totalOrders: '123',
-  };
-
+function OrderHistorySummary({
+  revenue,
+  ordersCount,
+  isLoading,
+}: {
+  revenue: number;
+  ordersCount: number;
+  isLoading: boolean;
+}) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
-      <SummaryCard label="Total Revenue" value={summaryData?.totalRevenue} />
-      <SummaryCard label="Total Orders" value={summaryData?.totalOrders} />
+      <SummaryCard label="Total Revenue" value={isLoading ? '...' : `$${revenue}`} />
+      <SummaryCard label="Total Orders" value={isLoading ? '...' : ordersCount} />
     </div>
   );
 }

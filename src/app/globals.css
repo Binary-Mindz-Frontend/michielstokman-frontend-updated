@@ -145,3 +145,39 @@
     @apply bg-primary/90 hover:bg-primary w-full rounded-md py-5! font-medium text-white transition-all duration-300 sm:py-6! sm:text-lg!;
   }
 }
+
+/* Tiptap Editor Styles */
+.tiptap ul {
+  list-style-type: disc;
+  padding-left: 1.25rem;
+  margin: 0.25rem 0;
+}
+
+.tiptap ol {
+  list-style-type: decimal;
+  padding-left: 1.25rem;
+  margin: 0.25rem 0;
+}
+
+.tiptap ul li,
+.tiptap ol li {
+  margin: 0.15rem 0;
+}
+
+.tiptap h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.tiptap strong {
+  font-weight: 600;
+}
+
+.tiptap em {
+  font-style: italic;
+}
+
+.tiptap u {
+  text-decoration: underline;
+}

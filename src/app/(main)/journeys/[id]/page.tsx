@@ -1,22 +1,94 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { setAuth, useCurrentUser } from '@/redux/features/auth/authSlice';
 import { useGetLiberationDetailsQuery } from '@/redux/features/discoveryFeed/discoveryFeed.api';
+import { useStartCheckoutMutation } from '@/redux/features/payment/payment.api';
+import { useGetProfileQuery } from '@/redux/features/userProfile/userProfile.api';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { Check } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+
+import { useEffect } from 'react';
+import { IPaymentCheckoutRequest } from '@/types/payment.types';
+import { toast } from 'sonner';
 import { cardData } from '../../(home)/_components/ResonanceGrid/_components/data/cardData.data';
 
 export default function JourneyDetailPage() {
   const params = useParams();
   const storyId = params?.id as string;
+  console.log(storyId);
+
   // Hooks
   const { data: response } = useGetLiberationDetailsQuery(storyId);
   const librationData = response?.data;
+  const { data: profileResponse } = useGetProfileQuery(undefined);
+  const profileData = profileResponse?.data;
+
+  const [startCheckout, { isLoading: isProcessing }] = useStartCheckoutMutation();
+  const user = useAppSelector(useCurrentUser) as any;
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    if (profileData && user) {
+      const profileUserId = profileData.user_id;
+      const profileId = profileData.id;
+
+      if (user.user_id !== profileUserId || user.id !== profileId) {
+        dispatch(
+          setAuth({
+            user: {
+              ...user,
+              user_id: profileUserId || user.user_id,
+              id: profileId || user.id,
+            },
+          }),
+        );
+      }
+    }
+  }, [profileData, user, dispatch]);
+
+  console.log('response', librationData);
+  console.log('user', user);
+  console.log('profileData', profileData);
 
   // Data find logic
   const journey = cardData.find((item) => item.id.toString() === storyId);
+  console.log('journey', journey);
+
+  const handleCheckout = async () => {
+    if (!user) {
+      toast.error('Please login to start checkout');
+      return;
+    }
+
+    try {
+      const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+      const checkoutData: IPaymentCheckoutRequest = {
+        user_id: profileData?.user_id || user?.user_id || '',
+        journey_code: librationData?.journey_code || storyId,
+        provider: 'stripe' as const,
+        success_url: `${baseUrl}/journeys/${storyId}/liberation`,
+        cancel_url: `${baseUrl}/journeys/${storyId}`,
+      };
+
+      console.log('startCheckout api payload data:', checkoutData);
+
+      const result = await startCheckout(checkoutData).unwrap();
+
+      if (result.success && result.data?.checkout_url) {
+        window.location.href = result.data.checkout_url;
+      } else {
+        toast.error(result.message || 'Failed to start checkout');
+      }
+    } catch (error: any) {
+      toast.error(error?.data?.message || 'Checkout failed. Please try again.');
+      console.error('Checkout error:', error);
+    }
+  };
 
   const expectations = [
     'Daily 15-minute guided practices',
@@ -92,7 +164,9 @@ export default function JourneyDetailPage() {
                 </div>
               </div>
 
-              <div className="text-dark-primary font-serif text-4xl font-bold md:text-4xl">€47</div>
+              <div className="text-dark-primary font-serif text-4xl font-bold md:text-4xl">
+                €{librationData?.price}
+              </div>
             </div>
           </div>
 
@@ -120,9 +194,9 @@ export default function JourneyDetailPage() {
 
           {/* Checkout Action - Styling from your Story Button */}
           <div className="flex flex-col items-center gap-4 pt-6 md:pt-10">
-            <Link href={`/journeys/${journey?.id}/liberation`}>
-              <Button className="btn-styles w-fit">Start This Liberation — €47</Button>
-            </Link>
+            <Button onClick={handleCheckout} disabled={isProcessing} className="btn-styles w-fit">
+              {isProcessing ? 'Processing...' : `Start This Liberation — €${librationData?.price}`}
+            </Button>
             <p className="text-secondary text-xs">
               One-time payment · Lifetime access · 30-day guarantee
             </p>

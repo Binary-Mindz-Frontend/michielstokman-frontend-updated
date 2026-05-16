@@ -1,9 +1,9 @@
-import DynamicPageHeader from '@/components/dashboard/DynamicPageHeader/DynamicPageHeader';
-import JourneyManagementTable from './journeyManagementTable/journeyManagementTable';
+import JourneyManagementHeader from './_components/journeyManagementHeader/journeyManagementHeader';
+import JourneyManagementTable from './_components/journeyManagementTable/journeyManagementTable';
 function DashboardJourneyManagementPage() {
   return (
-    <div className="space-y-6">
-      <DynamicPageHeader title="Journey Management" />
+    <div className="space-y-4">
+      <JourneyManagementHeader />
       <JourneyManagementTable />
     </div>
   );

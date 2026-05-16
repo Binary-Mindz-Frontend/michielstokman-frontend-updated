@@ -53,6 +53,8 @@ export default function LoginPage() {
       // onSuccess
       (res) => {
         const user: TLoginUser = {
+          id: res?.data?.user?.id,
+          user_id: res?.data?.user_id,
           email: res?.data?.user?.email,
           is_admin: res?.data?.user?.is_admin || false,
         };
