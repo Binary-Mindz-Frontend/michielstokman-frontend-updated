@@ -3,6 +3,8 @@ export type TUserRole = 'ADMIN';
 export type TAccountStatus = 'ACTIVE' | 'PENDING' | 'INACTIVE';
 
 export type TLoginUser = {
+  id?: string;
+  user_id?: string;
   email: string;
   is_admin: boolean;
 };
