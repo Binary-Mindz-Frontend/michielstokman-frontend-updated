@@ -6,17 +6,19 @@ import { Check } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { cardData } from '../../(home)/_components/ResonanceGrid/_components/data/cardData.data';
+// import { cardData } from '../../(home)/_components/ResonanceGrid/_components/data/cardData.data';
 
 export default function JourneyDetailPage() {
   const params = useParams();
   const storyId = params?.id as string;
+  console.log(storyId);
+
   // Hooks
   const { data: response } = useGetLiberationDetailsQuery(storyId);
   const librationData = response?.data;
 
   // Data find logic
-  const journey = cardData.find((item) => item.id.toString() === storyId);
+  // const journey = cardData.find((item) => item.id.toString() === storyId);
 
   const expectations = [
     'Daily 15-minute guided practices',
@@ -120,7 +122,7 @@ export default function JourneyDetailPage() {
 
           {/* Checkout Action - Styling from your Story Button */}
           <div className="flex flex-col items-center gap-4 pt-6 md:pt-10">
-            <Link href={`/journeys/${journey?.id}/liberation`}>
+            <Link href={`/journeys/${storyId}/liberation`}>
               <Button className="btn-styles w-fit">Start This Liberation — €47</Button>
             </Link>
             <p className="text-secondary text-xs">

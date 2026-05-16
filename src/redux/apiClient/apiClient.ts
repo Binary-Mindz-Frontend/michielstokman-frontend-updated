@@ -71,8 +71,9 @@ export const apiClient = createApi({
     'ModerationQueue',
     'Story',
     'VoiceReview',
-    'DISCOVERY_FEED',
+    'Discovery_Feed',
     'Liberations',
     'Orders_History',
+    'Photos_Management',
   ],
 });

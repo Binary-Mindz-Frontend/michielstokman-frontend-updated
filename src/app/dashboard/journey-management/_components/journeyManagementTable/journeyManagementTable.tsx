@@ -5,16 +5,18 @@ import TableEmptyState from '@/components/dashboard/CustomTable/TableEmptyState'
 import TableSkeleton from '@/components/dashboard/CustomTable/TableSkeleton';
 import SearchField from '@/components/dashboard/Fields/SearchField/SearchField';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useGetAllLiberationsQuery } from '@/redux/features/admin/journeyManagement/journeyManagement.api';
-
 import { Switch } from '@/components/ui/switch';
+import {
+  useDeactivateLiberationMutation,
+  useGetAllLiberationsQuery,
+} from '@/redux/features/admin/journeyManagement/journeyManagement.api';
 import { TColumn } from '@/types/custom-table.types';
 import { FormatDateTime } from '@/utils/formatDateTime';
 import { Edit3, Eye, MoreVertical, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { toast } from 'sonner';
 
-// Liberation Data type
 interface ILiberationData {
   id: string;
   title: string;
@@ -29,15 +31,43 @@ function JourneyManagementTable() {
   const searchParams = useSearchParams();
   const searchTerm = searchParams.get('search') || '';
 
-  // API Hooks
+  // Journey Data Api Hook
   const { data, isLoading, isFetching } = useGetAllLiberationsQuery({
     limit: 50,
     offset: 0,
     search: searchTerm,
   });
 
-  // Extracting journey data from the API response
+  // Status Update API Hook
+  const [deactivateLiberation] = useDeactivateLiberationMutation();
+
   const journeyData = data?.data?.definitions || [];
+
+  const handleStatusToggle = async (id: string, currentStatus: boolean) => {
+    const nextStatus = !currentStatus;
+    const toastId = toast.loading(nextStatus ? 'Activating journey...' : 'Deactivating journey...');
+
+    try {
+      const response = await deactivateLiberation({
+        id,
+        isActive: nextStatus,
+      }).unwrap();
+
+      if (response.success) {
+        toast.success(
+          response.message ||
+            `Liberation ${nextStatus ? 'activated' : 'deactivated'} successfully!`,
+          { id: toastId },
+        );
+      } else {
+        toast.error('Failed to update status', { id: toastId });
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      console.error('Status Update Error:', error);
+      toast.error(error?.data?.message || 'Something went wrong!', { id: toastId });
+    }
+  };
 
   const tableConfig: TColumn<ILiberationData>[] = [
     {
@@ -66,7 +96,12 @@ function JourneyManagementTable() {
     },
     {
       header: 'Status',
-      cell: (row) => <Switch checked={row?.is_active} />,
+      cell: (row) => (
+        <Switch
+          checked={row?.is_active}
+          onCheckedChange={() => handleStatusToggle(row?.id, row?.is_active)}
+        />
+      ),
     },
     {
       header: 'Action',
@@ -89,9 +124,12 @@ function JourneyManagementTable() {
                 <Eye size={16} className="text-dark-primary" /> View Details
               </Link>
               <div className="my-1 h-px bg-[#F1E9E4]" />
-              <button className="text-dark-primary hover:bg-primary/5 flex cursor-pointer items-center gap-3 px-3 py-2.5 transition-all">
-                <Edit3 size={16} className="text-secondary" /> Update
-              </button>
+              <Link
+                href={`/dashboard/journey-management/${row?.id}`}
+                className="text-dark-primary hover:bg-primary/5 flex cursor-pointer items-center gap-3 px-3 py-2.5 transition-all"
+              >
+                <Edit3 size={16} className="text-secondary" /> Edit
+              </Link>
               <div className="my-1 h-px bg-[#F1E9E4]" />
               <button className="text-dark-primary hover:bg-primary/5 flex cursor-pointer items-center gap-3 px-3 py-2.5 transition-all">
                 <Trash2 size={16} className="text-error" /> Remove
