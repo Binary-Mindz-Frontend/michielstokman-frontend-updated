@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react-hooks/incompatible-library */
 'use client';
 
@@ -17,6 +18,8 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { JOURNEY } from './data/Journey.data';
+import { useCompleteDayMutation } from '@/redux/features/liberation/liberation.api';
+import { toast } from 'sonner';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Phase =
@@ -124,6 +127,9 @@ export default function JourneyPage() {
   const [completedDays, setCompletedDays] = useState<number[]>([]);
   const [timerRunning, setTimerRunning] = useState(false);
 
+  // ── API Mutations ──
+  const [completeDay, { isLoading: isCompleting }] = useCompleteDayMutation();
+
   // ── Before You Begin state ──
   const [checkedPreps, setCheckedPreps] = useState<string[]>([]);
   const [selectedReminder, setSelectedReminder] = useState('early-bird');
@@ -185,9 +191,23 @@ export default function JourneyPage() {
     }
   };
 
-  const handleCompleteDay = reflectionForm.handleSubmit(() => {
-    setCompletedDays((prev) => [...prev, currentDayIndex]);
-    setPhase('day-complete');
+  const handleCompleteDay = reflectionForm.handleSubmit(async (data) => {
+    try {
+      await completeDay({
+        day: currentDay.day,
+        data: {
+          energy_level: data.energyLevel,
+          what_opened: data.whatOpened || '',
+          key_takeaway: data.keyTakeaway || '',
+        },
+      }).unwrap();
+
+      setCompletedDays((prev) => [...prev, currentDayIndex]);
+      setPhase('day-complete');
+    } catch (error: any) {
+      toast.error(error?.data?.message || 'Failed to complete day. Please try again.');
+      console.error('Complete day error:', error);
+    }
   });
 
   const handleContinueAfterDay = () => {
@@ -492,8 +512,8 @@ export default function JourneyPage() {
               rows={4}
             />
 
-            <Button type="submit" className="btn-styles">
-              Complete Day {currentDay.day}
+            <Button type="submit" disabled={isCompleting} className="btn-styles">
+              {isCompleting ? 'Completing...' : `Complete Day ${currentDay.day}`}
             </Button>
           </form>
         </div>
