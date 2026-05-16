@@ -23,9 +23,10 @@ export const adminLiberationApi = apiClient.injectEndpoints({
 
     // Deactivate Liberation (Only Admin)
     deactivateLiberation: builder.mutation({
-      query: (id) => ({
-        url: `/admin/liberation/${id}/deactivate`,
+      query: ({ id, isActive }) => ({
+        url: `/admin/liberation/${id}/set-active`,
         method: 'POST',
+        body: { is_active: isActive },
       }),
       invalidatesTags: ['Liberations'],
     }),

@@ -13,7 +13,7 @@ const discoveryFeedApi = apiClient.injectEndpoints({
           method: 'GET',
         };
       },
-      providesTags: ['DISCOVERY_FEED'],
+      providesTags: ['Discovery_Feed'],
     }),
 
     // Get Story Details
@@ -22,7 +22,7 @@ const discoveryFeedApi = apiClient.injectEndpoints({
         url: `/stories/${storyId}`,
         method: 'GET',
       }),
-      providesTags: (result, error, id) => [{ type: 'DISCOVERY_FEED', id }],
+      providesTags: (result, error, id) => [{ type: 'Discovery_Feed', id }],
     }),
 
     // Get Liberation Details
@@ -31,7 +31,7 @@ const discoveryFeedApi = apiClient.injectEndpoints({
         url: `/liberation/catalog/${journey_code}`,
         method: 'GET',
       }),
-      providesTags: (result, error, id) => [{ type: 'DISCOVERY_FEED', id }],
+      providesTags: (result, error, id) => [{ type: 'Discovery_Feed', id }],
     }),
 
     // Submit Story Feedback
@@ -42,7 +42,7 @@ const discoveryFeedApi = apiClient.injectEndpoints({
         body: body,
       }),
 
-      invalidatesTags: (result, error, { storyId }) => [{ type: 'DISCOVERY_FEED', id: storyId }],
+      invalidatesTags: (result, error, { storyId }) => [{ type: 'Discovery_Feed', id: storyId }],
     }),
   }),
 });

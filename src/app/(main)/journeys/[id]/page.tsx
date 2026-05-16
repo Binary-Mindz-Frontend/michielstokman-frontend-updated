@@ -11,6 +11,7 @@ import { Check } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+
 import { useEffect } from 'react';
 import { IPaymentCheckoutRequest } from '@/types/payment.types';
 import { toast } from 'sonner';
@@ -19,6 +20,8 @@ import { cardData } from '../../(home)/_components/ResonanceGrid/_components/dat
 export default function JourneyDetailPage() {
   const params = useParams();
   const storyId = params?.id as string;
+  console.log(storyId);
+
   // Hooks
   const { data: response } = useGetLiberationDetailsQuery(storyId);
   const librationData = response?.data;
