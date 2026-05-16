@@ -5,21 +5,28 @@ import InputField from '@/components/dashboard/Fields/InputField/InputField';
 import TextAreaField from '@/components/dashboard/Fields/TextAreaField/TextAreaField';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useCreateLiberationMutation } from '@/redux/features/admin/journeyManagement/journeyManagement.api';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Underline from '@tiptap/extension-underline';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { Bold, Heading2, Italic, List, ListOrdered, Plus, UnderlineIcon, X } from 'lucide-react';
+import { Bold, Heading2, List, ListOrdered, Plus, UnderlineIcon, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import * as z from 'zod';
 
+// ১. ব্যাকএন্ডের রিকোয়ার্ড স্কিমা অনুযায়ী Zod স্কিমা মডিফাই করা হলো
 export const journeySchema = z.object({
   title: z.string().min(1, 'Title is required'),
-  price: z.string().min(1, 'Price is required'),
-  daysCount: z.string().min(1, 'Days count is required'),
+  price: z
+    .string()
+    .min(1, 'Price is required')
+    .refine((val) => !isNaN(Number(val)), 'Price must be a valid number'),
   description: z.string().optional(),
   whatToExpect: z.array(z.string()).optional(),
+  setupInstructions: z.array(z.string()).optional(),
 
   days: z
     .array(
@@ -36,42 +43,107 @@ export type JourneyFormValues = z.infer<typeof journeySchema>;
 
 const tabs = ['Basic Info', 'Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'];
 
+// ট্যাব ওয়াইজ ভ্যালিডেশন ফিল্ডস থেকে বাড়তি ফিল্ড রিমুভড
+const tabFields: Record<string, (keyof JourneyFormValues | string)[]> = {
+  'Basic Info': ['title', 'price'],
+  'Day 1': ['days.0.dayTitle', 'days.0.whatToDo', 'days.0.whyThisExercise'],
+  'Day 2': ['days.1.dayTitle', 'days.1.whatToDo', 'days.1.whyThisExercise'],
+  'Day 3': ['days.2.dayTitle', 'days.2.whatToDo', 'days.2.whyThisExercise'],
+  'Day 4': ['days.3.dayTitle', 'days.3.whatToDo', 'days.3.whyThisExercise'],
+  'Day 5': ['days.4.dayTitle', 'days.4.whatToDo', 'days.4.whyThisExercise'],
+  'Day 6': ['days.5.dayTitle', 'days.5.whatToDo', 'days.5.whyThisExercise'],
+  'Day 7': ['days.6.dayTitle', 'days.6.whatToDo', 'days.6.whyThisExercise'],
+};
+
 export default function JourneyForm() {
   const [activeTab, setActiveTab] = useState('Basic Info');
+  const router = useRouter();
+
+  const activeTabIndex = tabs.indexOf(activeTab);
+  const isLastTab = activeTab === 'Day 7';
+
+  // Mutation Hook
+  const [createLiberation, { isLoading }] = useCreateLiberationMutation();
 
   const {
     control,
     handleSubmit,
+    trigger,
     formState: { errors },
   } = useForm<JourneyFormValues>({
     resolver: zodResolver(journeySchema),
     defaultValues: {
       title: '',
       price: '',
-      daysCount: '',
       description: '',
       whatToExpect: [],
+      setupInstructions: [],
       days: Array(7).fill({ dayTitle: '', whatToDo: '', whyThisExercise: '' }),
     },
   });
 
-  const onSubmit = (data: JourneyFormValues) => {
-    console.log('Final Journey Data (Backend Ready):', data);
+  // ২. সাবমিট হ্যান্ডলারে শুধু রিকোয়ার্ড ডেটা স্ট্রাকচার পাস করা হয়েছে
+  const onSubmit = async (data: JourneyFormValues) => {
+    try {
+      const payload = {
+        title: data.title,
+        description: data.description || '',
+        price: Number(data.price), // ব্যাকএন্ড স্কিমা অনুযায়ী ইন্টিজার বা নাম্বার
+        what_to_expect:
+          data.whatToExpect && data.whatToExpect.length > 0 ? data.whatToExpect : [''],
+        setup_instructions:
+          data.setupInstructions && data.setupInstructions.length > 0
+            ? data.setupInstructions
+            : [''],
+        days: data.days.map((dayItem, index) => ({
+          day: index + 1, // দিন গণনা ১ থেকে শুরু
+          title: dayItem.dayTitle || '',
+          exercise_text: dayItem.whatToDo && dayItem.whatToDo !== '<p></p>' ? dayItem.whatToDo : '',
+          why_text:
+            dayItem.whyThisExercise && dayItem.whyThisExercise !== '<p></p>'
+              ? dayItem.whyThisExercise
+              : '',
+        })),
+      };
+
+      const response = await createLiberation(payload).unwrap();
+
+      if (response.success || response.status === 200) {
+        toast.success(response.message || 'Journey created successfully!');
+        router.push('/dashboard/journey-management');
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      console.error('Validation Error Details:', error);
+      const backendErrorMsg =
+        error?.data?.detail?.[0]?.msg || error?.data?.detail || error?.data?.message;
+      toast.error(backendErrorMsg || 'Something went wrong!');
+    }
+  };
+
+  const handleNext = async () => {
+    const fields = tabFields[activeTab] as Parameters<typeof trigger>[0];
+    const isValid = await trigger(fields);
+    if (!isValid) return;
+    setActiveTab(tabs[activeTabIndex + 1]);
   };
 
   return (
     <div className="min-h-screen w-full rounded-md bg-[#FAF7F5] p-4 md:p-6">
-      <DynamicPageHeader title="Journey Management Details" />
+      <DynamicPageHeader title="Journey Details Create" />
+
       {/* Tabs Header */}
       <div className="no-scrollbar border-primary/10 mb-8 flex items-center overflow-x-auto border-b">
-        {tabs.map((tab) => (
+        {tabs.map((tab, i) => (
           <button
             key={tab}
             type="button"
             onClick={() => setActiveTab(tab)}
+            disabled={i > activeTabIndex}
             className={cn(
               'relative cursor-pointer px-8 py-4 text-sm font-medium whitespace-nowrap transition-all',
               activeTab === tab ? 'text-primary font-bold' : 'text-[#978279]',
+              i > activeTabIndex && 'cursor-not-allowed opacity-40',
             )}
           >
             {tab}
@@ -102,15 +174,6 @@ export default function JourneyForm() {
               required
               error={errors.price?.message}
             />
-            <InputField
-              label="Days"
-              name="daysCount"
-              control={control}
-              placeholder="Enter Days"
-              required
-              error={errors.daysCount?.message}
-            />
-
             <TextAreaField
               label="Description"
               name="description"
@@ -118,8 +181,6 @@ export default function JourneyForm() {
               placeholder="Enter Description"
               error={errors.description?.message}
             />
-
-            {/* What to Expect */}
             <Controller
               name="whatToExpect"
               control={control}
@@ -132,6 +193,22 @@ export default function JourneyForm() {
                     Array.isArray(errors.whatToExpect)
                       ? errors.whatToExpect[0]?.message
                       : (errors.whatToExpect as { message?: string } | undefined)?.message
+                  }
+                />
+              )}
+            />
+            <Controller
+              name="setupInstructions"
+              control={control}
+              render={({ field }) => (
+                <DynamicListInput
+                  label="Setup Instructions"
+                  value={field.value ?? []}
+                  onChange={field.onChange}
+                  error={
+                    Array.isArray(errors.setupInstructions)
+                      ? errors.setupInstructions[0]?.message
+                      : (errors.setupInstructions as { message?: string } | undefined)?.message
                   }
                 />
               )}
@@ -152,7 +229,6 @@ export default function JourneyForm() {
                   required
                   error={errors.days?.[index]?.dayTitle?.message}
                 />
-
                 <Controller
                   name={`days.${index}.whatToDo`}
                   control={control}
@@ -165,7 +241,6 @@ export default function JourneyForm() {
                     />
                   )}
                 />
-
                 <Controller
                   name={`days.${index}.whyThisExercise`}
                   control={control}
@@ -182,15 +257,22 @@ export default function JourneyForm() {
             ),
         )}
 
-        <Button type="submit" className="btn-styles">
-          Submit Journey
-        </Button>
+        {/* ── Action Button ── */}
+        {isLastTab ? (
+          <Button type="submit" className="btn-styles" disabled={isLoading}>
+            {isLoading ? 'Submitting...' : 'Submit Journey'}
+          </Button>
+        ) : (
+          <Button type="button" onClick={handleNext} className="btn-styles">
+            Next
+          </Button>
+        )}
       </form>
     </div>
   );
 }
 
-//  DynamicListInput
+// DynamicListInput Component
 const DynamicListInput = ({
   label,
   value,
@@ -234,7 +316,6 @@ const DynamicListInput = ({
           <Plus size={20} />
         </button>
       </div>
-
       <div className="flex flex-wrap gap-2 pt-1">
         {value.map((item, idx) => (
           <div
@@ -255,7 +336,7 @@ const DynamicListInput = ({
   );
 };
 
-//  TiptapEditor
+// TiptapEditor Component
 const TiptapEditor = ({
   label,
   value,
@@ -302,8 +383,6 @@ const TiptapEditor = ({
       <label className="block text-sm font-medium">
         {label} <span className="text-error">*</span>
       </label>
-
-      {/* Toolbar */}
       <div className="border-primary/10 flex flex-wrap items-center gap-1 rounded-t-md border border-b-0 bg-white px-2 py-1.5">
         <button
           type="button"
@@ -320,12 +399,12 @@ const TiptapEditor = ({
           type="button"
           onMouseDown={(e) => {
             e.preventDefault();
-            editor.chain().focus().toggleItalic().run();
+            editor.chain().focus().toggleBold().run();
           }}
           className={toolbarBtn(editor.isActive('italic'))}
           title="Italic"
         >
-          <Italic size={15} />
+          <Bold size={15} />
         </button>
         <button
           type="button"
@@ -375,10 +454,7 @@ const TiptapEditor = ({
           <ListOrdered size={15} />
         </button>
       </div>
-
-      {/* Editor */}
       <EditorContent editor={editor} />
-
       {error && <p className="text-error text-xs font-medium">{error}</p>}
     </div>
   );
