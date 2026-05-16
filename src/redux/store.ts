@@ -1,12 +1,21 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { configureStore } from '@reduxjs/toolkit';
 import { apiClient } from './apiClient/apiClient';
 import authReducer from './features/auth/authSlice';
 
-export const makeStore = () => {
+export const makeStore = (user: any = null) => {
   return configureStore({
     reducer: {
       auth: authReducer,
       [apiClient.reducerPath]: apiClient.reducer,
+    },
+    preloadedState: {
+      auth: {
+        user: user,
+        isAuthenticated: !!user,
+        isSessionExpired: false,
+        isAuthChecked: true,
+      },
     },
     middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(apiClient.middleware),
   });

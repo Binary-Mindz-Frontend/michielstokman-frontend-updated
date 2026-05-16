@@ -7,7 +7,14 @@ import React from 'react';
 
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
-  const allowedPaths = ['/', '/create', '/profile'];
+  const allowedPaths = [
+    '/',
+    '/create',
+    '/profile',
+    '/about',
+    '/about/founders-word',
+    '/safety-freedom-rules',
+  ];
   const shouldShowLayout = allowedPaths.includes(pathname);
 
   return (
