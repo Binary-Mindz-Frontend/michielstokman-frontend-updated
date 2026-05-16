@@ -92,7 +92,7 @@ function JourneyManagementTable() {
     },
     {
       header: 'Price',
-      cell: (row) => <span>$ {row?.price}</span>,
+      cell: (row) => <span>€ {row?.price}</span>,
     },
     {
       header: 'Status',
