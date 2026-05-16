@@ -1,21 +1,32 @@
+'use client';
+import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
+import { motion } from 'framer-motion';
 import { FileText, Shield, Wind } from 'lucide-react';
 
 function SafetyFreedomRulesPage() {
   return (
-    <div className="min-h-screen w-full px-4 py-10">
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={FADE_IN_UP_CONTAINER}
+      className="min-h-screen w-full px-4 py-10"
+    >
       <div className="mx-auto max-w-3xl space-y-8 text-left">
         {/* Main Header */}
-        <div className="space-y-4">
-          <h1 className="text-primary font-serif text-3xl font-medium tracking-wide md:text-4xl">
+        <motion.div variants={FADE_IN_UP_ITEM} className="space-y-4">
+          <motion.h1
+            variants={FADE_IN_UP_ITEM}
+            className="text-primary font-serif text-3xl font-medium tracking-wide md:text-4xl"
+          >
             Safety, Freedom, Rules
-          </h1>
+          </motion.h1>
           <p className="text-secondary font-medium tracking-tight">
             The ground we stand on together. Read it once. Carry it with you.
           </p>
-        </div>
+        </motion.div>
 
         {/* --- Safety Section --- */}
-        <div className="space-y-4">
+        <motion.div variants={FADE_IN_UP_ITEM} className="space-y-4">
           <div className="text-primary flex items-center gap-3">
             <Shield size={20} strokeWidth={1.5} />
             <h2 className="font-serif text-xl font-medium md:text-2xl">Safety</h2>
@@ -36,10 +47,10 @@ function SafetyFreedomRulesPage() {
               deepest desires, your longings, the things you have never said out loud.
             </p>
           </div>
-        </div>
+        </motion.div>
 
         {/* --- Freedom Section --- */}
-        <div className="space-y-4">
+        <motion.div variants={FADE_IN_UP_ITEM} className="space-y-4">
           <div className="text-primary flex items-center gap-3">
             <Wind size={20} strokeWidth={1.5} />
             <h2 className="font-serif text-xl font-medium md:text-2xl">Freedom</h2>
@@ -58,10 +69,10 @@ function SafetyFreedomRulesPage() {
               to perform liberation while binding the person beside us.
             </p>
           </div>
-        </div>
+        </motion.div>
 
         {/* --- Rules Section --- */}
-        <div className="space-y-4">
+        <motion.div variants={FADE_IN_UP_ITEM} className="space-y-4">
           <div className="text-primary flex items-center gap-3">
             <FileText size={20} strokeWidth={1.5} />
             <h2 className="font-serif text-xl font-medium md:text-2xl">Rules</h2>
@@ -81,16 +92,16 @@ function SafetyFreedomRulesPage() {
               worthy. That is the one line, and it holds everything else in place.
             </p>
           </div>
-        </div>
+        </motion.div>
 
         {/* --- Footer Note --- */}
-        <div className="pt-6">
+        <motion.div variants={FADE_IN_UP_ITEM} className="pt-6">
           <p className="text-primary/90 font-serif text-base leading-relaxed font-medium tracking-wide md:text-lg">
             Safe enough to be honest. Free enough to be whole. Kind enough to keep each other here.
           </p>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

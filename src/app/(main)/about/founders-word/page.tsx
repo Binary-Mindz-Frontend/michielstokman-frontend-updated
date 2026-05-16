@@ -1,13 +1,20 @@
 'use client';
 
+import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 function FoundersWordPage() {
   return (
-    <div className="min-h-screen w-full px-4 py-10">
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={FADE_IN_UP_CONTAINER}
+      className="min-h-screen w-full px-4 py-10"
+    >
       <div className="mx-auto max-w-3xl space-y-8 text-left">
         {/* Top Mini Header & Main Title */}
-        <div className="space-y-3 text-center md:text-left">
+        <motion.div variants={FADE_IN_UP_ITEM} className="space-y-3 text-center md:text-left">
           <p className="font-sans text-xs font-semibold tracking-widest text-[#978279] uppercase">
             A Word from the Founder
           </p>
@@ -15,10 +22,13 @@ function FoundersWordPage() {
             The Truth That Stayed
           </h1>
           <p className="font-serif text-sm text-[#978279] italic">By Michiel Stokman</p>
-        </div>
+        </motion.div>
 
         {/* --- Intro Paragraphs --- */}
-        <div className="text-secondary space-y-4 font-sans leading-relaxed">
+        <motion.div
+          variants={FADE_IN_UP_ITEM}
+          className="text-secondary space-y-4 font-sans leading-relaxed"
+        >
           <p>
             My name is Michiel Stokman. I was born in the Netherlands in 1973, and when I am asked
             why I started Transform to Liberation, I notice that every answer I try to give feels
@@ -31,10 +41,10 @@ function FoundersWordPage() {
             day, until I could no longer set it aside without feeling that I was ignoring my own
             soul.
           </p>
-        </div>
+        </motion.div>
 
         {/* --- Section 1: The Stalemate of Success --- */}
-        <div className="space-y-4">
+        <motion.div variants={FADE_IN_UP_ITEM} className="space-y-4">
           <h2 className="text-primary font-serif text-xl font-medium md:text-2xl">
             The Stalemate of Success
           </h2>
@@ -61,10 +71,10 @@ function FoundersWordPage() {
               doesn&apos;t argue. It simply stays. And for the first time, I chose to stay with it.
             </p>
           </div>
-        </div>
+        </motion.div>
 
         {/* --- Section 2: The Great Taboo --- */}
-        <div className="space-y-4">
+        <motion.div variants={FADE_IN_UP_ITEM} className="space-y-4">
           <h2 className="text-primary font-serif text-xl font-medium md:text-2xl">
             The Great Taboo: The Reclamation of the Whole Self
           </h2>
@@ -92,10 +102,10 @@ function FoundersWordPage() {
               With it, we are alive.
             </p>
           </div>
-        </div>
+        </motion.div>
 
         {/* --- Section 3: A Path That Reveals Itself --- */}
-        <div className="space-y-4">
+        <motion.div variants={FADE_IN_UP_ITEM} className="space-y-4">
           <h2 className="text-primary font-serif text-xl font-medium md:text-2xl">
             A Path That Reveals Itself
           </h2>
@@ -113,10 +123,10 @@ function FoundersWordPage() {
               was no longer needed. The tension vanished, and a sense of direction took its place.
             </p>
           </div>
-        </div>
+        </motion.div>
 
         {/* --- Section 4: The Choice for Maturity --- */}
-        <div className="space-y-4">
+        <motion.div variants={FADE_IN_UP_ITEM} className="space-y-4">
           <h2 className="text-primary font-serif text-xl font-medium md:text-2xl">
             The Choice for Maturity
           </h2>
@@ -149,19 +159,22 @@ function FoundersWordPage() {
               I am Michiel Stokman. I am no longer living the lie. Will you join me in the deep?
             </p>
           </div>
-        </div>
+        </motion.div>
 
         {/* --- Decorative Space & Footer Navigation --- */}
-        <div className="border-t border-[#F1E9E4] pt-8 text-center">
+        <motion.div
+          variants={FADE_IN_UP_ITEM}
+          className="border-t border-[#F1E9E4] pt-8 text-center"
+        >
           <Link
             href="/about"
             className="text-primary/80 hover:text-primary font-serif text-xs font-medium tracking-wide transition-all hover:underline md:text-sm"
           >
             &larr; Back to Why Transform to Liberation
           </Link>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
