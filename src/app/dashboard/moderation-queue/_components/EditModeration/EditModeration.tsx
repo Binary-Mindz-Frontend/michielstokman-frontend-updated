@@ -23,13 +23,12 @@ interface EditActionProps {
 
 interface IEditForm {
   title: string;
-  story_type: 'meditations' | 'confessions';
+  story_type: 'meditation' | 'confession';
   story_text: string;
 }
 
 const EditAction: React.FC<EditActionProps> = ({ id, onSuccess }) => {
   const { data: storyData, isLoading: isFetching } = useGetStoryDetailsQuery(id);
-  console.log(storyData?.data);
   const [updateStory, { isLoading: isUpdating }] = useUpdateStoryMutation();
 
   const {
@@ -37,12 +36,10 @@ const EditAction: React.FC<EditActionProps> = ({ id, onSuccess }) => {
     handleSubmit,
     formState: { errors },
   } = useForm<IEditForm>({
-    // This 'values' key ensures that when storyData loads,
-    // the SelectField and InputFields are automatically populated/selected.
     values: {
       title: storyData?.data?.title || '',
       story_type:
-        (storyData?.data?.story_type?.toLowerCase() as 'meditations' | 'confessions') ||
+        (storyData?.data?.story_type?.toLowerCase() as 'meditation' | 'confession') ||
         'meditations',
       story_text: storyData?.data?.story_text || '',
     },
@@ -52,8 +49,10 @@ const EditAction: React.FC<EditActionProps> = ({ id, onSuccess }) => {
     try {
       const res = await updateStory({
         storyId: id,
-        ...formData, // This sends { storyId, title, story_type, story_text }
+        ...formData,
       }).unwrap();
+
+      console.log(res, 'res');
 
       if (res.success) {
         toast.success(res.message);
@@ -67,9 +66,21 @@ const EditAction: React.FC<EditActionProps> = ({ id, onSuccess }) => {
 
   if (isFetching) {
     return (
-      <div className="flex h-64 flex-col items-center justify-center gap-2">
-        <Loader2 className="text-secondary h-8 w-8 animate-spin" />
-        <p className="text-mute text-sm font-medium tracking-wide">Loading Details...</p>
+      <div className="mx-auto flex max-w-4xl animate-pulse flex-col gap-6 p-6">
+        <div className="h-48 w-full rounded-xl bg-neutral-200" />
+        <div className="space-y-3">
+          <div className="h-4 w-12 rounded bg-neutral-200" />
+          <div className="h-6 w-3/4 rounded bg-neutral-200" />
+        </div>
+        <div className="space-y-3">
+          <div className="h-4 w-12 rounded bg-neutral-200" />
+          <div className="h-5 w-24 rounded bg-neutral-200" />
+        </div>
+        <div className="mt-2 space-y-3">
+          <div className="h-4 w-full rounded bg-neutral-200" />
+          <div className="h-4 w-5/6 rounded bg-neutral-200" />
+          <div className="h-4 w-4/5 rounded bg-neutral-200" />
+        </div>
       </div>
     );
   }
@@ -94,8 +105,8 @@ const EditAction: React.FC<EditActionProps> = ({ id, onSuccess }) => {
         required
         placeholder="Choose category"
         options={[
-          { label: 'Meditations', value: 'meditations' },
-          { label: 'Confessions', value: 'confessions' },
+          { label: 'Meditations', value: 'meditation' },
+          { label: 'Confessions', value: 'confession' },
         ]}
         error={errors.story_type?.message}
       />
@@ -119,19 +130,19 @@ const EditAction: React.FC<EditActionProps> = ({ id, onSuccess }) => {
           onClick={onSuccess}
           className="border-primary/10 text-dark-primary h-12 flex-1 bg-white font-semibold transition-colors hover:bg-[#F5F2F0]"
         >
-          Cancel
+          Close
         </Button>
         <Button
           type="submit"
           disabled={isUpdating}
-          className="bg-secondary h-12 flex-1 font-semibold text-white shadow-sm transition-all hover:opacity-90 active:scale-[0.98]"
+          className="bg-primary h-12 flex-1 font-semibold text-white shadow-sm transition-all hover:opacity-90 active:scale-[0.98]"
         >
           {isUpdating ? (
             <div className="flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" /> Saving...
             </div>
           ) : (
-            'Update Story'
+            'Save'
           )}
         </Button>
       </div>

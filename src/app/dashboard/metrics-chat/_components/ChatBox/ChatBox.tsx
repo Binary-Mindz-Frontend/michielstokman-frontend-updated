@@ -1,5 +1,6 @@
 'use client';
 
+// import { useSendMetricsChatMessageMutation } from '@/redux/features/admin/adminMetricsChat/adminMetricsChat.api';
 import { Bot, Loader2, Send, Sparkles, User } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -10,6 +11,7 @@ interface IMessage {
 }
 
 const ChatBox = () => {
+  // const [chatbox, isloading] = useSendMetricsChatMessageMutation()
   const [messages, setMessages] = useState<IMessage[]>([
     {
       role: 'assistant',
