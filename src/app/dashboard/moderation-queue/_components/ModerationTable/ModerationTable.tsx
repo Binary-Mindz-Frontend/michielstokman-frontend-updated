@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
@@ -33,6 +34,7 @@ import { ApproveAction, DeleteAction, RejectAction } from '../ApproveAction/Appr
 import EditAction from '../EditModeration/EditModeration';
 import { ReviewDetails } from '../ReviewDetails/ReviewDetails';
 import ModerationPagination from './ModerationPagination';
+import useExportData from '@/hooks/useExportData';
 
 interface IModerationStory {
   id: string;
@@ -47,6 +49,7 @@ interface IModerationStory {
 const ModerationTable = () => {
   const { getQueryObject, searchParams } = useSetSearchQueryInURL();
   const query = getQueryObject();
+  const { exportToCSV } = useExportData({ fileName: 'moderation_queue_data' });
 
   // --- Modal State ---
   const [modalState, setModalState] = useState<{
@@ -72,7 +75,7 @@ const ModerationTable = () => {
   const currentOffset = parseInt(searchParams.get('offset') || '0');
   const currentStatus = searchParams.get('status') || 'all';
 
-  const { data, isLoading } = useGetModerationQueueQuery({
+  const { data, isLoading, isFetching } = useGetModerationQueueQuery({
     search: Array.isArray(query.search) ? query.search[0] : query.search || undefined,
     status: currentStatus === 'all' ? undefined : currentStatus,
     limit: limit,
@@ -83,6 +86,21 @@ const ModerationTable = () => {
   const stats = data?.data;
   const activeTab = currentStatus;
   const totalCount = stats?.[activeTab] || stats?.all || 0;
+
+  const handleExport = () => {
+    if (stories.length === 0) return;
+
+    const exportData = stories.map((story: any) => ({
+      ID: story.id,
+      Title: story.title,
+      Type: story.story_type,
+      Author: story.author,
+      Date: story.created_at,
+      Status: story.moderation_status,
+    }));
+
+    exportToCSV(exportData, `moderation_${currentStatus}_stories`);
+  };
 
   const tableConfig: TColumn<IModerationStory>[] = [
     { header: 'Sl', accessor: 'id' },
@@ -179,14 +197,19 @@ const ModerationTable = () => {
     <div className="w-full space-y-6 rounded-md border border-[#F1E9E4] bg-[#F8F7F3] p-6">
       <div className="flex items-center justify-between gap-4">
         <SearchField placeholder="Search by title or author..." queryKey="search" />
-        <Button className="text-secondary border-primary/20 flex items-center gap-2 rounded-md border bg-white px-6 py-5 font-medium hover:bg-gray-50">
+
+        <Button
+          onClick={handleExport}
+          disabled={stories.length === 0}
+          className="text-secondary border-primary/20 flex items-center gap-2 rounded-md border bg-white px-6 py-5 font-medium hover:bg-gray-50"
+        >
           <Upload size={18} /> Export
         </Button>
       </div>
 
       <FilterTabs tabs={tabsData} />
 
-      {isLoading ? (
+      {isLoading || isFetching ? (
         <TableSkeleton />
       ) : stories.length === 0 ? (
         <TableEmptyState
