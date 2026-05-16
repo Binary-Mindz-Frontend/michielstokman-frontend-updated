@@ -26,12 +26,12 @@ export const WeeklyTrendSkeleton = () => {
 
       <div className="mt-4 space-y-4">
         {[...Array(3)].map((_, i) => (
-          <div key={i} className="animate-pulse rounded-md bg-[#E0E0E0] p-4">
+          <div key={i} className="animate-pulse rounded-md bg-gray-200 p-4">
             <div className="mb-2 h-4 w-1/3 rounded bg-gray-200"></div>
             <div className="flex gap-4">
-              <div className="h-3 w-1/4 rounded bg-gray-200"></div>
-              <div className="h-3 w-1/4 rounded bg-gray-200"></div>
-              <div className="h-3 w-1/4 rounded bg-gray-200"></div>
+              <div className="h-3 w-1/4 rounded bg-gray-300"></div>
+              <div className="h-3 w-1/4 rounded bg-gray-300"></div>
+              <div className="h-3 w-1/4 rounded bg-gray-300"></div>
             </div>
           </div>
         ))}

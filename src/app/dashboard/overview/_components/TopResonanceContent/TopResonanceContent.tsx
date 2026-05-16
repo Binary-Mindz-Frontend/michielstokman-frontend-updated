@@ -5,7 +5,7 @@ interface TopResonanceContent {
   id: number;
   title: string;
   reflections: number;
-  score: string;
+  pulse: string;
 }
 
 const TopResonanceContent = ({
@@ -46,7 +46,7 @@ const TopResonanceContent = ({
             className="border-primary/20 flex items-center justify-between border-b py-5 last:border-0"
           >
             <div className="flex items-center gap-4">
-              <span className="text-secondary mt-1 text-xl">{content?.id}.</span>
+              {/* <span className="text-secondary mt-1 text-xl">{content?.id}.</span> */}
               <div>
                 <h4 className="text-dark-primary text-lg font-semibold sm:text-xl">
                   {content?.title}
@@ -56,7 +56,7 @@ const TopResonanceContent = ({
                 </p>
               </div>
             </div>
-            <span className="text-primary text-lg font-semibold sm:text-xl">{content?.score}</span>
+            <span className="text-primary text-lg font-semibold sm:text-xl">{content?.pulse}</span>
           </div>
         ))}
       </div>
