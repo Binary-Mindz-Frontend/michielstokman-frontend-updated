@@ -12,6 +12,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect } from 'react';
+import { IPaymentCheckoutRequest } from '@/types/payment.types';
 import { toast } from 'sonner';
 import { cardData } from '../../(home)/_components/ResonanceGrid/_components/data/cardData.data';
 
@@ -62,11 +63,16 @@ export default function JourneyDetailPage() {
     }
 
     try {
-      const checkoutData = {
-        user_id: profileData?.user_id || user?.user_id || user?.id,
+      const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+      const checkoutData: IPaymentCheckoutRequest = {
+        user_id: profileData?.user_id || user?.user_id || '',
         journey_code: librationData?.journey_code || storyId,
         provider: 'stripe' as const,
+        success_url: `${baseUrl}/journeys/${storyId}/liberation`,
+        cancel_url: `${baseUrl}/journeys/${storyId}`,
       };
+
+      console.log('startCheckout api payload data:', checkoutData);
 
       const result = await startCheckout(checkoutData).unwrap();
 
