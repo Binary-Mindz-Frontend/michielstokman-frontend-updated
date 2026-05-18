@@ -4,14 +4,18 @@ import cardImage6 from '@/assets/home/card6.png';
 import NoDataFound from '@/components/main/NoDataFound/NoDataFound';
 import CardGridSkeleton from '@/components/main/Skeletons/CardGridSkeleton';
 import { Button } from '@/components/ui/button';
+import { useIsAuthenticated } from '@/redux/features/auth/authSlice';
+import { useAppSelector } from '@/redux/hooks';
 import { useGetDiscoveryFeedQuery } from '@/redux/features/discoveryFeed/discoveryFeed.api';
 import { TDiscoveryItemType } from '@/types/discoveryFeed.types';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 const CardGrid = () => {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const isAuthenticated = useAppSelector(useIsAuthenticated);
   const activeFilters = searchParams.getAll('story_type');
 
   const { data, isLoading, isFetching } = useGetDiscoveryFeedQuery(activeFilters);
@@ -43,6 +47,12 @@ const CardGrid = () => {
               <Link
                 href={detailPath}
                 key={card?.id}
+                onClick={(e) => {
+                  if (!isAuthenticated) {
+                    e.preventDefault();
+                    router.push(`/login?redirect=${encodeURIComponent(detailPath)}`);
+                  }
+                }}
                 className="group relative flex cursor-pointer flex-col overflow-hidden rounded-md transition-all duration-500 hover:-translate-y-2"
               >
                 {/* Image Section */}
