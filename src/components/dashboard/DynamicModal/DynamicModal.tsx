@@ -48,7 +48,7 @@ const DynamicModal: React.FC<DynamicModalProps> = ({
         )}
 
         {/* Content Section */}
-        <div className="w-full">{children}</div>
+        <div className="max-h-[80vh] w-full overflow-y-auto">{children}</div>
       </DialogContent>
     </Dialog>
   );

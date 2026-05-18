@@ -48,7 +48,7 @@ function OrderHistoryTable({ data, isLoading }: { data: IOrderHistory[]; isLoadi
     },
     {
       header: 'Price',
-      cell: (row) => <span>$ {row?.amount || '0.00'}</span>,
+      cell: (row) => <span>€ {row?.amount || '0.00'}</span>,
     },
     {
       header: 'Date',

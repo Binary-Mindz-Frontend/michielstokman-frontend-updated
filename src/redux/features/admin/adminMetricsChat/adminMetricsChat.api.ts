@@ -9,12 +9,10 @@ const adminMetricsChatApi = apiClient.injectEndpoints({
      */
     sendMetricsChatMessage: builder.mutation({
       query: (payload) => ({
-        url: '/v1/admin/chat',
+        url: '/admin/chat',
         method: 'POST',
         body: payload,
       }),
-      // We typically don't invalidate tags for a chat unless
-      // the chat actually changes specific dashboard stats.
     }),
   }),
 });

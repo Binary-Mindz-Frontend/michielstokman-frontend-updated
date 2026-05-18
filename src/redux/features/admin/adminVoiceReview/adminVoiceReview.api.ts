@@ -2,23 +2,27 @@ import { apiClient } from '@/redux/apiClient/apiClient';
 
 const adminVoiceReviewApi = apiClient.injectEndpoints({
   endpoints: (builder) => ({
-    // Get Voice Review List
+    // Get Voice Review List (Added query params support)
     getVoiceReviewList: builder.query({
-      query: () => ({
-        url: '/v1/admin/voice-review',
+      query: (params) => ({
+        url: '/admin/voice-review',
         method: 'GET',
+        params: {
+          search: params?.search || undefined,
+          limit: params?.limit || 20,
+          offset: params?.offset || 0,
+        },
       }),
-      providesTags: ['VoiceReview'],
+      providesTags: ['Voice_Review'],
     }),
 
     // Regenerate Voice
     regenerateVoice: builder.mutation({
       query: (storyId) => ({
-        url: `/v1/admin/voice-review/${storyId}/regenerate`,
+        url: `/admin/voice-review/${storyId}/regenerate`,
         method: 'POST',
       }),
-      // Invalidating 'VoiceReview' ensures the list updates to show the new state
-      invalidatesTags: ['VoiceReview'],
+      invalidatesTags: ['Voice_Review'],
     }),
   }),
 });

@@ -1,5 +1,6 @@
 'use client';
 
+import { useSendMetricsChatMessageMutation } from '@/redux/features/admin/adminMetricsChat/adminMetricsChat.api';
 import { Bot, Loader2, Send, Sparkles, User } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -10,48 +11,77 @@ interface IMessage {
 }
 
 const ChatBox = () => {
-  const [messages, setMessages] = useState<IMessage[]>([
-    {
-      role: 'assistant',
-      content:
-        'Welcome to the Admin console. Ask me about metrics, content performance, or growth areas',
-    },
-  ]);
+  // Correctly destructure RTK Mutation tuple
+  const [sendMetricsChatMessage, { isLoading: isApiLoading }] = useSendMetricsChatMessageMutation();
+
+  const [messages, setMessages] = useState<IMessage[]>([]);
   const [input, setInput] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, isTyping]);
+  }, [messages, isApiLoading]);
+
+  // Helper function to turn API markdown **text** into clean HTML bold tags safely
+  const renderFormattedContent = (content: string) => {
+    if (!content) return '';
+
+    // Split lines to preserve layout, handle **bold**, and stitch back together
+    return content.split('\n').map((line, index) => {
+      const parts = line.split(/(\*\*.*?\*\*)/g);
+      return (
+        <span key={index} className="block min-h-5">
+          {parts.map((part, partIndex) => {
+            if (part.startsWith('**') && part.endsWith('**')) {
+              return (
+                <strong key={partIndex} className="font-bold">
+                  {part.slice(2, -2)}
+                </strong>
+              );
+            }
+            return part;
+          })}
+        </span>
+      );
+    });
+  };
 
   const handleSend = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || isApiLoading) return;
 
     const userMessage: IMessage = { role: 'user', content: input };
     setMessages((prev) => [...prev, userMessage]);
+    const currentInput = input;
     setInput('');
-    setIsTyping(true);
 
-    setTimeout(() => {
-      const aiResponse: IMessage = {
-        role: 'assistant',
-        content: `I analyzed the data for "${userMessage.content}". Here are the findings:`,
-        items: [
-          '• Overall pulse score increased by 4.2%',
-          '• Top performing content is still "The Day I Said No"',
-          '• User engagement is highest between 8 PM - 10 PM',
-        ],
-      };
-      setMessages((prev) => [...prev, aiResponse]);
-      setIsTyping(false);
-    }, 1500);
+    try {
+      // CHANGED: sending "query" instead of "message" to match your backend's expected schema
+      const response = await sendMetricsChatMessage({ query: currentInput }).unwrap();
+
+      if (response?.success && response?.data?.answer) {
+        const aiMessage: IMessage = {
+          role: 'assistant',
+          content: response.data.answer,
+        };
+        setMessages((prev) => [...prev, aiMessage]);
+      } else {
+        throw new Error('Malformed data structure received');
+      }
+    } catch (error) {
+      console.error('Failed to generate insights:', error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: 'Sorry, I encountered an issue retrieving those metrics. Please try again.',
+        },
+      ]);
+    }
   };
-
   return (
-    <div className="border-primary/10 mx-auto flex h-200 w-full flex-col overflow-hidden rounded-md border bg-[#FDFCFB]">
+    <div className="border-primary/10 mx-auto flex h-[77vh] w-full flex-col overflow-hidden rounded-md border bg-[#FDFCFB]">
       {/* Header */}
       <div className="border-primary/10 flex items-center justify-between border-b bg-white p-4">
         <div className="flex items-center gap-2">
@@ -94,9 +124,9 @@ const ChatBox = () => {
                   : 'text-dark-primary border-primary/10 rounded-bl-none border bg-white'
               }`}
             >
-              <p className="text-sm leading-relaxed whitespace-pre-wrap md:text-base">
-                {msg?.content}
-              </p>
+              <div className="text-sm leading-relaxed md:text-base">
+                {renderFormattedContent(msg?.content)}
+              </div>
 
               {msg?.items && (
                 <div className="mt-4 space-y-2 border-t border-[#F8F7F3] pt-3 text-sm md:text-base">
@@ -118,7 +148,7 @@ const ChatBox = () => {
         ))}
 
         {/* Typing Indicator */}
-        {isTyping && (
+        {isApiLoading && (
           <div className="flex items-center justify-start gap-3">
             <div className="bg-primary flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white">
               <Loader2 size={18} className="animate-spin" />
@@ -143,14 +173,15 @@ const ChatBox = () => {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            disabled={isApiLoading}
             placeholder="Ask anything about this week's performance..."
-            className="text-dark-primary placeholder:text-secondary flex-1 border-none bg-transparent py-2 outline-none"
+            className="text-dark-primary placeholder:text-secondary flex-1 border-none bg-transparent px-2 py-2 outline-none disabled:cursor-not-allowed"
           />
           <button
             type="submit"
-            disabled={!input.trim() || isTyping}
+            disabled={!input.trim() || isApiLoading}
             className={`flex items-center gap-2 rounded-md px-4 py-2 font-semibold transition-all md:px-6 ${
-              !input.trim() || isTyping
+              !input.trim() || isApiLoading
                 ? 'cursor-not-allowed bg-gray-300'
                 : 'bg-primary text-white shadow-md hover:bg-[#8B5D45] active:scale-95'
             }`}
