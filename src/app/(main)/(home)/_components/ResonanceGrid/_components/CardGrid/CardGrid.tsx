@@ -32,6 +32,12 @@ const CardGrid = () => {
   const { data, isLoading, isFetching } = useGetDiscoveryFeedQuery(activeFilters);
   const feedData = data?.data?.items;
 
+  const sortedFeedData = feedData
+    ? [...feedData].sort((a, b) => {
+        return (b.has_access ? 1 : 0) - (a.has_access ? 1 : 0);
+      })
+    : [];
+
   if (isLoading || isFetching) {
     return <CardGridSkeleton />;
   }
@@ -39,14 +45,14 @@ const CardGrid = () => {
   return (
     <div>
       {/* Feed Data Check */}
-      {(!feedData || feedData.length === 0) && !isLoading ? (
+      {sortedFeedData.length === 0 && !isLoading ? (
         <NoDataFound
           title="No Content Available"
           description="It seems like there's nothing in your feed right now. Check back later or try exploring other categories."
         />
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {feedData?.map((card: TDiscoveryItemType, index: number) => {
+          {sortedFeedData.map((card: TDiscoveryItemType, index: number) => {
             const isJourney = card?.card_type === 'liberation_journey';
 
             // Dynamic path selection logic
