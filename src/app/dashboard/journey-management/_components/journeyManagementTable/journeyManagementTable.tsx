@@ -4,7 +4,6 @@ import CustomTable from '@/components/dashboard/CustomTable/CustomTable';
 import TableEmptyState from '@/components/dashboard/CustomTable/TableEmptyState';
 import TableSkeleton from '@/components/dashboard/CustomTable/TableSkeleton';
 import SearchField from '@/components/dashboard/Fields/SearchField/SearchField';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
 import {
   useDeactivateLiberationMutation,
@@ -12,7 +11,7 @@ import {
 } from '@/redux/features/admin/journeyManagement/journeyManagement.api';
 import { TColumn } from '@/types/custom-table.types';
 import { FormatDateTime } from '@/utils/formatDateTime';
-import { Edit3, Eye, MoreVertical, Trash2 } from 'lucide-react';
+import { Edit } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
@@ -106,37 +105,12 @@ function JourneyManagementTable() {
     {
       header: 'Action',
       cell: (row) => (
-        <Popover>
-          <PopoverTrigger asChild>
-            <button className="rounded-full p-1 transition-colors hover:bg-gray-100">
-              <MoreVertical size={20} className="text-secondary cursor-pointer" />
-            </button>
-          </PopoverTrigger>
-          <PopoverContent
-            align="end"
-            className="border-primary/10 w-48 rounded-md bg-[#FAF7F5] p-0 shadow-sm"
-          >
-            <div className="flex flex-col">
-              <Link
-                href={`/dashboard/journey-management/${row?.id}`}
-                className="text-dark-primary hover:bg-primary/5 flex cursor-pointer items-center gap-3 px-3 py-2.5 transition-all"
-              >
-                <Eye size={16} className="text-dark-primary" /> View Details
-              </Link>
-              <div className="my-1 h-px bg-[#F1E9E4]" />
-              <Link
-                href={`/dashboard/journey-management/${row?.id}`}
-                className="text-dark-primary hover:bg-primary/5 flex cursor-pointer items-center gap-3 px-3 py-2.5 transition-all"
-              >
-                <Edit3 size={16} className="text-secondary" /> Edit
-              </Link>
-              <div className="my-1 h-px bg-[#F1E9E4]" />
-              <button className="text-dark-primary hover:bg-primary/5 flex cursor-pointer items-center gap-3 px-3 py-2.5 transition-all">
-                <Trash2 size={16} className="text-error" /> Remove
-              </button>
-            </div>
-          </PopoverContent>
-        </Popover>
+        <Link
+          href={`/dashboard/journey-management/${row?.id}`}
+          className="text-dark-primary hover:bg-primary/10 flex w-fit cursor-pointer items-center gap-3 rounded-sm px-3 py-2.5 transition-all"
+        >
+          <Edit size={18} className="text-secondary" /> Edit
+        </Link>
       ),
     },
   ];
