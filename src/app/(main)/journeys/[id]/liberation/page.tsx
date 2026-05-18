@@ -308,6 +308,7 @@ export default function JourneyPage() {
   const handleStartNextDay = (dayIndex: number) => {
     if (completedDays.includes(dayIndex)) return;
     if (dayIndex !== 0 && !completedDays.includes(dayIndex - 1)) return;
+    checkinForm.reset({ feeling: '' });
     setCurrentDayIndex(dayIndex);
     setCurrentExerciseIndex(0);
     setPhase('day-checkin');
