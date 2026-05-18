@@ -12,6 +12,17 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 
+const getValidImageUrl = (url?: string | null) => {
+  if (!url) return cardImage6;
+  if (url.startsWith('/')) return url;
+  try {
+    new URL(url);
+    return url;
+  } catch {
+    return cardImage6;
+  }
+};
+
 const CardGrid = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -20,6 +31,7 @@ const CardGrid = () => {
 
   const { data, isLoading, isFetching } = useGetDiscoveryFeedQuery(activeFilters);
   const feedData = data?.data?.items;
+  console.log('feedData', feedData);
 
   if (isLoading || isFetching) {
     return <CardGridSkeleton />;
@@ -35,7 +47,7 @@ const CardGrid = () => {
         />
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {feedData?.map((card: TDiscoveryItemType) => {
+          {feedData?.map((card: TDiscoveryItemType, index: number) => {
             const isJourney = card?.card_type === 'liberation_journey';
 
             // Dynamic path selection logic
@@ -56,7 +68,7 @@ const CardGrid = () => {
             return (
               <Link
                 href={detailPath}
-                key={card?.id}
+                key={`${card?.id || 'card'}-${index}`}
                 onClick={(e) => {
                   if (!isAuthenticated) {
                     e.preventDefault();
@@ -69,8 +81,10 @@ const CardGrid = () => {
 
                 <div className="relative aspect-4/5 w-full">
                   <Image
-                    src={cardImage6}
-                    alt={card?.title}
+                    src={getValidImageUrl(card?.cover_image_url)}
+                    alt={card?.title || 'Card Cover'}
+                    width={400}
+                    height={500}
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
 
