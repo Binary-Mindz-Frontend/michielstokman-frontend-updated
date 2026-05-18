@@ -24,6 +24,7 @@ import {
   useEnrollJourneyMutation,
   useGenerateDayExerciseMutation,
   useGetJourneyStatusQuery,
+  useGetDayExercisesQuery,
 } from '@/redux/features/liberation/liberation.api';
 import { toast } from 'sonner';
 
@@ -168,10 +169,40 @@ export default function JourneyPage() {
   const [calendarAdded, setCalendarAdded] = useState(false);
 
   const currentDay = JOURNEY?.days[currentDayIndex];
-  const currentExercise = currentDay?.exercises[currentExerciseIndex];
-  const isLastExercise = currentExerciseIndex === currentDay?.exercises.length - 1;
-  const totalSteps = 1 + (currentDay?.exercises.length ?? 0);
-  const currentStep = phase === 'day-checkin' ? 1 : 2 + currentExerciseIndex;
+
+  const { data: dayExercisesResponse } = useGetDayExercisesQuery(
+    { journey_code: journeyCode, day: currentDay?.day },
+    { skip: !journeyCode || !currentDay?.day },
+  );
+  const dayExercisesData = dayExercisesResponse?.data;
+
+  // Single step exercise configuration based on API response
+  const totalSteps = 2; // 1. Check-in, 2. Exercise
+  const currentStep = phase === 'day-checkin' ? 1 : 2;
+
+  // ── Timer State & Effects ──
+  const [secondsElapsed, setSecondsElapsed] = useState(0);
+
+  useEffect(() => {
+    let intervalId: any;
+    if (timerRunning) {
+      intervalId = setInterval(() => {
+        setSecondsElapsed((prev) => prev + 1);
+      }, 1000);
+    }
+    return () => clearInterval(intervalId);
+  }, [timerRunning]);
+
+  useEffect(() => {
+    setTimerRunning(false);
+    setSecondsElapsed(0);
+  }, [currentExerciseIndex, phase]);
+
+  const formatTime = (secs: number) => {
+    const mins = Math.floor(secs / 60);
+    const remainderSecs = secs % 60;
+    return `${mins}:${remainderSecs.toString().padStart(2, '0')} min`;
+  };
 
   const allPrepsChecked = checkedPreps.length === JOURNEY?.preparations.length;
 
@@ -240,12 +271,8 @@ export default function JourneyPage() {
   };
 
   const handleNextExercise = () => {
-    if (isLastExercise) {
-      reflectionForm.reset({ energyLevel: 5, whatOpened: '', keyTakeaway: '' });
-      setPhase('reflection');
-    } else {
-      setCurrentExerciseIndex((i) => i + 1);
-    }
+    reflectionForm.reset({ energyLevel: 5, whatOpened: '', keyTakeaway: '' });
+    setPhase('reflection');
   };
 
   const handleCompleteDay = reflectionForm.handleSubmit(async (data) => {
@@ -465,15 +492,16 @@ export default function JourneyPage() {
   // ─────────────────────────────────────────────────────────────────────────────
   // SCREEN: EXERCISE
   // ─────────────────────────────────────────────────────────────────────────────
-  if (phase === 'exercise' && currentExercise) {
+  if (phase === 'exercise') {
+    const title = dayExercisesData?.day_theme || currentDay?.title;
+    const greeting = dayExercisesData?.ai_greeting || currentDay?.exercises?.[0]?.quote;
+    const whatToDo = dayExercisesData?.ai_exercise_text || currentDay?.exercises?.[0]?.whatToDo;
+    const whyThis = dayExercisesData?.ai_why_text || currentDay?.exercises?.[0]?.whyThis;
+
     return (
       <section className="mx-auto min-h-screen max-w-3xl px-4 py-12">
         <button
-          onClick={() =>
-            currentExerciseIndex === 0
-              ? setPhase('day-checkin')
-              : setCurrentExerciseIndex((i) => i - 1)
-          }
+          onClick={() => setPhase('day-checkin')}
           className="text-primary mb-4 flex cursor-pointer items-center gap-1 text-sm transition-opacity hover:opacity-80"
         >
           ← Back
@@ -481,37 +509,46 @@ export default function JourneyPage() {
         <StepBar current={currentStep} total={totalSteps} />
 
         <div>
-          <p className="text-primary mb-4 text-sm font-medium">{currentExercise.type}</p>
-
           <ExerciseImage />
 
-          <h2 className="text-dark-primary mb-3 font-serif text-xl font-bold">
-            {currentExercise.title}
-          </h2>
+          {title && (
+            <h2 className="text-dark-primary mb-3 font-serif text-xl font-bold">{title}</h2>
+          )}
 
-          <div className="border-primary/10 bg-primary/5 mb-5 rounded-md border px-4 py-3 text-sm text-[#7A6155] italic">
-            {currentExercise.quote}
-          </div>
+          {greeting && (
+            <div className="border-primary/10 bg-primary/5 mb-5 rounded-md border px-4 py-3 text-sm text-[#7A6155] italic">
+              {greeting}
+            </div>
+          )}
 
-          <h3 className="text-dark-primary mb-2 font-semibold">What to do</h3>
-          <p className="text-secondary mb-4 text-sm leading-relaxed">{currentExercise.whatToDo}</p>
+          {whatToDo && (
+            <>
+              <h3 className="text-dark-primary mb-2 font-semibold">What to do</h3>
+              <p className="text-secondary mb-8 text-sm leading-relaxed whitespace-pre-wrap">
+                {whatToDo}
+              </p>
+            </>
+          )}
 
-          <ol className="text-secondary mb-6 space-y-1.5 text-sm">
-            {currentExercise.steps.map((step, i) => (
-              <li key={i}>
-                {i + 1}. {step}
-              </li>
-            ))}
-          </ol>
-
-          <h3 className="text-dark-primary mb-2 font-semibold">Why this exercise</h3>
-          <p className="text-secondary mb-8 text-sm leading-relaxed">{currentExercise.whyThis}</p>
+          {whyThis && (
+            <>
+              <h3 className="text-dark-primary mb-2 font-semibold">Why this exercise</h3>
+              <p className="text-secondary mb-8 text-sm leading-relaxed">{whyThis}</p>
+            </>
+          )}
 
           <div className="mb-6 flex items-center justify-between">
-            <span className="text-secondary text-sm">{currentExercise.duration}</span>
+            <span className="text-secondary font-mono text-sm">{formatTime(secondsElapsed)}</span>
             <Button
               type="button"
-              onClick={() => setTimerRunning(!timerRunning)}
+              onClick={() => {
+                if (!timerRunning) {
+                  setSecondsElapsed(0);
+                  setTimerRunning(true);
+                } else {
+                  setTimerRunning(false);
+                }
+              }}
               className={cn(
                 'rounded-md border bg-transparent px-5 py-2 text-sm transition-all hover:bg-transparent',
                 timerRunning
@@ -519,12 +556,12 @@ export default function JourneyPage() {
                   : 'border-primary/20 text-secondary',
               )}
             >
-              {timerRunning ? 'Stop Timer' : 'Start Timer'}
+              {timerRunning ? 'Stop' : 'Start Timer'}
             </Button>
           </div>
 
           <Button onClick={handleNextExercise} className="btn-styles">
-            {isLastExercise ? 'Complete & Reflect' : 'Done — Next Exercise →'}
+            Complete & Reflect
           </Button>
         </div>
       </section>

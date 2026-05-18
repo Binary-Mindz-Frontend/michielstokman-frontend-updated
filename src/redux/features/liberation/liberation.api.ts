@@ -40,6 +40,13 @@ export const liberationApi = apiClient.injectEndpoints({
       }),
       providesTags: ['Liberations'],
     }),
+    getDayExercises: builder.query<any, { journey_code: string; day: number }>({
+      query: ({ journey_code, day }) => ({
+        url: `/liberation/${journey_code}/day/${day}`,
+        method: 'GET',
+      }),
+      providesTags: ['Liberations'],
+    }),
   }),
 });
 
@@ -48,4 +55,5 @@ export const {
   useEnrollJourneyMutation,
   useGenerateDayExerciseMutation,
   useGetJourneyStatusQuery,
+  useGetDayExercisesQuery,
 } = liberationApi;
