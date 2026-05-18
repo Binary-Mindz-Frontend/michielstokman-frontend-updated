@@ -10,23 +10,23 @@ import DynamicSectionHeader from '@/components/main/DynamicSectionHeader/Dynamic
 import GrowthSlider from '@/components/main/GrowthSlider/GrowthSlider';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Check } from 'lucide-react';
-import Image from 'next/image';
-import { useRouter, useParams, useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import * as z from 'zod';
-import { JOURNEY } from './data/Journey.data';
 import { useGetLiberationDetailsQuery } from '@/redux/features/discoveryFeed/discoveryFeed.api';
 import {
   useCompleteDayMutation,
   useEnrollJourneyMutation,
   useGenerateDayExerciseMutation,
-  useGetJourneyStatusQuery,
   useGetDayExercisesQuery,
+  useGetJourneyStatusQuery,
 } from '@/redux/features/liberation/liberation.api';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Check } from 'lucide-react';
+import Image from 'next/image';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import * as z from 'zod';
+import { JOURNEY } from './data/Journey.data';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Phase =
@@ -76,7 +76,7 @@ function buildGoogleCalendarUrl(title: string, reminderTime: string, days = 7) {
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
 
-// ─── Step Progress Bar ────────────────────────────────────────────────────────
+// ─── Step Progress Bar
 function StepBar({ current, total }: { current: number; total: number }) {
   return (
     <div className="mb-8 flex gap-3">
