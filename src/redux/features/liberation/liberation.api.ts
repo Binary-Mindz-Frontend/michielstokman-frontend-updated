@@ -4,9 +4,12 @@ import { ILiberationCompleteRequest } from '@/types/liberation.types';
 
 export const liberationApi = apiClient.injectEndpoints({
   endpoints: (builder) => ({
-    completeDay: builder.mutation<any, { day: number; data: ILiberationCompleteRequest }>({
-      query: ({ day, data }) => ({
-        url: `liberation/day/${day}/complete`,
+    completeDay: builder.mutation<
+      any,
+      { journey_id: string; day: number; data: ILiberationCompleteRequest }
+    >({
+      query: ({ journey_id, day, data }) => ({
+        url: `/liberation/${journey_id}/day/${day}/complete`,
         method: 'POST',
         body: data,
       }),
@@ -19,7 +22,19 @@ export const liberationApi = apiClient.injectEndpoints({
       }),
       invalidatesTags: ['Liberations'],
     }),
+    generateDayExercise: builder.mutation<
+      any,
+      { journey_code: string; day: number; data: { morning_feeling: string } }
+    >({
+      query: ({ journey_code, day, data }) => ({
+        url: `/liberation/${journey_code}/day/${day}/generate`,
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Liberations'],
+    }),
   }),
 });
 
-export const { useCompleteDayMutation, useEnrollJourneyMutation } = liberationApi;
+export const { useCompleteDayMutation, useEnrollJourneyMutation, useGenerateDayExerciseMutation } =
+  liberationApi;

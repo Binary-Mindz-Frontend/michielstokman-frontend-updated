@@ -18,9 +18,11 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { JOURNEY } from './data/Journey.data';
+import { useGetLiberationDetailsQuery } from '@/redux/features/discoveryFeed/discoveryFeed.api';
 import {
   useCompleteDayMutation,
   useEnrollJourneyMutation,
+  useGenerateDayExerciseMutation,
 } from '@/redux/features/liberation/liberation.api';
 import { toast } from 'sonner';
 
@@ -132,9 +134,14 @@ export default function JourneyPage() {
   const [completedDays, setCompletedDays] = useState<number[]>([]);
   const [timerRunning, setTimerRunning] = useState(false);
 
-  // ── API Mutations ──
+  // ── API Mutations & Queries ──
+  const { data: detailsResponse } = useGetLiberationDetailsQuery(journeyId);
+  const liberationDetails = detailsResponse?.data;
+  const journeyCode = liberationDetails?.journey_code || journeyId;
+
   const [completeDay, { isLoading: isCompleting }] = useCompleteDayMutation();
   const [enrollJourney, { isLoading: isEnrolling }] = useEnrollJourneyMutation();
+  const [generateDayExercise, { isLoading: isGenerating }] = useGenerateDayExerciseMutation();
 
   // ── Before You Begin state ──
   const [checkedPreps, setCheckedPreps] = useState<string[]>([]);
@@ -195,7 +202,23 @@ export default function JourneyPage() {
     }
   };
 
-  const handleBeginExercises = () => setPhase('exercise');
+  const handleBeginExercises = async (data: CheckinData) => {
+    try {
+      if (journeyCode && currentDay?.day !== undefined) {
+        await generateDayExercise({
+          journey_code: journeyCode,
+          day: currentDay.day,
+          data: {
+            morning_feeling: data.feeling || '',
+          },
+        }).unwrap();
+      }
+      setPhase('exercise');
+    } catch (error: any) {
+      toast.error(error?.data?.message || 'Failed to generate exercises. Please try again.');
+      console.error('Generate exercise error:', error);
+    }
+  };
 
   const handleNextExercise = () => {
     if (isLastExercise) {
@@ -208,14 +231,17 @@ export default function JourneyPage() {
 
   const handleCompleteDay = reflectionForm.handleSubmit(async (data) => {
     try {
-      await completeDay({
-        day: currentDay.day,
-        data: {
-          energy_level: data.energyLevel,
-          what_opened: data.whatOpened || '',
-          key_takeaway: data.keyTakeaway || '',
-        },
-      }).unwrap();
+      if (journeyCode) {
+        await completeDay({
+          journey_id: journeyCode,
+          day: currentDay.day,
+          data: {
+            energy_level: data.energyLevel,
+            what_opened: data.whatOpened || '',
+            key_takeaway: data.keyTakeaway || '',
+          },
+        }).unwrap();
+      }
 
       setCompletedDays((prev) => [...prev, currentDayIndex]);
       setPhase('day-complete');
@@ -408,8 +434,8 @@ export default function JourneyPage() {
               placeholder="A word or two is enough"
               rows={4}
             />
-            <Button type="submit" className="btn-styles">
-              Begin Exercises →
+            <Button type="submit" disabled={isGenerating} className="btn-styles">
+              {isGenerating ? 'Generating...' : 'Begin Exercises →'}
             </Button>
           </form>
         </div>
