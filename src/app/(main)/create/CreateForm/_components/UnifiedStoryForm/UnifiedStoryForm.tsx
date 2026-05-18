@@ -77,21 +77,19 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
     try {
       const formattedData = {
         story_type: isConfession ? 'confession' : 'meditation',
-        title: data.title,
-        first_name: data.firstName,
-        story_input: data.content,
-        growth_areas: data.growthAreas,
-        life_phase: data.lifePhase,
-        tags: data.tags ? data.tags.split(',').map((tag: string) => tag.trim()) : [],
-        high_intensity: data.sensitiveContent,
+        title: data?.title,
+        first_name: data?.firstName,
+        story_input: data?.content,
+        growth_areas: data?.growthAreas,
+        life_phase: data?.lifePhase,
+        tags: data?.tags ? data?.tags.split(',').map((tag: string) => tag.trim()) : [],
+        high_intensity: data?.sensitiveContent,
       };
 
       const res = await generateStory(formattedData).unwrap();
 
       if (res.success) {
         setIsSuccess(true);
-        toast.success(res.message || `${category} submitted successfully!`);
-
         reset({
           content: '',
           title: '',

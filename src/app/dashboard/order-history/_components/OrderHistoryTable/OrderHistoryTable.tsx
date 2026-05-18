@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useGetOrderHistoryQuery } from '@/redux/features/admin/orderHistory/orderHistory.api';
 import { TColumn } from '@/types/custom-table.types';
 import { FormatDateTime } from '@/utils/formatDateTime';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -24,21 +25,32 @@ interface IOrderHistory {
   paid_at: string;
 }
 
-function OrderHistoryTable({ data, isLoading }: { data: IOrderHistory[]; isLoading: boolean }) {
-  const router = useRouter();
+function OrderHistoryTable() {
   const searchParams = useSearchParams();
-  const currentDays = searchParams.get('days_back') || '30';
+  const search = searchParams.get('search') || '';
+  const days_back = searchParams.get('days_back') || '30';
+  const router = useRouter();
+
+  // API Query Call
+  const { data, isLoading, isFetching } = useGetOrderHistoryQuery({
+    search,
+    days_back: Number(days_back),
+    limit: 50,
+    offset: 0,
+  });
+
+  const orderList = data?.data?.orders || [];
 
   const handlePeriodChange = (val: string) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('days_back', val);
-    router.push(`?${params.toString()}`);
+    router.push(`?${params.toString()}`, { scroll: false });
   };
 
   const tableConfig: TColumn<IOrderHistory>[] = [
     {
       header: 'Sl',
-      cell: (row) => <span className="text-secondary">{row?.id}</span>,
+      accessor: 'id',
     },
     {
       header: 'Name',
@@ -48,11 +60,11 @@ function OrderHistoryTable({ data, isLoading }: { data: IOrderHistory[]; isLoadi
     },
     {
       header: 'Price',
-      cell: (row) => <span>€ {row?.amount || '0.00'}</span>,
+      cell: (row) => <span>€ {row?.amount ? row.amount.toFixed(2) : '0.00'}</span>,
     },
     {
       header: 'Date',
-      cell: (row) => <span>{FormatDateTime(row?.paid_at)}</span>,
+      cell: (row) => <span>{row?.paid_at ? FormatDateTime(row.paid_at) : 'N/A'}</span>,
     },
     {
       header: 'Email',
@@ -68,9 +80,9 @@ function OrderHistoryTable({ data, isLoading }: { data: IOrderHistory[]; isLoadi
         </div>
 
         <div className="flex w-full items-center gap-3 md:w-auto">
-          <Select value={currentDays} onValueChange={handlePeriodChange}>
+          <Select value={days_back} onValueChange={handlePeriodChange}>
             <SelectTrigger className="md:w-45">
-              <SelectValue placeholder="Select period " />
+              <SelectValue placeholder="Select period" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="7">Last 7 Days</SelectItem>
@@ -82,12 +94,12 @@ function OrderHistoryTable({ data, isLoading }: { data: IOrderHistory[]; isLoadi
       </div>
 
       <div>
-        {isLoading ? (
+        {isLoading || isFetching ? (
           <TableSkeleton SKELETON_COLS={5} />
-        ) : data.length === 0 ? (
+        ) : orderList.length === 0 ? (
           <TableEmptyState message="No orders found!" />
         ) : (
-          <CustomTable columns={tableConfig} data={data} />
+          <CustomTable columns={tableConfig} data={orderList} />
         )}
       </div>
     </div>
