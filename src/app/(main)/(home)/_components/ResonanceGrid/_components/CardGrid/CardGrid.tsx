@@ -5,12 +5,12 @@ import NoDataFound from '@/components/main/NoDataFound/NoDataFound';
 import CardGridSkeleton from '@/components/main/Skeletons/CardGridSkeleton';
 import { Button } from '@/components/ui/button';
 import { useIsAuthenticated } from '@/redux/features/auth/authSlice';
-import { useAppSelector } from '@/redux/hooks';
 import { useGetDiscoveryFeedQuery } from '@/redux/features/discoveryFeed/discoveryFeed.api';
+import { useAppSelector } from '@/redux/hooks';
 import { TDiscoveryItemType } from '@/types/discoveryFeed.types';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const getValidImageUrl = (url?: string | null) => {
   if (!url) return cardImage6;
@@ -31,7 +31,6 @@ const CardGrid = () => {
 
   const { data, isLoading, isFetching } = useGetDiscoveryFeedQuery(activeFilters);
   const feedData = data?.data?.items;
-  console.log('feedData', feedData);
 
   if (isLoading || isFetching) {
     return <CardGridSkeleton />;
@@ -78,8 +77,7 @@ const CardGrid = () => {
                 className="group relative flex cursor-pointer flex-col overflow-hidden rounded-md transition-all duration-500 hover:-translate-y-2"
               >
                 {/* Image Section */}
-
-                <div className="relative aspect-4/5 w-full">
+                <div className="relative aspect-4/5 h-full max-h-112.5 w-full">
                   <Image
                     src={getValidImageUrl(card?.cover_image_url)}
                     alt={card?.title || 'Card Cover'}
@@ -103,7 +101,6 @@ const CardGrid = () => {
                   </div>
 
                   {/* Exact Overlay from your specs */}
-
                   <div
                     className="pointer-events-none absolute inset-0"
                     style={{

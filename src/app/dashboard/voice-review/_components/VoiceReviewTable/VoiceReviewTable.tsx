@@ -4,14 +4,13 @@
 import CustomTable from '@/components/dashboard/CustomTable/CustomTable';
 import SearchField from '@/components/dashboard/Fields/SearchField/SearchField';
 import FilterTabs from '@/components/dashboard/FilterTabs/FilterTabs';
-import { Button } from '@/components/ui/button';
 import {
   useGetVoiceReviewListQuery,
   useRegenerateVoiceMutation,
 } from '@/redux/features/admin/adminVoiceReview/adminVoiceReview.api';
 import { TColumn } from '@/types/custom-table.types';
 import { IVoiceReviewData } from '@/types/voiceReviewData.type';
-import { Pause, Play, RotateCcw, Upload } from 'lucide-react';
+import { Pause, Play, RotateCcw } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -48,7 +47,7 @@ function VoiceReviewTable() {
   const handlePlayPause = (row: IVoiceReviewData) => {
     if (!row?.audio_path || !row?.id) return;
 
-    const audioUrl = `${process.env.NEXT_PUBLIC_BASE_URL || ''}/${row.audio_path}`;
+    const audioUrl = `http://34.255.26.146:8000/${row.audio_path}`;
 
     if (playingId === row.id) {
       if (globalAudioInstance) {
@@ -125,7 +124,7 @@ function VoiceReviewTable() {
       header: 'Action',
       cell: (row) => {
         const isCurrentAudioPlaying = playingId === row?.id;
-        const isThisRowRegenerating = loadingId === row?.id; // 👈 শুধু এই রো রি-জেনারেট হচ্ছে কিনা চেক
+        const isThisRowRegenerating = loadingId === row?.id;
 
         return (
           <div className="flex items-center gap-2">
@@ -142,14 +141,14 @@ function VoiceReviewTable() {
             {/* Regenerate Button */}
             <button
               type="button"
-              disabled={loadingId !== null} // 👈 যেকোনো একটা লোড হলে সব রিফ্রেশ বাটন সাময়িক ডিজেবল থাকবে (ডাবল ক্লিক আটকাতে)
+              disabled={loadingId !== null}
               onClick={() => row?.id && handleRegenerate(row.id)}
               className="bg-primary/10 text-primary hover:bg-primary/20 cursor-pointer rounded-full p-1.5 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
               title="Regenerate Voice"
             >
               <RotateCcw
                 size={18}
-                className={isThisRowRegenerating ? 'text-primary animate-spin' : ''} // 👈 শুধু ক্লিক করা বাটনেই স্পিন অ্যানিমেশন হবে
+                className={isThisRowRegenerating ? 'text-primary animate-spin' : ''}
               />
             </button>
           </div>
@@ -174,15 +173,8 @@ function VoiceReviewTable() {
 
   return (
     <div className="w-full space-y-6 rounded-md border border-[#F1E9E4] bg-[#F8F7F3] p-6">
-      <div className="flex items-center justify-between gap-4">
-        <SearchField placeholder="Search by title or type..." queryKey="search" />
-        <Button className="text-secondary border-primary/20 flex items-center gap-2 rounded-md border bg-white px-6 py-5 font-medium hover:bg-gray-50">
-          <Upload size={18} /> Export
-        </Button>
-      </div>
-
+      <SearchField placeholder="Search by title or type..." queryKey="search" />
       <FilterTabs tabs={tabsData} />
-
       <CustomTable columns={tableConfig} data={voiceReviewData} />
     </div>
   );
