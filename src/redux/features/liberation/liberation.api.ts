@@ -33,8 +33,19 @@ export const liberationApi = apiClient.injectEndpoints({
       }),
       invalidatesTags: ['Liberations'],
     }),
+    getJourneyStatus: builder.query<any, string>({
+      query: (journey_code) => ({
+        url: `/liberation/${journey_code}/status`,
+        method: 'GET',
+      }),
+      providesTags: ['Liberations'],
+    }),
   }),
 });
 
-export const { useCompleteDayMutation, useEnrollJourneyMutation, useGenerateDayExerciseMutation } =
-  liberationApi;
+export const {
+  useCompleteDayMutation,
+  useEnrollJourneyMutation,
+  useGenerateDayExerciseMutation,
+  useGetJourneyStatusQuery,
+} = liberationApi;

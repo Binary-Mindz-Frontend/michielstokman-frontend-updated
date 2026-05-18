@@ -14,7 +14,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Check } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter, useParams } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { JOURNEY } from './data/Journey.data';
@@ -23,6 +23,7 @@ import {
   useCompleteDayMutation,
   useEnrollJourneyMutation,
   useGenerateDayExerciseMutation,
+  useGetJourneyStatusQuery,
 } from '@/redux/features/liberation/liberation.api';
 import { toast } from 'sonner';
 
@@ -139,9 +140,27 @@ export default function JourneyPage() {
   const liberationDetails = detailsResponse?.data;
   const journeyCode = liberationDetails?.journey_code || journeyId;
 
+  const { data: statusResponse } = useGetJourneyStatusQuery(journeyCode, {
+    skip: !journeyCode,
+  });
+  const journeyStatus = statusResponse?.data;
+
   const [completeDay, { isLoading: isCompleting }] = useCompleteDayMutation();
   const [enrollJourney, { isLoading: isEnrolling }] = useEnrollJourneyMutation();
   const [generateDayExercise, { isLoading: isGenerating }] = useGenerateDayExerciseMutation();
+
+  // ── Sync completedDays from API ──
+  useEffect(() => {
+    if (journeyStatus?.steps) {
+      const completedIndices: number[] = [];
+      journeyStatus.steps.forEach((step: any, idx: number) => {
+        if (step.status === 'completed') {
+          completedIndices.push(idx);
+        }
+      });
+      setCompletedDays(completedIndices);
+    }
+  }, [journeyStatus]);
 
   // ── Before You Begin state ──
   const [checkedPreps, setCheckedPreps] = useState<string[]>([]);
@@ -632,9 +651,14 @@ export default function JourneyPage() {
 
           <div className="space-y-3">
             {JOURNEY?.days.map((day, i) => {
-              const isCompleted = completedDays.includes(i);
-              const isReadyToStart = i === 0 || completedDays.includes(i - 1);
-              const isLocked = !isCompleted && !isReadyToStart;
+              const stepFromApi = journeyStatus?.steps?.find((s: any) => s.day_number === day.day);
+              const apiStatus = stepFromApi?.status;
+
+              const isCompleted = apiStatus ? apiStatus === 'completed' : completedDays.includes(i);
+              const isReadyToStart = apiStatus
+                ? apiStatus === 'available'
+                : i === 0 || completedDays.includes(i - 1);
+              const isLocked = apiStatus ? apiStatus === 'locked' : !isCompleted && !isReadyToStart;
 
               return (
                 <button
