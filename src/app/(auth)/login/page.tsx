@@ -14,7 +14,7 @@ import { catchAsyncMutation } from '@/utils/apiReqRes.utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -32,6 +32,7 @@ export default function LoginPage() {
   const [loginUser, { isLoading }] = useLoginUserMutation();
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   // Form
   const {
@@ -58,7 +59,9 @@ export default function LoginPage() {
           email: res?.data?.user?.email,
           is_admin: res?.data?.user?.is_admin || false,
         };
-        const redirectPath = res?.data?.user?.is_admin ? '/dashboard/overview' : '/profile';
+        const defaultRedirect = res?.data?.user?.is_admin ? '/dashboard/overview' : '/profile';
+        const redirectUrl = searchParams.get('redirect');
+        const redirectPath = redirectUrl ? decodeURIComponent(redirectUrl) : defaultRedirect;
         dispatch(setAuth({ user }));
         setUserProfile(user, res?.data?.access_token);
         toast.success(res?.message || 'User Logged in Successfully');
