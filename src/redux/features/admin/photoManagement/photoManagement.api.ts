@@ -30,21 +30,8 @@ export const adminPhotoApi = apiClient.injectEndpoints({
       }),
       invalidatesTags: ['Photos_Management'],
     }),
-
-    // Delete Cover Image
-    deletePhoto: builder.mutation({
-      query: (id) => ({
-        url: `/admin/photos/${id}`,
-        method: 'DELETE',
-      }),
-      invalidatesTags: ['Photos_Management'],
-    }),
   }),
 });
 
-export const {
-  useGetAllPhotosQuery,
-  useUploadPhotoMutation,
-  useUpdatePhotoMutation,
-  useDeletePhotoMutation,
-} = adminPhotoApi;
+export const { useGetAllPhotosQuery, useUploadPhotoMutation, useUpdatePhotoMutation } =
+  adminPhotoApi;
