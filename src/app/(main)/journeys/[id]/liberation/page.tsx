@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Check } from 'lucide-react';
 import Image from 'next/image';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
@@ -128,9 +128,11 @@ function ExerciseImage() {
 export default function JourneyPage() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const journeyId = params?.id as string;
 
-  const [phase, setPhase] = useState<Phase>('landing');
+  const initialPhase = (searchParams.get('phase') as Phase) || 'landing';
+  const [phase, setPhase] = useState<Phase>(initialPhase);
   const [currentDayIndex, setCurrentDayIndex] = useState(0);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const [completedDays, setCompletedDays] = useState<number[]>([]);

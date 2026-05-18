@@ -39,9 +39,19 @@ const CardGrid = () => {
             const isJourney = card?.card_type === 'liberation_journey';
 
             // Dynamic path selection logic
-            const detailPath = isJourney
-              ? `/journeys/${card?.journey_code}`
-              : `/details/${card?.id}`;
+            let detailPath = `/details/${card?.id}`;
+
+            if (isJourney) {
+              if (card?.has_access) {
+                if (card?.is_enrolled && card?.current_day && card.current_day > 1) {
+                  detailPath = `/journeys/${card?.journey_code}/liberation?phase=overview`;
+                } else {
+                  detailPath = `/journeys/${card?.journey_code}/liberation`;
+                }
+              } else {
+                detailPath = `/journeys/${card?.journey_code}`;
+              }
+            }
 
             return (
               <Link
@@ -114,7 +124,9 @@ const CardGrid = () => {
                             €{card?.price_display || '0.00'}
                           </p>
 
-                          <Button className="btn-styles">Begin Your Liberation</Button>
+                          <Button className="btn-styles">
+                            {card?.has_access ? 'Continue Liberation' : 'Begin Your Liberation'}
+                          </Button>
                         </div>
                       ) : (
                         <div className="text-xs font-light text-white/60">
