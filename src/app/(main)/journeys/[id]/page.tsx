@@ -68,7 +68,7 @@ export default function JourneyDetailPage() {
     try {
       const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
       const checkoutData: IPaymentCheckoutRequest = {
-        user_id: profileData?.user_id || user?.user_id || '',
+        user_id: profileData?.user_id || user?.user_id,
         journey_code: librationData?.journey_code || storyId,
         provider: 'stripe' as const,
         success_url: `${baseUrl}/journeys/${storyId}/liberation`,

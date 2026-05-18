@@ -2,6 +2,6 @@ export interface IPaymentCheckoutRequest {
   user_id: string;
   journey_code: string;
   provider: 'stripe';
-  success_url: string;
-  cancel_url: string;
+  success_url?: string;
+  cancel_url?: string;
 }

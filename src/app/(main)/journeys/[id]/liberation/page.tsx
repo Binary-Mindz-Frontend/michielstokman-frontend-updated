@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react-hooks/incompatible-library */
 'use client';
 
@@ -12,11 +13,20 @@ import { cn } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Check } from 'lucide-react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { JOURNEY } from './data/Journey.data';
+import { useGetLiberationDetailsQuery } from '@/redux/features/discoveryFeed/discoveryFeed.api';
+import {
+  useCompleteDayMutation,
+  useEnrollJourneyMutation,
+  useGenerateDayExerciseMutation,
+  useGetJourneyStatusQuery,
+  useGetDayExercisesQuery,
+} from '@/redux/features/liberation/liberation.api';
+import { toast } from 'sonner';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Phase =
@@ -117,6 +127,8 @@ function ExerciseImage() {
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function JourneyPage() {
   const router = useRouter();
+  const params = useParams();
+  const journeyId = params?.id as string;
 
   const [phase, setPhase] = useState<Phase>('landing');
   const [currentDayIndex, setCurrentDayIndex] = useState(0);
@@ -124,16 +136,73 @@ export default function JourneyPage() {
   const [completedDays, setCompletedDays] = useState<number[]>([]);
   const [timerRunning, setTimerRunning] = useState(false);
 
+  // ── API Mutations & Queries ──
+  const { data: detailsResponse } = useGetLiberationDetailsQuery(journeyId);
+  const liberationDetails = detailsResponse?.data;
+  const journeyCode = liberationDetails?.journey_code || journeyId;
+
+  const { data: statusResponse } = useGetJourneyStatusQuery(journeyCode, {
+    skip: !journeyCode,
+  });
+  const journeyStatus = statusResponse?.data;
+
+  const [completeDay, { isLoading: isCompleting }] = useCompleteDayMutation();
+  const [enrollJourney, { isLoading: isEnrolling }] = useEnrollJourneyMutation();
+  const [generateDayExercise, { isLoading: isGenerating }] = useGenerateDayExerciseMutation();
+
+  // ── Sync completedDays from API ──
+  useEffect(() => {
+    if (journeyStatus?.steps) {
+      const completedIndices: number[] = [];
+      journeyStatus.steps.forEach((step: any, idx: number) => {
+        if (step.status === 'completed') {
+          completedIndices.push(idx);
+        }
+      });
+      setCompletedDays(completedIndices);
+    }
+  }, [journeyStatus]);
+
   // ── Before You Begin state ──
   const [checkedPreps, setCheckedPreps] = useState<string[]>([]);
   const [selectedReminder, setSelectedReminder] = useState('early-bird');
   const [calendarAdded, setCalendarAdded] = useState(false);
 
   const currentDay = JOURNEY?.days[currentDayIndex];
-  const currentExercise = currentDay?.exercises[currentExerciseIndex];
-  const isLastExercise = currentExerciseIndex === currentDay?.exercises.length - 1;
-  const totalSteps = 1 + (currentDay?.exercises.length ?? 0);
-  const currentStep = phase === 'day-checkin' ? 1 : 2 + currentExerciseIndex;
+
+  const { data: dayExercisesResponse } = useGetDayExercisesQuery(
+    { journey_code: journeyCode, day: currentDay?.day },
+    { skip: !journeyCode || !currentDay?.day },
+  );
+  const dayExercisesData = dayExercisesResponse?.data;
+
+  // Single step exercise configuration based on API response
+  const totalSteps = 2; // 1. Check-in, 2. Exercise
+  const currentStep = phase === 'day-checkin' ? 1 : 2;
+
+  // ── Timer State & Effects ──
+  const [secondsElapsed, setSecondsElapsed] = useState(0);
+
+  useEffect(() => {
+    let intervalId: any;
+    if (timerRunning) {
+      intervalId = setInterval(() => {
+        setSecondsElapsed((prev) => prev + 1);
+      }, 1000);
+    }
+    return () => clearInterval(intervalId);
+  }, [timerRunning]);
+
+  useEffect(() => {
+    setTimerRunning(false);
+    setSecondsElapsed(0);
+  }, [currentExerciseIndex, phase]);
+
+  const formatTime = (secs: number) => {
+    const mins = Math.floor(secs / 60);
+    const remainderSecs = secs % 60;
+    return `${mins}:${remainderSecs.toString().padStart(2, '0')} min`;
+  };
 
   const allPrepsChecked = checkedPreps.length === JOURNEY?.preparations.length;
 
@@ -168,26 +237,64 @@ export default function JourneyPage() {
     setCalendarAdded(true);
   };
 
-  const handleStartDay = () => {
-    checkinForm.reset({ feeling: '' });
-    setCurrentExerciseIndex(0);
-    setPhase('day-checkin');
-  };
-
-  const handleBeginExercises = () => setPhase('exercise');
-
-  const handleNextExercise = () => {
-    if (isLastExercise) {
-      reflectionForm.reset({ energyLevel: 5, whatOpened: '', keyTakeaway: '' });
-      setPhase('reflection');
-    } else {
-      setCurrentExerciseIndex((i) => i + 1);
+  const handleStartDay = async () => {
+    try {
+      if (journeyId) {
+        await enrollJourney(journeyId).unwrap();
+        toast.success('Journey started successfully!');
+      }
+      checkinForm.reset({ feeling: '' });
+      setCurrentExerciseIndex(0);
+      setPhase('day-checkin');
+    } catch (error: any) {
+      toast.error(error?.data?.message || 'Failed to start journey. Please try again.');
+      console.error('Enroll journey error:', error);
     }
   };
 
-  const handleCompleteDay = reflectionForm.handleSubmit(() => {
-    setCompletedDays((prev) => [...prev, currentDayIndex]);
-    setPhase('day-complete');
+  const handleBeginExercises = async (data: CheckinData) => {
+    try {
+      if (journeyCode && currentDay?.day !== undefined) {
+        await generateDayExercise({
+          journey_code: journeyCode,
+          day: currentDay.day,
+          data: {
+            morning_feeling: data.feeling || '',
+          },
+        }).unwrap();
+      }
+      setPhase('exercise');
+    } catch (error: any) {
+      toast.error(error?.data?.message || 'Failed to generate exercises. Please try again.');
+      console.error('Generate exercise error:', error);
+    }
+  };
+
+  const handleNextExercise = () => {
+    reflectionForm.reset({ energyLevel: 5, whatOpened: '', keyTakeaway: '' });
+    setPhase('reflection');
+  };
+
+  const handleCompleteDay = reflectionForm.handleSubmit(async (data) => {
+    try {
+      if (journeyCode) {
+        await completeDay({
+          journey_id: journeyCode,
+          day: currentDay.day,
+          data: {
+            energy_level: data.energyLevel,
+            what_opened: data.whatOpened || '',
+            key_takeaway: data.keyTakeaway || '',
+          },
+        }).unwrap();
+      }
+
+      setCompletedDays((prev) => [...prev, currentDayIndex]);
+      setPhase('day-complete');
+    } catch (error: any) {
+      toast.error(error?.data?.message || 'Failed to complete day. Please try again.');
+      console.error('Complete day error:', error);
+    }
   });
 
   const handleContinueAfterDay = () => {
@@ -201,6 +308,7 @@ export default function JourneyPage() {
   const handleStartNextDay = (dayIndex: number) => {
     if (completedDays.includes(dayIndex)) return;
     if (dayIndex !== 0 && !completedDays.includes(dayIndex - 1)) return;
+    checkinForm.reset({ feeling: '' });
     setCurrentDayIndex(dayIndex);
     setCurrentExerciseIndex(0);
     setPhase('day-checkin');
@@ -329,7 +437,11 @@ export default function JourneyPage() {
           </div>
 
           {/* ── Start Day 1 — disabled until all 3 checked ── */}
-          <Button onClick={handleStartDay} disabled={!allPrepsChecked} className="btn-styles mt-6">
+          <Button
+            onClick={handleStartDay}
+            disabled={!allPrepsChecked || isEnrolling}
+            className="btn-styles mt-6"
+          >
             {allPrepsChecked
               ? 'Start Day 1'
               : `Check ${JOURNEY?.preparations.length - checkedPreps.length} item${JOURNEY?.preparations.length - checkedPreps.length === 1 ? '' : 's'} above`}
@@ -369,8 +481,8 @@ export default function JourneyPage() {
               placeholder="A word or two is enough"
               rows={4}
             />
-            <Button type="submit" className="btn-styles">
-              Begin Exercises →
+            <Button type="submit" disabled={isGenerating} className="btn-styles">
+              {isGenerating ? 'Generating...' : 'Begin Exercises →'}
             </Button>
           </form>
         </div>
@@ -381,15 +493,16 @@ export default function JourneyPage() {
   // ─────────────────────────────────────────────────────────────────────────────
   // SCREEN: EXERCISE
   // ─────────────────────────────────────────────────────────────────────────────
-  if (phase === 'exercise' && currentExercise) {
+  if (phase === 'exercise') {
+    const title = dayExercisesData?.day_theme || currentDay?.title;
+    const greeting = dayExercisesData?.ai_greeting || currentDay?.exercises?.[0]?.quote;
+    const whatToDo = dayExercisesData?.ai_exercise_text || currentDay?.exercises?.[0]?.whatToDo;
+    const whyThis = dayExercisesData?.ai_why_text || currentDay?.exercises?.[0]?.whyThis;
+
     return (
       <section className="mx-auto min-h-screen max-w-3xl px-4 py-12">
         <button
-          onClick={() =>
-            currentExerciseIndex === 0
-              ? setPhase('day-checkin')
-              : setCurrentExerciseIndex((i) => i - 1)
-          }
+          onClick={() => setPhase('day-checkin')}
           className="text-primary mb-4 flex cursor-pointer items-center gap-1 text-sm transition-opacity hover:opacity-80"
         >
           ← Back
@@ -397,37 +510,46 @@ export default function JourneyPage() {
         <StepBar current={currentStep} total={totalSteps} />
 
         <div>
-          <p className="text-primary mb-4 text-sm font-medium">{currentExercise.type}</p>
-
           <ExerciseImage />
 
-          <h2 className="text-dark-primary mb-3 font-serif text-xl font-bold">
-            {currentExercise.title}
-          </h2>
+          {title && (
+            <h2 className="text-dark-primary mb-3 font-serif text-xl font-bold">{title}</h2>
+          )}
 
-          <div className="border-primary/10 bg-primary/5 mb-5 rounded-md border px-4 py-3 text-sm text-[#7A6155] italic">
-            {currentExercise.quote}
-          </div>
+          {greeting && (
+            <div className="border-primary/10 bg-primary/5 mb-5 rounded-md border px-4 py-3 text-sm text-[#7A6155] italic">
+              {greeting}
+            </div>
+          )}
 
-          <h3 className="text-dark-primary mb-2 font-semibold">What to do</h3>
-          <p className="text-secondary mb-4 text-sm leading-relaxed">{currentExercise.whatToDo}</p>
+          {whatToDo && (
+            <>
+              <h3 className="text-dark-primary mb-2 font-semibold">What to do</h3>
+              <p className="text-secondary mb-8 text-sm leading-relaxed whitespace-pre-wrap">
+                {whatToDo}
+              </p>
+            </>
+          )}
 
-          <ol className="text-secondary mb-6 space-y-1.5 text-sm">
-            {currentExercise.steps.map((step, i) => (
-              <li key={i}>
-                {i + 1}. {step}
-              </li>
-            ))}
-          </ol>
-
-          <h3 className="text-dark-primary mb-2 font-semibold">Why this exercise</h3>
-          <p className="text-secondary mb-8 text-sm leading-relaxed">{currentExercise.whyThis}</p>
+          {whyThis && (
+            <>
+              <h3 className="text-dark-primary mb-2 font-semibold">Why this exercise</h3>
+              <p className="text-secondary mb-8 text-sm leading-relaxed">{whyThis}</p>
+            </>
+          )}
 
           <div className="mb-6 flex items-center justify-between">
-            <span className="text-secondary text-sm">{currentExercise.duration}</span>
+            <span className="text-secondary font-mono text-sm">{formatTime(secondsElapsed)}</span>
             <Button
               type="button"
-              onClick={() => setTimerRunning(!timerRunning)}
+              onClick={() => {
+                if (!timerRunning) {
+                  setSecondsElapsed(0);
+                  setTimerRunning(true);
+                } else {
+                  setTimerRunning(false);
+                }
+              }}
               className={cn(
                 'rounded-md border bg-transparent px-5 py-2 text-sm transition-all hover:bg-transparent',
                 timerRunning
@@ -435,12 +557,12 @@ export default function JourneyPage() {
                   : 'border-primary/20 text-secondary',
               )}
             >
-              {timerRunning ? 'Stop Timer' : 'Start Timer'}
+              {timerRunning ? 'Stop' : 'Start Timer'}
             </Button>
           </div>
 
           <Button onClick={handleNextExercise} className="btn-styles">
-            {isLastExercise ? 'Complete & Reflect' : 'Done — Next Exercise →'}
+            Complete & Reflect
           </Button>
         </div>
       </section>
@@ -492,8 +614,8 @@ export default function JourneyPage() {
               rows={4}
             />
 
-            <Button type="submit" className="btn-styles">
-              Complete Day {currentDay.day}
+            <Button type="submit" disabled={isCompleting} className="btn-styles">
+              {isCompleting ? 'Completing...' : `Complete Day ${currentDay.day}`}
             </Button>
           </form>
         </div>
@@ -567,9 +689,14 @@ export default function JourneyPage() {
 
           <div className="space-y-3">
             {JOURNEY?.days.map((day, i) => {
-              const isCompleted = completedDays.includes(i);
-              const isReadyToStart = i === 0 || completedDays.includes(i - 1);
-              const isLocked = !isCompleted && !isReadyToStart;
+              const stepFromApi = journeyStatus?.steps?.find((s: any) => s.day_number === day.day);
+              const apiStatus = stepFromApi?.status;
+
+              const isCompleted = apiStatus ? apiStatus === 'completed' : completedDays.includes(i);
+              const isReadyToStart = apiStatus
+                ? apiStatus === 'available'
+                : i === 0 || completedDays.includes(i - 1);
+              const isLocked = apiStatus ? apiStatus === 'locked' : !isCompleted && !isReadyToStart;
 
               return (
                 <button
