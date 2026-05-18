@@ -12,7 +12,14 @@ export const liberationApi = apiClient.injectEndpoints({
       }),
       invalidatesTags: ['Liberations'],
     }),
+    enrollJourney: builder.mutation<any, string>({
+      query: (journey_id) => ({
+        url: `/liberation/${journey_id}/enroll`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['Liberations'],
+    }),
   }),
 });
 
-export const { useCompleteDayMutation } = liberationApi;
+export const { useCompleteDayMutation, useEnrollJourneyMutation } = liberationApi;

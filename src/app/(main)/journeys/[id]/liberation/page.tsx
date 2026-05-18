@@ -13,12 +13,15 @@ import { cn } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Check } from 'lucide-react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { JOURNEY } from './data/Journey.data';
-import { useCompleteDayMutation } from '@/redux/features/liberation/liberation.api';
+import {
+  useCompleteDayMutation,
+  useEnrollJourneyMutation,
+} from '@/redux/features/liberation/liberation.api';
 import { toast } from 'sonner';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -120,6 +123,8 @@ function ExerciseImage() {
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function JourneyPage() {
   const router = useRouter();
+  const params = useParams();
+  const journeyId = params?.id as string;
 
   const [phase, setPhase] = useState<Phase>('landing');
   const [currentDayIndex, setCurrentDayIndex] = useState(0);
@@ -129,6 +134,7 @@ export default function JourneyPage() {
 
   // ── API Mutations ──
   const [completeDay, { isLoading: isCompleting }] = useCompleteDayMutation();
+  const [enrollJourney, { isLoading: isEnrolling }] = useEnrollJourneyMutation();
 
   // ── Before You Begin state ──
   const [checkedPreps, setCheckedPreps] = useState<string[]>([]);
@@ -174,10 +180,19 @@ export default function JourneyPage() {
     setCalendarAdded(true);
   };
 
-  const handleStartDay = () => {
-    checkinForm.reset({ feeling: '' });
-    setCurrentExerciseIndex(0);
-    setPhase('day-checkin');
+  const handleStartDay = async () => {
+    try {
+      if (journeyId) {
+        await enrollJourney(journeyId).unwrap();
+        toast.success('Journey started successfully!');
+      }
+      checkinForm.reset({ feeling: '' });
+      setCurrentExerciseIndex(0);
+      setPhase('day-checkin');
+    } catch (error: any) {
+      toast.error(error?.data?.message || 'Failed to start journey. Please try again.');
+      console.error('Enroll journey error:', error);
+    }
   };
 
   const handleBeginExercises = () => setPhase('exercise');
@@ -349,7 +364,11 @@ export default function JourneyPage() {
           </div>
 
           {/* ── Start Day 1 — disabled until all 3 checked ── */}
-          <Button onClick={handleStartDay} disabled={!allPrepsChecked} className="btn-styles mt-6">
+          <Button
+            onClick={handleStartDay}
+            disabled={!allPrepsChecked || isEnrolling}
+            className="btn-styles mt-6"
+          >
             {allPrepsChecked
               ? 'Start Day 1'
               : `Check ${JOURNEY?.preparations.length - checkedPreps.length} item${JOURNEY?.preparations.length - checkedPreps.length === 1 ? '' : 's'} above`}
