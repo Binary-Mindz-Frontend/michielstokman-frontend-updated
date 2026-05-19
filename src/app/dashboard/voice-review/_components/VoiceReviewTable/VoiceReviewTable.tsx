@@ -2,6 +2,8 @@
 'use client';
 
 import CustomTable from '@/components/dashboard/CustomTable/CustomTable';
+import TableEmptyState from '@/components/dashboard/CustomTable/TableEmptyState';
+import TableSkeleton from '@/components/dashboard/CustomTable/TableSkeleton';
 import SearchField from '@/components/dashboard/Fields/SearchField/SearchField';
 import FilterTabs from '@/components/dashboard/FilterTabs/FilterTabs';
 import {
@@ -10,6 +12,7 @@ import {
 } from '@/redux/features/admin/adminVoiceReview/adminVoiceReview.api';
 import { TColumn } from '@/types/custom-table.types';
 import { IVoiceReviewData } from '@/types/voiceReviewData.type';
+import { FormatDate } from '@/utils/formatDateTime';
 import { Pause, Play, RotateCcw } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -21,18 +24,23 @@ function VoiceReviewTable() {
   const searchParams = useSearchParams();
   const searchQuery = searchParams ? searchParams.get('search') : '';
 
-  const [playingId, setPlayingId] = useState<string | null>(null);
+  const currentTab = searchParams ? searchParams.get('story_type') || 'All' : 'All';
 
+  const [playingId, setPlayingId] = useState<string | null>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
-  const { data: voiceReviewList } = useGetVoiceReviewListQuery({
+  const {
+    data: voiceReviewList,
+    isLoading,
+    isFetching,
+  } = useGetVoiceReviewListQuery({
     search: searchQuery || '',
+    story_type: currentTab === 'All' ? undefined : currentTab,
     limit: 50,
     offset: 0,
   });
 
   const voiceReviewData = voiceReviewList?.data?.items || [];
-
   const [regenerateVoice] = useRegenerateVoiceMutation();
 
   useEffect(() => {
@@ -47,16 +55,14 @@ function VoiceReviewTable() {
   const handlePlayPause = (row: IVoiceReviewData) => {
     if (!row?.audio_path || !row?.id) return;
 
-    const audioUrl = `http://34.255.26.146:8000/${row.audio_path}`;
-
-    if (playingId === row.id) {
+    if (playingId === row?.id) {
       if (globalAudioInstance) {
         if (!globalAudioInstance.paused) {
           globalAudioInstance.pause();
           setPlayingId(null);
         } else {
           globalAudioInstance.play();
-          setPlayingId(row.id);
+          setPlayingId(row?.id);
         }
       }
       return;
@@ -66,16 +72,15 @@ function VoiceReviewTable() {
       globalAudioInstance.pause();
     }
 
-    globalAudioInstance = new Audio(audioUrl);
+    globalAudioInstance = new Audio(row?.audio_path);
     globalAudioInstance.play();
-    setPlayingId(row.id);
+    setPlayingId(row?.id);
 
     globalAudioInstance.onended = () => {
       setPlayingId(null);
     };
   };
 
-  // Handle Voice Regeneration Action
   const handleRegenerate = async (storyId: string) => {
     setLoadingId(storyId);
     const toastId = toast.loading('Regenerating voice audio...');
@@ -96,7 +101,6 @@ function VoiceReviewTable() {
     }
   };
 
-  // Table Config
   const tableConfig: TColumn<IVoiceReviewData>[] = [
     {
       header: 'Sl',
@@ -121,6 +125,12 @@ function VoiceReviewTable() {
       accessor: 'created_at',
     },
     {
+      header: 'Updated',
+      cell: (row) => {
+        return <span>{FormatDate(row?.updated_at)}</span>;
+      },
+    },
+    {
       header: 'Action',
       cell: (row) => {
         const isCurrentAudioPlaying = playingId === row?.id;
@@ -128,7 +138,6 @@ function VoiceReviewTable() {
 
         return (
           <div className="flex items-center gap-2">
-            {/* Play / Pause Toggle Button */}
             <button
               type="button"
               onClick={() => handlePlayPause(row)}
@@ -138,11 +147,10 @@ function VoiceReviewTable() {
               {isCurrentAudioPlaying ? <Pause size={18} /> : <Play size={18} />}
             </button>
 
-            {/* Regenerate Button */}
             <button
               type="button"
               disabled={loadingId !== null}
-              onClick={() => row?.id && handleRegenerate(row.id)}
+              onClick={() => row?.id && handleRegenerate(row?.id)}
               className="bg-primary/10 text-primary hover:bg-primary/20 cursor-pointer rounded-full p-1.5 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
               title="Regenerate Voice"
             >
@@ -158,24 +166,23 @@ function VoiceReviewTable() {
   ];
 
   const tabsData = [
-    { label: 'All', value: 'all', count: voiceReviewList?.data?.total || 0 },
-    {
-      label: 'Stories',
-      value: 'story',
-      count: voiceReviewData.filter((item: any) => item.story_type === 'Story').length,
-    },
-    {
-      label: 'Meditations',
-      value: 'meditations',
-      count: voiceReviewData.filter((item: any) => item.story_type === 'Meditations').length,
-    },
+    { label: 'All', value: 'All', count: voiceReviewList?.data?.all || 0 },
+    { label: 'Stories', value: 'Stories', count: voiceReviewList?.data?.stories || 0 },
+    { label: 'Meditations', value: 'Meditations', count: voiceReviewList?.data?.meditations || 0 },
   ];
 
   return (
     <div className="w-full space-y-6 rounded-md border border-[#F1E9E4] bg-[#F8F7F3] p-6">
       <SearchField placeholder="Search by title or type..." queryKey="search" />
-      <FilterTabs tabs={tabsData} />
-      <CustomTable columns={tableConfig} data={voiceReviewData} />
+      <FilterTabs tabs={tabsData} queryKey="story_type" />
+
+      {isLoading || isFetching ? (
+        <TableSkeleton SKELETON_COLS={6} />
+      ) : voiceReviewData.length === 0 ? (
+        <TableEmptyState message="No voice reviews found for the filters Please try again." />
+      ) : (
+        <CustomTable columns={tableConfig} data={voiceReviewData} />
+      )}
     </div>
   );
 }
