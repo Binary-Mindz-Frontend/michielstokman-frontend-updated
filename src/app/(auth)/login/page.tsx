@@ -14,7 +14,7 @@ import { catchAsyncMutation } from '@/utils/apiReqRes.utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -32,6 +32,7 @@ export default function LoginPage() {
   const [loginUser, { isLoading }] = useLoginUserMutation();
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   // Form
   const {
@@ -51,20 +52,31 @@ export default function LoginPage() {
     await catchAsyncMutation(
       loginUser(data).unwrap(),
       // onSuccess
-      (res) => {
+      async (res) => {
         const user: TLoginUser = {
           id: res?.data?.user?.id,
           user_id: res?.data?.user_id,
           email: res?.data?.user?.email,
           is_admin: res?.data?.user?.is_admin || false,
         };
-        const redirectPath = res?.data?.user?.is_admin ? '/dashboard/overview' : '/profile';
+        const defaultRedirect = res?.data?.user?.is_admin ? '/dashboard/overview' : '/profile';
+        const redirectUrl = searchParams.get('redirect');
+        const redirectPath = redirectUrl ? decodeURIComponent(redirectUrl) : defaultRedirect;
+
+        // Update Redux state immediately
         dispatch(setAuth({ user }));
-        setUserProfile(user, res?.data?.access_token);
-        toast.success(res?.message || 'User Logged in Successfully');
-        setTimeout(() => {
-          router.push(redirectPath);
-        }, 1000);
+
+        try {
+          // Await the Server Action to guarantee cookies are fully set on the server before redirecting
+          await setUserProfile(user, res?.data?.access_token);
+          toast.success(res?.message || 'User Logged in Successfully');
+          setTimeout(() => {
+            router.push(redirectPath);
+          }, 1000);
+        } catch (error) {
+          console.error('Error during login authentication synchronization:', error);
+          toast.error('Authentication setup failed. Please try again.');
+        }
       },
     );
   };

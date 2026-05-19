@@ -46,10 +46,12 @@ export default function StoryDetailPage() {
   // Word Counter
   let wordCounter = 0;
 
+  console.log(feedData);
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <div className="relative h-[60vh] w-full overflow-hidden">
+      <div className="relative h-[55vh] w-full overflow-hidden">
         <Image
           src={
             feedData?.cover_image_url ||

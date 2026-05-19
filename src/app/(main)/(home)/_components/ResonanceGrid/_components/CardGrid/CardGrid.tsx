@@ -4,18 +4,39 @@ import cardImage6 from '@/assets/home/card6.png';
 import NoDataFound from '@/components/main/NoDataFound/NoDataFound';
 import CardGridSkeleton from '@/components/main/Skeletons/CardGridSkeleton';
 import { Button } from '@/components/ui/button';
+import { useIsAuthenticated } from '@/redux/features/auth/authSlice';
 import { useGetDiscoveryFeedQuery } from '@/redux/features/discoveryFeed/discoveryFeed.api';
+import { useAppSelector } from '@/redux/hooks';
 import { TDiscoveryItemType } from '@/types/discoveryFeed.types';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+
+const getValidImageUrl = (url?: string | null) => {
+  if (!url) return cardImage6;
+  if (url.startsWith('/')) return url;
+  try {
+    new URL(url);
+    return url;
+  } catch {
+    return cardImage6;
+  }
+};
 
 const CardGrid = () => {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const isAuthenticated = useAppSelector(useIsAuthenticated);
   const activeFilters = searchParams.getAll('story_type');
 
   const { data, isLoading, isFetching } = useGetDiscoveryFeedQuery(activeFilters);
   const feedData = data?.data?.items;
+
+  const sortedFeedData = feedData
+    ? [...feedData].sort((a, b) => {
+        return (b.has_access ? 1 : 0) - (a.has_access ? 1 : 0);
+      })
+    : [];
 
   if (isLoading || isFetching) {
     return <CardGridSkeleton />;
@@ -24,33 +45,50 @@ const CardGrid = () => {
   return (
     <div>
       {/* Feed Data Check */}
-      {(!feedData || feedData.length === 0) && !isLoading ? (
+      {sortedFeedData.length === 0 && !isLoading ? (
         <NoDataFound
           title="No Content Available"
           description="It seems like there's nothing in your feed right now. Check back later or try exploring other categories."
         />
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {feedData?.map((card: TDiscoveryItemType) => {
+          {sortedFeedData.map((card: TDiscoveryItemType, index: number) => {
             const isJourney = card?.card_type === 'liberation_journey';
 
             // Dynamic path selection logic
-            const detailPath = isJourney
-              ? `/journeys/${card?.journey_code}`
-              : `/details/${card?.id}`;
+            let detailPath = `/details/${card?.id}`;
+
+            if (isJourney) {
+              if (card?.has_access) {
+                if (card?.is_enrolled && card?.current_day && card.current_day > 1) {
+                  detailPath = `/journeys/${card?.journey_code}/liberation?phase=overview`;
+                } else {
+                  detailPath = `/journeys/${card?.journey_code}/liberation`;
+                }
+              } else {
+                detailPath = `/journeys/${card?.journey_code}`;
+              }
+            }
 
             return (
               <Link
                 href={detailPath}
-                key={card?.id}
+                key={`${card?.id || 'card'}-${index}`}
+                onClick={(e) => {
+                  if (!isAuthenticated) {
+                    e.preventDefault();
+                    router.push(`/login?redirect=${encodeURIComponent(detailPath)}`);
+                  }
+                }}
                 className="group relative flex cursor-pointer flex-col overflow-hidden rounded-md transition-all duration-500 hover:-translate-y-2"
               >
                 {/* Image Section */}
-
-                <div className="relative aspect-4/5 w-full">
+                <div className="relative aspect-4/5 h-full max-h-112.5 w-full">
                   <Image
-                    src={cardImage6}
-                    alt={card?.title}
+                    src={getValidImageUrl(card?.cover_image_url)}
+                    alt={card?.title || 'Card Cover'}
+                    width={400}
+                    height={500}
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
 
@@ -69,7 +107,6 @@ const CardGrid = () => {
                   </div>
 
                   {/* Exact Overlay from your specs */}
-
                   <div
                     className="pointer-events-none absolute inset-0"
                     style={{
@@ -104,7 +141,11 @@ const CardGrid = () => {
                             €{card?.price_display || '0.00'}
                           </p>
 
-                          <Button className="btn-styles">Begin Your Liberation</Button>
+                          <Button className="btn-styles">
+                            {card?.has_access
+                              ? 'Continue Your Liberation'
+                              : 'Begin Your Liberation'}
+                          </Button>
                         </div>
                       ) : (
                         <div className="text-xs font-light text-white/60">

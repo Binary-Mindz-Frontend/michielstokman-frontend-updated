@@ -18,7 +18,16 @@ export const adminLiberationApi = apiClient.injectEndpoints({
       },
       providesTags: ['Orders_History'],
     }),
+
+    // get all orders stats
+    getOrdersStats: builder.query({
+      query: () => ({
+        url: '/admin/orders/stats',
+        method: 'GET',
+      }),
+      providesTags: ['Orders_History'],
+    }),
   }),
 });
 
-export const { useGetOrderHistoryQuery } = adminLiberationApi;
+export const { useGetOrderHistoryQuery, useGetOrdersStatsQuery } = adminLiberationApi;

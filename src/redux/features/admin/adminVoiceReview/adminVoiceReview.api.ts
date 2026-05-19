@@ -9,6 +9,7 @@ const adminVoiceReviewApi = apiClient.injectEndpoints({
         method: 'GET',
         params: {
           search: params?.search || undefined,
+          story_type: params?.story_type || undefined,
           limit: params?.limit || 20,
           offset: params?.offset || 0,
         },

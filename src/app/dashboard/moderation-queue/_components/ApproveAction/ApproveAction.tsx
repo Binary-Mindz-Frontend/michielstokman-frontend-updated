@@ -2,8 +2,8 @@
 import { Button } from '@/components/ui/button';
 import {
   useApproveStoryMutation,
-  useRejectStoryMutation,
   useDeleteStoryMutation,
+  useRejectStoryMutation,
 } from '@/redux/features/admin/adminModeration/adminModeration.api';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -34,7 +34,7 @@ export const ApproveAction = ({ id, onSuccess }: ActionProps) => {
       <p>
         Are you sure you want to <strong>Approve</strong> this story?
       </p>
-      <Button onClick={handleApprove} disabled={isLoading} className="text-medium w-full">
+      <Button onClick={handleApprove} disabled={isLoading} className="btn-styles">
         Confirm Approval
       </Button>
     </div>
@@ -86,7 +86,7 @@ export const RejectAction = ({ id, onSuccess }: ActionProps) => {
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           placeholder="e.g. Inappropriate content, formatting issues..."
-          className="border-primary/20 focus:ring-error/30 min-h-[100px] w-full rounded-md border bg-white p-3 text-sm outline-none focus:ring-1"
+          className="border-primary/20 focus:ring-error/30 min-h-25 w-full rounded-md border bg-white p-3 text-sm outline-none focus:ring-1"
         />
       </div>
 
