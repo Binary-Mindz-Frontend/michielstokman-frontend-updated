@@ -20,10 +20,6 @@ export default function StoryPlayer({ story, onTimeUpdateCallback }: IStoryPlaye
 
   const [duration, setDuration] = useState(0);
 
-  // audio source
-
-  const audioSrc = `http://34.255.26.146:8000/${story}`;
-
   // toggle play
   const togglePlay = () => {
     if (audioRef.current) {
@@ -75,7 +71,7 @@ export default function StoryPlayer({ story, onTimeUpdateCallback }: IStoryPlaye
     <div className="space-y-4 pt-6 md:space-y-6 md:pt-12">
       <audio
         ref={audioRef}
-        src={audioSrc}
+        src={story}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={() => setIsPlaying(false)}

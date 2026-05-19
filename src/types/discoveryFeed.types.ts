@@ -27,6 +27,7 @@ export type ILiberationJourneyItemType = {
   what_to_expect: string[];
   setup_instructions: string[];
   is_enrolled: boolean;
+  has_access: boolean;
   current_day: number | null;
   journey_status: string | null;
   journey_id: string | null;

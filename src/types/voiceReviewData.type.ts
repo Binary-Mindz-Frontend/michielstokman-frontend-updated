@@ -5,5 +5,6 @@ export interface IVoiceReviewData {
   voice_name: string;
   audio_duration: string;
   created_at: string;
+  updated_at: string;
   audio_path: string;
 }
