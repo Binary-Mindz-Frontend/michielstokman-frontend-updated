@@ -1,5 +1,6 @@
 'use client';
 
+import CustomPagination from '@/components/dashboard/CustomPagination/CustomPagination';
 import CustomTable from '@/components/dashboard/CustomTable/CustomTable';
 import TableEmptyState from '@/components/dashboard/CustomTable/TableEmptyState';
 import TableSkeleton from '@/components/dashboard/CustomTable/TableSkeleton';
@@ -30,16 +31,20 @@ function OrderHistoryTable() {
   const search = searchParams.get('search') || '';
   const days_back = searchParams.get('days_back') || '30';
   const router = useRouter();
+  const currentPage = parseInt(searchParams.get('page') || '1');
 
   // API Query Call
   const { data, isLoading, isFetching } = useGetOrderHistoryQuery({
     search,
     days_back: Number(days_back),
-    limit: 50,
-    offset: 0,
+    limit: 10,
+    page: currentPage,
   });
 
+  // console.log(meta, "meta");
+
   const orderList = data?.data?.orders || [];
+  const meta = data?.data?.meta || 0;
 
   const handlePeriodChange = (val: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -102,6 +107,7 @@ function OrderHistoryTable() {
           <CustomTable columns={tableConfig} data={orderList} />
         )}
       </div>
+      {!isLoading && !isFetching && meta && <CustomPagination meta={meta} />}
     </div>
   );
 }
