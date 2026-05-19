@@ -46,28 +46,31 @@ export default function DashboardSummary({
     {
       title: 'Total Views',
       value: topStats?.views?.value || '0',
-      subValue: topStats?.views?.percentage || '0%',
+      subValue: topStats?.views?.percentage,
       trend: topStats?.views?.trend,
       icon: Eye,
     },
     {
       title: 'Avg Resonance',
       value: topStats?.resonance?.value || '0.0',
-      subValue: topStats?.resonance?.percentage || '0',
+      subValue: topStats?.resonance?.percentage,
       trend: topStats?.resonance?.trend,
       icon: TrendingUp,
     },
     {
       title: 'Completion Rate',
-      value: topStats?.completion?.value || '0%',
-      subValue: topStats?.completion?.percentage || '0%',
+      value:
+        topStats?.completion?.value !== undefined && topStats?.completion?.value !== null
+          ? `${Number(topStats.completion.value)}%`
+          : '0.00%',
+      subValue: topStats?.completion?.percentage,
       trend: topStats?.completion?.trend,
       icon: BarChart3,
     },
     {
       title: 'Share Clicks',
       value: topStats?.shares?.value || '0',
-      subValue: topStats?.shares?.percentage || '0%',
+      subValue: topStats?.shares?.percentage,
       trend: topStats?.shares?.trend,
       icon: Share2,
     },
