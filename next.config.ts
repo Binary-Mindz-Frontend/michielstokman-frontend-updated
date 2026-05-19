@@ -9,9 +9,13 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',
-        pathname: '**',
+        pathname: '',
       },
-
+      {
+        protocol: 'https',
+        hostname: 'api.transformtoliberation.com',
+        pathname: '',
+      },
       {
         protocol: 'http',
         hostname: '34.255.26.146',
