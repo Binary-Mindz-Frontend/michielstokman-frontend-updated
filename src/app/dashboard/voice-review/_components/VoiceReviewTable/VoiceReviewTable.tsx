@@ -12,6 +12,7 @@ import {
 } from '@/redux/features/admin/adminVoiceReview/adminVoiceReview.api';
 import { TColumn } from '@/types/custom-table.types';
 import { IVoiceReviewData } from '@/types/voiceReviewData.type';
+import { FormatDate } from '@/utils/formatDateTime';
 import { Pause, Play, RotateCcw } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -122,6 +123,12 @@ function VoiceReviewTable() {
     {
       header: 'Generated',
       accessor: 'created_at',
+    },
+    {
+      header: 'Updated',
+      cell: (row) => {
+        return <span>{FormatDate(row?.updated_at)}</span>;
+      },
     },
     {
       header: 'Action',
