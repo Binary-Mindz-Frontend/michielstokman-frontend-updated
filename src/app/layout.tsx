@@ -4,8 +4,11 @@ import { Toaster } from 'sonner';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'michielstokman',
+  title: 'Transform to Liberation',
   description: 'Personal website of Michiel Stokman!',
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({
