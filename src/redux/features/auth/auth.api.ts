@@ -12,6 +12,7 @@ const authManagementApi = apiClient.injectEndpoints({
         };
         return result;
       },
+      invalidatesTags: ['PROFILE', 'Discovery_Feed', 'Liberations'],
     }),
     //login user
     loginUser: builder.mutation({
@@ -23,6 +24,7 @@ const authManagementApi = apiClient.injectEndpoints({
         };
         return result;
       },
+      invalidatesTags: ['PROFILE', 'Discovery_Feed', 'Liberations'],
     }),
     updateUserProfile: builder.mutation({
       query: (data) => {
