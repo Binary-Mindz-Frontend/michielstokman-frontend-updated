@@ -142,7 +142,9 @@ const CardGrid = () => {
                           </p>
 
                           <Button className="btn-styles">
-                            {card?.has_access ? 'Continue Liberation' : 'Begin Your Liberation'}
+                            {card?.has_access
+                              ? 'Continue Your Liberation'
+                              : 'Begin Your Liberation'}
                           </Button>
                         </div>
                       ) : (
