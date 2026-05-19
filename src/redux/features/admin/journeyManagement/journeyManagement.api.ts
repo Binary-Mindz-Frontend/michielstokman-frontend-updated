@@ -14,12 +14,12 @@ export const adminLiberationApi = apiClient.injectEndpoints({
 
     // Get All Liberations (Only Admin)
     getAllLiberations: builder.query({
-      query: ({ limit = 50, offset = 0, search = '' }) => ({
+      query: ({ limit = 10, page = 1, search = '' }) => ({
         url: '/admin/liberation',
         method: 'GET',
         params: {
           limit,
-          offset,
+          page,
           search: search || undefined,
         },
       }),
