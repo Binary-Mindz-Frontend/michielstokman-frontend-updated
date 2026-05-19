@@ -1,14 +1,17 @@
 FROM node:20-alpine AS base
 
+# Install pnpm globally
+RUN npm install -g pnpm
+
 # Install dependencies only when needed
 FROM base AS deps
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Install dependencies
-COPY package.json package-lock.json ./
-RUN npm ci
+# Install dependencies using pnpm
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -24,8 +27,8 @@ ARG NEXT_PUBLIC_BASE_API
 ENV NEXT_PUBLIC_BASE_API=$NEXT_PUBLIC_BASE_API
 # ---------------------------------------
 
-# Build the Next.js app
-RUN npm run build
+# Build the Next.js app using pnpm
+RUN pnpm run build
 
 # Production image, copy all the files and run next
 FROM base AS runner
