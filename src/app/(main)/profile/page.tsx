@@ -11,12 +11,13 @@ import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils'
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 export default function ProfilePage() {
   const router = useRouter();
   const logout = useLogout();
 
-  const { data, isLoading } = useGetProfileQuery(undefined);
+  const { data, isLoading, isError, error } = useGetProfileQuery(undefined);
   const profileData = data?.data;
 
   const [growthFocusValues, setGrowthFocusValues] = useState<Record<string, number>>({
@@ -29,6 +30,33 @@ export default function ProfilePage() {
     'Health & Body': 0,
     Enlightenment: 0,
   });
+
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
+
+  // Monitor loading timeout (10 seconds fallback) to prevent infinite loading state
+  useEffect(() => {
+    if (isLoading) {
+      const timer = setTimeout(() => {
+        setLoadingTimeout(true);
+      }, 10000);
+      return () => clearTimeout(timer);
+    } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLoadingTimeout(false);
+    }
+  }, [isLoading]);
+
+  // Handle unauthorized or failed session states dynamically
+  useEffect(() => {
+    if (isError && error && typeof error === 'object') {
+      const err = error as { status?: number; data?: unknown };
+      if (err.status === 401) {
+        toast.error('Session expired or unauthorized. Please log in again.');
+        logout();
+        router.push('/login?redirect=%2Fprofile');
+      }
+    }
+  }, [isError, error, router, logout]);
 
   useEffect(() => {
     if (profileData) {
@@ -51,7 +79,33 @@ export default function ProfilePage() {
     router.push('/');
   };
 
-  if (isLoading) return <ProfileSkeleton />;
+  if (isLoading && !loadingTimeout) return <ProfileSkeleton />;
+
+  // Display proper fallback screen when loading fails, times out, or when unauthorized
+  if (loadingTimeout || (isError && !profileData)) {
+    return (
+      <div className="mx-auto max-w-md space-y-6 px-4 py-20 text-center">
+        <h2 className="text-primary font-serif text-2xl font-semibold">Unable to load profile</h2>
+        <p className="text-secondary text-sm">
+          {loadingTimeout
+            ? 'The request timed out due to a slow network connection.'
+            : 'Your session may have expired or there was a server connection issue.'}
+        </p>
+        <div className="space-y-3">
+          <Button className="btn-styles w-full" onClick={() => window.location.reload()}>
+            Retry Connection
+          </Button>
+          <Button
+            variant="outline"
+            className="btn-styles border-primary/20 text-dark-primary w-full bg-transparent hover:bg-[#F5F1EA]"
+            onClick={handleLogout}
+          >
+            Go to Login
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const personalDetails = [
     { label: 'Age', value: profileData?.age?.toString() },
