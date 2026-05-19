@@ -8,21 +8,14 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'images.unsplash.com',
-        pathname: '',
-      },
-      {
-        protocol: 'https',
-        hostname: 'api.transformtoliberation.com',
-        pathname: '**',
+        hostname: '**',
       },
       {
         protocol: 'http',
-        hostname: '34.255.26.146',
-        port: '8000',
-        pathname: '**',
+        hostname: '**',
       },
     ],
+    dangerouslyAllowSVG: true,
   },
 };
 

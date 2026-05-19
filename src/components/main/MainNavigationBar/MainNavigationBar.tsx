@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import { useAuthState } from '@/redux/features/auth/authSlice';
@@ -19,7 +17,7 @@ function MainNavigationBar() {
   const [isSticky, setIsSticky] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  const { user, isAuthChecked } = useAppSelector(useAuthState);
+  const { user } = useAppSelector(useAuthState);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -48,6 +46,17 @@ function MainNavigationBar() {
     { label: 'About', href: '/about' },
     { label: 'Safety Rules', href: '/safety-freedom-rules' },
   ];
+
+  let redirectPath;
+  if (user) {
+    if (user.is_admin) {
+      redirectPath = '/dashboard/overview';
+    } else {
+      redirectPath = '/profile';
+    }
+  } else {
+    redirectPath = '/login';
+  }
 
   return (
     <header className="z-50 w-full bg-[#FDFCFB]">
@@ -119,19 +128,17 @@ function MainNavigationBar() {
 
           <li className="group relative" onClick={() => setIsOpen(false)}>
             <Link
-              href={user ? '/profile' : '/login'}
+              href={redirectPath}
               className={`whitespace-nowrap transition-colors duration-300 ${
-                pathname === (user ? '/profile' : '/login')
-                  ? 'text-primary'
-                  : 'hover:text-primary text-dark-primary'
+                pathname === redirectPath ? 'text-primary' : 'hover:text-primary text-dark-primary'
               }`}
             >
-              {user ? 'Profile' : 'Login/Signup'}
+              {user ? (user.is_admin ? 'Dashboard' : 'Profile') : 'Login/Signup'}
             </Link>
 
             <div
               className={`bg-primary absolute bottom-0 left-1/2 h-[1.5px] -translate-x-1/2 transition-all duration-300 ${
-                pathname === (user ? '/profile' : '/login') ? 'w-full' : 'w-0 group-hover:w-full'
+                pathname === redirectPath ? 'w-full' : 'w-0 group-hover:w-full'
               }`}
             />
           </li>
