@@ -47,6 +47,13 @@ export const liberationApi = apiClient.injectEndpoints({
       }),
       providesTags: ['Liberations'],
     }),
+    repeatJourney: builder.mutation<any, string>({
+      query: (journey_code) => ({
+        url: `/liberation/${journey_code}/repeat`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['Liberations'],
+    }),
   }),
 });
 
@@ -56,4 +63,5 @@ export const {
   useGenerateDayExerciseMutation,
   useGetJourneyStatusQuery,
   useGetDayExercisesQuery,
+  useRepeatJourneyMutation,
 } = liberationApi;
