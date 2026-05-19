@@ -86,12 +86,14 @@ export default function RegisterPage() {
       variants={FADE_IN_UP_CONTAINER}
       className="flex min-h-screen flex-col items-center justify-center px-4 py-12"
     >
-      <motion.h2
-        variants={FADE_IN_UP_ITEM}
-        className="text-primary mb-16 font-serif text-2xl tracking-wide md:text-3xl"
-      >
-        Transform to Liberation
-      </motion.h2>
+      <Link href="/">
+        <motion.h2
+          variants={FADE_IN_UP_ITEM}
+          className="text-primary mb-16 font-serif text-2xl tracking-wide md:text-3xl"
+        >
+          Transform to Liberation
+        </motion.h2>
+      </Link>
 
       <motion.div variants={FADE_IN_UP_ITEM} className="w-full max-w-120 space-y-8 text-center">
         <DynamicSectionHeader
