@@ -6,6 +6,7 @@
 .pnp.*
 .pnpm-store/
 .pnpm-store
+/src/app/tw-animate.css
 .yarn/*
 !.yarn/patches
 !.yarn/plugins
