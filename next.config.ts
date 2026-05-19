@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'api.transformtoliberation.com',
-        pathname: '',
+        pathname: '**',
       },
       {
         protocol: 'http',

@@ -10,7 +10,7 @@ import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { Check } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 
 import { useEffect } from 'react';
 import { IPaymentCheckoutRequest } from '@/types/payment.types';
@@ -19,6 +19,7 @@ import { cardData } from '../../(home)/_components/ResonanceGrid/_components/dat
 
 export default function JourneyDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const storyId = params?.id as string;
   console.log(storyId);
 
@@ -60,6 +61,11 @@ export default function JourneyDetailPage() {
   console.log('journey', journey);
 
   const handleCheckout = async () => {
+    if (librationData?.has_access) {
+      router.push(`/journeys/${storyId}/liberation`);
+      return;
+    }
+
     if (!user) {
       toast.error('Please login to start checkout');
       return;
@@ -195,7 +201,11 @@ export default function JourneyDetailPage() {
           {/* Checkout Action - Styling from your Story Button */}
           <div className="flex flex-col items-center gap-4 pt-6 md:pt-10">
             <Button onClick={handleCheckout} disabled={isProcessing} className="btn-styles w-fit">
-              {isProcessing ? 'Processing...' : `Start This Liberation — €${librationData?.price}`}
+              {isProcessing
+                ? 'Processing...'
+                : librationData?.has_access
+                  ? 'Continue Your liberation'
+                  : `Start This Liberation — €${librationData?.price}`}
             </Button>
             <p className="text-secondary text-xs">
               One-time payment · Lifetime access · 30-day guarantee
