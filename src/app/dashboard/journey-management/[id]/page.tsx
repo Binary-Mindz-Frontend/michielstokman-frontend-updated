@@ -21,7 +21,7 @@ import DynamicListInput from './_components/DynamicListInput/DynamicListInput';
 import TiptapEditor from './_components/TiptapEditor/TiptapEditor';
 
 // Schema
-export const journeySchema = z.object({
+const journeySchema = z.object({
   title: z.string().min(1, 'Title is required'),
   price: z
     .string()
@@ -40,7 +40,7 @@ export const journeySchema = z.object({
     .length(7),
 });
 
-export type JourneyFormValues = z.infer<typeof journeySchema>;
+type JourneyFormValues = z.infer<typeof journeySchema>;
 
 const tabs = ['Basic Info', 'Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'];
 
