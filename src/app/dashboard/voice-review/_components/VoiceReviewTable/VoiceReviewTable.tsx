@@ -54,16 +54,14 @@ function VoiceReviewTable() {
   const handlePlayPause = (row: IVoiceReviewData) => {
     if (!row?.audio_path || !row?.id) return;
 
-    const audioUrl = `http://34.255.26.146:8000/${row.audio_path}`;
-
-    if (playingId === row.id) {
+    if (playingId === row?.id) {
       if (globalAudioInstance) {
         if (!globalAudioInstance.paused) {
           globalAudioInstance.pause();
           setPlayingId(null);
         } else {
           globalAudioInstance.play();
-          setPlayingId(row.id);
+          setPlayingId(row?.id);
         }
       }
       return;
@@ -73,9 +71,9 @@ function VoiceReviewTable() {
       globalAudioInstance.pause();
     }
 
-    globalAudioInstance = new Audio(audioUrl);
+    globalAudioInstance = new Audio(row?.audio_path);
     globalAudioInstance.play();
-    setPlayingId(row.id);
+    setPlayingId(row?.id);
 
     globalAudioInstance.onended = () => {
       setPlayingId(null);
@@ -145,7 +143,7 @@ function VoiceReviewTable() {
             <button
               type="button"
               disabled={loadingId !== null}
-              onClick={() => row?.id && handleRegenerate(row.id)}
+              onClick={() => row?.id && handleRegenerate(row?.id)}
               className="bg-primary/10 text-primary hover:bg-primary/20 cursor-pointer rounded-full p-1.5 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
               title="Regenerate Voice"
             >
