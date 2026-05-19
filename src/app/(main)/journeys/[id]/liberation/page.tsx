@@ -9,6 +9,7 @@ import TextAreaField from '@/components/dashboard/Fields/TextAreaField/TextAreaF
 import DynamicSectionHeader from '@/components/main/DynamicSectionHeader/DynamicSectionHeader';
 import GrowthSlider from '@/components/main/GrowthSlider/GrowthSlider';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useGetLiberationDetailsQuery } from '@/redux/features/discoveryFeed/discoveryFeed.api';
 import {
@@ -139,11 +140,12 @@ export default function JourneyPage() {
   const [timerRunning, setTimerRunning] = useState(false);
 
   // ── API Mutations & Queries ──
-  const { data: detailsResponse } = useGetLiberationDetailsQuery(journeyId);
+  const { data: detailsResponse, isError: isDetailsError } =
+    useGetLiberationDetailsQuery(journeyId);
   const liberationDetails = detailsResponse?.data;
   const journeyCode = liberationDetails?.journey_code || journeyId;
 
-  const { data: statusResponse } = useGetJourneyStatusQuery(journeyCode, {
+  const { data: statusResponse, isError: isStatusError } = useGetJourneyStatusQuery(journeyCode, {
     skip: !journeyCode,
   });
   const journeyStatus = statusResponse?.data;
@@ -164,6 +166,73 @@ export default function JourneyPage() {
       setCompletedDays(completedIndices);
     }
   }, [journeyStatus]);
+
+  // Determine if the user is enrolled
+  const isEnrolled =
+    journeyStatus?.is_enrolled === true ||
+    journeyStatus?.journey_status === 'active' ||
+    (Array.isArray(journeyStatus?.steps) && journeyStatus.steps.length > 0);
+
+  // Derive active phase immediately to prevent any split-second useEffect delay flicker
+  const activePhase = phase === 'landing' && isEnrolled ? 'overview' : phase;
+
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Hydrate state from localStorage on client mount
+  useEffect(() => {
+    if (journeyId) {
+      try {
+        const saved = localStorage.getItem(`liberation_state_${journeyId}`);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.phase) setPhase(parsed.phase);
+          if (typeof parsed.currentDayIndex === 'number')
+            setCurrentDayIndex(parsed.currentDayIndex);
+          if (typeof parsed.currentExerciseIndex === 'number')
+            setCurrentExerciseIndex(parsed.currentExerciseIndex);
+        }
+      } catch (e) {
+        console.error('Failed to restore persisted liberation state:', e);
+      } finally {
+        setIsHydrated(true);
+      }
+    }
+  }, [journeyId]);
+
+  // Persist state to localStorage whenever it changes
+  useEffect(() => {
+    if (journeyId && isHydrated) {
+      try {
+        const stateToPersist = {
+          phase,
+          currentDayIndex,
+          currentExerciseIndex,
+        };
+        localStorage.setItem(`liberation_state_${journeyId}`, JSON.stringify(stateToPersist));
+      } catch (e) {
+        console.error('Failed to save persisted liberation state:', e);
+      }
+    }
+  }, [phase, currentDayIndex, currentExerciseIndex, journeyId, isHydrated]);
+
+  const [hasRestoredProgress, setHasRestoredProgress] = useState(false);
+
+  // ── Restore progress phase on initial load if user is already enrolled ──
+  useEffect(() => {
+    if (journeyStatus && !hasRestoredProgress && phase === 'landing') {
+      if (isEnrolled) {
+        setPhase('overview');
+      }
+      setHasRestoredProgress(true);
+    }
+  }, [journeyStatus, phase, hasRestoredProgress, isEnrolled]);
+
+  // ── Redirect to journey detail page if user does not have access ──
+  useEffect(() => {
+    if (detailsResponse && liberationDetails && liberationDetails.has_access === false) {
+      router.replace(`/journeys/${journeyId}`);
+    }
+  }, [detailsResponse, liberationDetails, journeyId, router]);
 
   // ── Before You Begin state ──
   const [checkedPreps, setCheckedPreps] = useState<string[]>([]);
@@ -316,10 +385,47 @@ export default function JourneyPage() {
     setPhase('day-checkin');
   };
 
+  // ── Loading Skeleton State ──
+  const isPageLoading =
+    !isHydrated ||
+    (!detailsResponse && !isDetailsError) ||
+    (journeyCode && !statusResponse && !isStatusError);
+
+  if (isPageLoading) {
+    return (
+      <section className="mx-auto h-full max-w-3xl px-4 py-12">
+        {/* Back Button Skeleton */}
+        <div className="mb-4">
+          <Skeleton className="bg-primary/5 h-5 w-16" />
+        </div>
+        <div>
+          {/* Flower Section Skeleton */}
+          <div className="mb-6 flex flex-col items-center text-center">
+            <Skeleton className="bg-primary/5 h-64 w-64 animate-pulse rounded-full" />
+            <Skeleton className="bg-primary/5 mt-4 h-4 w-64 animate-pulse" />
+          </div>
+
+          {/* 7 Days Cards Skeleton */}
+          <div className="space-y-3">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <div
+                key={i}
+                className="border-primary/10 w-full rounded-md border bg-transparent px-5 py-4 text-left"
+              >
+                <Skeleton className="bg-primary/5 mb-2 h-5 w-48 animate-pulse" />
+                <Skeleton className="bg-primary/5 h-4 w-24 animate-pulse" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   // ─────────────────────────────────────────────────────────────────────────────
   // SCREEN: LANDING
   // ─────────────────────────────────────────────────────────────────────────────
-  if (phase === 'landing') {
+  if (activePhase === 'landing') {
     return (
       <section className="mx-auto max-w-3xl px-4 py-12">
         <button
@@ -354,7 +460,7 @@ export default function JourneyPage() {
   // ─────────────────────────────────────────────────────────────────────────────
   // SCREEN: BEFORE YOU BEGIN
   // ─────────────────────────────────────────────────────────────────────────────
-  if (phase === 'before-begin') {
+  if (activePhase === 'before-begin') {
     return (
       <section className="mx-auto min-h-screen max-w-2xl px-4 py-12">
         <button
@@ -456,7 +562,7 @@ export default function JourneyPage() {
   // ─────────────────────────────────────────────────────────────────────────────
   // SCREEN: DAY CHECK-IN
   // ─────────────────────────────────────────────────────────────────────────────
-  if (phase === 'day-checkin') {
+  if (activePhase === 'day-checkin') {
     return (
       <section className="mx-auto min-h-screen max-w-3xl px-4 py-12">
         <button
@@ -495,7 +601,7 @@ export default function JourneyPage() {
   // ─────────────────────────────────────────────────────────────────────────────
   // SCREEN: EXERCISE
   // ─────────────────────────────────────────────────────────────────────────────
-  if (phase === 'exercise') {
+  if (activePhase === 'exercise') {
     const title = dayExercisesData?.day_theme || currentDay?.title;
     const greeting = dayExercisesData?.ai_greeting || currentDay?.exercises?.[0]?.quote;
     const whatToDo = dayExercisesData?.ai_exercise_text || currentDay?.exercises?.[0]?.whatToDo;
@@ -574,7 +680,7 @@ export default function JourneyPage() {
   // ─────────────────────────────────────────────────────────────────────────────
   // SCREEN: REFLECTION
   // ─────────────────────────────────────────────────────────────────────────────
-  if (phase === 'reflection') {
+  if (activePhase === 'reflection') {
     return (
       <section className="mx-auto min-h-screen max-w-3xl px-4 py-12">
         <button
@@ -628,7 +734,7 @@ export default function JourneyPage() {
   // ─────────────────────────────────────────────────────────────────────────────
   // SCREEN: DAY COMPLETE
   // ─────────────────────────────────────────────────────────────────────────────
-  if (phase === 'day-complete') {
+  if (activePhase === 'day-complete') {
     return (
       <section className="mx-auto min-h-screen max-w-3xl px-4 py-12">
         <button
@@ -664,7 +770,7 @@ export default function JourneyPage() {
   // ─────────────────────────────────────────────────────────────────────────────
   // SCREEN: OVERVIEW
   // ─────────────────────────────────────────────────────────────────────────────
-  if (phase === 'overview') {
+  if (activePhase === 'overview') {
     return (
       <section className="mx-auto h-full max-w-3xl px-4 py-12">
         <button
@@ -747,7 +853,7 @@ export default function JourneyPage() {
   // ─────────────────────────────────────────────────────────────────────────────
   // SCREEN: LIBERATION COMPLETE
   // ─────────────────────────────────────────────────────────────────────────────
-  if (phase === 'liberation-complete') {
+  if (activePhase === 'liberation-complete') {
     return (
       <section className="mx-auto min-h-screen max-w-3xl px-4 py-12">
         <button

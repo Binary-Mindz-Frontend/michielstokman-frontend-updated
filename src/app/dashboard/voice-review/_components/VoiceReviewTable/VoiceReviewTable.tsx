@@ -1,11 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
+import CustomPagination from '@/components/dashboard/CustomPagination/CustomPagination';
 import CustomTable from '@/components/dashboard/CustomTable/CustomTable';
 import TableEmptyState from '@/components/dashboard/CustomTable/TableEmptyState';
 import TableSkeleton from '@/components/dashboard/CustomTable/TableSkeleton';
 import SearchField from '@/components/dashboard/Fields/SearchField/SearchField';
 import FilterTabs from '@/components/dashboard/FilterTabs/FilterTabs';
+import useSetSearchQueryInURL from '@/hooks/useSetSearchQueryInURL';
 import {
   useGetVoiceReviewListQuery,
   useRegenerateVoiceMutation,
@@ -14,17 +16,16 @@ import { TColumn } from '@/types/custom-table.types';
 import { IVoiceReviewData } from '@/types/voiceReviewData.type';
 import { FormatDate } from '@/utils/formatDateTime';
 import { Pause, Play, RotateCcw } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 let globalAudioInstance: HTMLAudioElement | null = null;
 
 function VoiceReviewTable() {
-  const searchParams = useSearchParams();
-  const searchQuery = searchParams ? searchParams.get('search') : '';
-
-  const currentTab = searchParams ? searchParams.get('story_type') || 'All' : 'All';
+  const { searchParams } = useSetSearchQueryInURL();
+  const searchQuery = searchParams.get('search') || '';
+  const currentTab = searchParams.get('story_type') || 'All';
+  const currentPage = parseInt(searchParams.get('page') || '1');
 
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
@@ -34,13 +35,14 @@ function VoiceReviewTable() {
     isLoading,
     isFetching,
   } = useGetVoiceReviewListQuery({
-    search: searchQuery || '',
+    search: searchQuery || undefined,
     story_type: currentTab === 'All' ? undefined : currentTab,
-    limit: 50,
-    offset: 0,
+    limit: 1,
+    page: currentPage,
   });
 
   const voiceReviewData = voiceReviewList?.data?.items || [];
+  const meta = voiceReviewList?.data?.meta;
   const [regenerateVoice] = useRegenerateVoiceMutation();
 
   useEffect(() => {
@@ -183,6 +185,8 @@ function VoiceReviewTable() {
       ) : (
         <CustomTable columns={tableConfig} data={voiceReviewData} />
       )}
+
+      {!isLoading && !isFetching && meta && <CustomPagination meta={meta} />}
     </div>
   );
 }

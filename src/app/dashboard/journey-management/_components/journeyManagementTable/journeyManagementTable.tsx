@@ -1,10 +1,12 @@
 'use client';
 
+import CustomPagination from '@/components/dashboard/CustomPagination/CustomPagination';
 import CustomTable from '@/components/dashboard/CustomTable/CustomTable';
 import TableEmptyState from '@/components/dashboard/CustomTable/TableEmptyState';
 import TableSkeleton from '@/components/dashboard/CustomTable/TableSkeleton';
 import SearchField from '@/components/dashboard/Fields/SearchField/SearchField';
 import { Switch } from '@/components/ui/switch';
+import useSetSearchQueryInURL from '@/hooks/useSetSearchQueryInURL';
 import {
   useDeactivateLiberationMutation,
   useGetAllLiberationsQuery,
@@ -13,7 +15,6 @@ import { TColumn } from '@/types/custom-table.types';
 import { FormatDateTime } from '@/utils/formatDateTime';
 import { Edit } from 'lucide-react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 
 interface ILiberationData {
@@ -27,20 +28,20 @@ interface ILiberationData {
 }
 
 function JourneyManagementTable() {
-  const searchParams = useSearchParams();
+  const { searchParams } = useSetSearchQueryInURL();
   const searchTerm = searchParams.get('search') || '';
+  const currentPage = parseInt(searchParams.get('page') || '1');
 
-  // Journey Data Api Hook
   const { data, isLoading, isFetching } = useGetAllLiberationsQuery({
-    limit: 50,
-    offset: 0,
+    limit: 10,
+    page: currentPage,
     search: searchTerm,
   });
 
-  // Status Update API Hook
   const [deactivateLiberation] = useDeactivateLiberationMutation();
 
   const journeyData = data?.data?.definitions || [];
+  const meta = data?.data?.meta;
 
   const handleStatusToggle = async (id: string, currentStatus: boolean) => {
     const nextStatus = !currentStatus;
@@ -128,6 +129,8 @@ function JourneyManagementTable() {
           <CustomTable columns={tableConfig} data={journeyData} />
         )}
       </div>
+
+      {!isLoading && !isFetching && meta && <CustomPagination meta={meta} />}
     </div>
   );
 }

@@ -34,7 +34,7 @@ import { useState } from 'react';
 import { ApproveAction, DeleteAction, RejectAction } from '../ApproveAction/ApproveAction';
 import EditAction from '../EditModeration/EditModeration';
 import { ReviewDetails } from '../ReviewDetails/ReviewDetails';
-import ModerationPagination from './ModerationPagination';
+import CustomPagination from '@/components/dashboard/CustomPagination/CustomPagination';
 
 interface IModerationStory {
   id: string;
@@ -72,20 +72,19 @@ const ModerationTable = () => {
   };
 
   const limit = 10;
-  const currentOffset = parseInt(searchParams.get('offset') || '0');
+  const currentPage = parseInt(searchParams.get('page') || '1');
   const currentStatus = searchParams.get('status') || 'all';
 
   const { data, isLoading, isFetching } = useGetModerationQueueQuery({
     search: Array.isArray(query.search) ? query.search[0] : query.search || undefined,
     status: currentStatus === 'all' ? undefined : currentStatus,
-    limit: limit,
-    offset: currentOffset,
+    limit,
+    page: currentPage,
   });
 
   const stories = data?.data?.stories || [];
   const stats = data?.data;
-  const activeTab = currentStatus;
-  const totalCount = stats?.[activeTab] || stats?.all || 0;
+  const meta = data?.data?.meta;
 
   const handleExport = () => {
     if (stories.length === 0) return;
@@ -219,7 +218,7 @@ const ModerationTable = () => {
         <CustomTable columns={tableConfig} data={stories} />
       )}
 
-      {!isLoading && <ModerationPagination totalItems={totalCount} limit={limit} />}
+      {!isLoading && !isFetching && meta && <CustomPagination meta={meta} />}
 
       {/* --- Global Dynamic Modal --- */}
       <DynamicModal

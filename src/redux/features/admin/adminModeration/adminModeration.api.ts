@@ -3,20 +3,20 @@ type ModerationQueueParams = {
   status?: string;
   search?: string;
   limit?: number;
-  offset?: number;
+  page?: number;
 };
 
 const adminModerationApi = apiClient.injectEndpoints({
   endpoints: (builder) => ({
     // Get Moderation Queue
     getModerationQueue: builder.query({
-      query: ({ status, search, limit = 20, offset = 0 }: ModerationQueueParams = {}) => ({
+      query: ({ status, search, limit = 10, page = 1 }: ModerationQueueParams = {}) => ({
         url: '/admin/moderation/queue',
         params: {
           moderation_status: status,
           search,
           limit,
-          offset,
+          page,
         },
       }),
       providesTags: ['ModerationQueue'],
