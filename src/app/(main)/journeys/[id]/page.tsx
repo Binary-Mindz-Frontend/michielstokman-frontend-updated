@@ -2,7 +2,6 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { setAuth, useCurrentUser } from '@/redux/features/auth/authSlice';
 import { useGetLiberationDetailsQuery } from '@/redux/features/discoveryFeed/discoveryFeed.api';
 import { useStartCheckoutMutation } from '@/redux/features/payment/payment.api';
@@ -13,6 +12,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 
+import { JourneyDetailSkeleton } from '@/components/main/Skeletons/JourneyDetailSkeleton';
 import { IPaymentCheckoutRequest } from '@/types/payment.types';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
@@ -57,97 +57,10 @@ export default function JourneyDetailPage() {
   }, [profileData, user, dispatch]);
 
   // Data find logic
-
   console.log('journey', librationData);
 
   if (isDetailsLoading || (!librationData && !isError)) {
-    return (
-      <div className="min-h-screen">
-        {/* Hero Section Skeleton */}
-        <div className="relative h-[60vh] w-full overflow-hidden">
-          <Skeleton className="bg-primary/5 h-full w-full animate-pulse" />
-
-          {/* Exact Overlay */}
-          <div
-            className="absolute inset-0 z-10"
-            style={{
-              background: 'linear-gradient(180deg, rgba(250, 247, 245, 0) -39.16%, #FAF7F5 93.71%)',
-            }}
-          />
-
-          {/* Back Button */}
-          <div className="relative z-20 container mx-auto pt-12">
-            <Link
-              href="/"
-              className="text-primary inline-flex items-center text-sm font-medium hover:underline"
-            >
-              ← Back
-            </Link>
-          </div>
-        </div>
-
-        {/* Content Section Skeleton */}
-        <div className="relative z-20 mx-auto -mt-40 w-full max-w-400 px-4">
-          <div className="space-y-6">
-            {/* Header Info */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-3">
-                <span className="text-dark-primary text-sm font-medium tracking-wider uppercase">
-                  Liberations
-                </span>
-                <div className="bg-dark-primary/30 h-0.5 w-12" />
-              </div>
-
-              <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
-                <div className="w-full space-y-4">
-                  {/* Title Skeleton */}
-                  <Skeleton className="bg-primary/5 h-12 w-3/4 animate-pulse" />
-
-                  <div className="flex items-center gap-3">
-                    {/* Days Badges Skeletons */}
-                    <Skeleton className="bg-primary/5 h-7 w-20 animate-pulse rounded-sm" />
-                    <Skeleton className="bg-primary/5 h-7 w-24 animate-pulse rounded-sm" />
-                  </div>
-                </div>
-
-                {/* Price Skeleton */}
-                <Skeleton className="bg-primary/5 h-10 w-24 animate-pulse" />
-              </div>
-            </div>
-
-            {/* Description Text Skeleton */}
-            <div className="max-w-4xl space-y-2">
-              <Skeleton className="bg-primary/5 h-5 w-full animate-pulse" />
-              <Skeleton className="bg-primary/5 h-5 w-11/12 animate-pulse" />
-              <Skeleton className="bg-primary/5 h-5 w-4/5 animate-pulse" />
-            </div>
-
-            {/* What to Expect Section Skeleton */}
-            <div className="space-y-6 pt-6">
-              <h2 className="text-dark-primary font-serif text-2xl font-semibold">
-                What to Expect
-              </h2>
-              <div className="grid grid-cols-1 gap-y-4 md:max-w-xl">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="flex items-start gap-4">
-                    <Skeleton className="bg-primary/5 mt-1 h-4 w-4 shrink-0 animate-pulse rounded-full" />
-                    <Skeleton className="bg-primary/5 h-4 w-64 animate-pulse" />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Checkout Action Skeleton */}
-            <div className="flex flex-col items-center gap-4 pt-6 md:pt-10">
-              <Skeleton className="bg-primary/5 h-12 w-48 animate-pulse rounded-md" />
-              <p className="text-secondary text-xs">
-                One-time payment · Lifetime access · 30-day guarantee
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <JourneyDetailSkeleton />;
   }
 
   const handleCheckout = async () => {
@@ -191,7 +104,10 @@ export default function JourneyDetailPage() {
       {/* Hero Section - Matching Story Page */}
       <div className="relative h-[60vh] w-full overflow-hidden">
         <Image
-          src={'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=1200'}
+          src={
+            librationData?.cover_image_url ||
+            'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=1200'
+          }
           alt={librationData?.title}
           fill
           className="object-cover"
