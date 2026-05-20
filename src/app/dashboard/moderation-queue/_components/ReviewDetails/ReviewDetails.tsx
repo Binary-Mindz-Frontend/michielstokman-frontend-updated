@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { useGetStoryDetailsQuery } from '@/redux/features/admin/adminModeration/adminModeration.api';
-import { User, Hash } from 'lucide-react';
+import { User, Compass, Heart, MessageSquareText, Volume2 } from 'lucide-react';
 import Image from 'next/image';
 import img from '@/assets/table_placeholder_image.jpg';
 
@@ -23,6 +23,8 @@ export const ReviewDetails = ({
 }: ReviewDetailsProps) => {
   const { data, isLoading } = useGetStoryDetailsQuery(id);
   const story = data?.data;
+
+  console.log(story, 'story');
 
   if (isLoading) {
     return (
@@ -48,15 +50,8 @@ export const ReviewDetails = ({
   return (
     <div className="flex h-full flex-col justify-between gap-6 overflow-hidden">
       {/* Main Details Card */}
-      <div
-        // style={}
-        className="custom-scrollbar flex-1 space-y-6 overflow-y-auto rounded-xl bg-white p-4 shadow-xs"
-      >
-        <h2 className="border-b border-[#F0EAE5] pb-3 font-serif text-2xl font-bold tracking-tight text-[#4A2E2B]">
-          Details
-        </h2>
-
-        {/* Optional Cover Image (Kept from original codebase but stylized) */}
+      <div className="custom-scrollbar flex-1 space-y-6 overflow-y-auto rounded-xl bg-white p-4">
+        {/* Optional Cover Image */}
         {story?.cover_image_url && (
           <div className="relative h-40 w-full overflow-hidden rounded-xl border border-[#E6DFDA]">
             <Image src={story.cover_image_url || img} alt="Cover" fill className="object-cover" />
@@ -84,16 +79,32 @@ export const ReviewDetails = ({
         </div>
 
         {/* Subtle Metadata Layout */}
-        <div className="flex gap-6 border-t border-b border-[#F0EAE5] py-3 text-xs text-[#8A6E5F]">
+        <div className="flex flex-wrap gap-x-6 gap-y-2 border-t border-b border-[#F0EAE5] py-3 text-xs text-[#8A6E5F]">
           <span className="flex items-center gap-1">
             <User size={14} className="text-[#A08170]" />
             <strong>Author:</strong> {story?.author || 'Anonymous'}
           </span>
           <span className="flex items-center gap-1">
-            <Hash size={14} className="text-[#A08170]" />
             <strong>Story ID:</strong> {id}
           </span>
+          {story?.first_name && (
+            <span className="flex items-center gap-1">
+              <strong>First Name:</strong> {story.first_name}
+            </span>
+          )}
         </div>
+
+        {/* Audio Player Section */}
+        {story?.audio_path && (
+          <div className="rounded-xl border border-[#F0EAE5] bg-[#FAF8F5] p-4">
+            <span className="mb-2 flex items-center gap-1.5 text-[12px] font-bold tracking-wider text-[#A08170] uppercase">
+              <Volume2 size={14} /> Audio Narration
+            </span>
+            <audio controls src={story.audio_path} className="mt-1 h-10 w-full accent-[#BF7758]">
+              Your browser does not support the audio element.
+            </audio>
+          </div>
+        )}
 
         {/* Dynamic Story Body Content */}
         <div>
@@ -106,6 +117,50 @@ export const ReviewDetails = ({
             )}
           </div>
         </div>
+
+        {/* Meta Insights: Life Phase & Growth Areas */}
+        <div className="grid grid-cols-1 gap-4 border-t border-[#F0EAE5] pt-4 sm:grid-cols-2">
+          {story?.life_phase && (
+            <div>
+              <span className="mb-2 flex items-center gap-1 text-[12px] font-bold tracking-wider text-[#A08170] uppercase">
+                <Compass size={14} /> Life Phase
+              </span>
+              <span className="inline-block rounded-md border border-[#E6DFDA] bg-[#FDFBF7] px-3 py-1.5 text-sm font-medium text-[#5C3A21]">
+                {story.life_phase}
+              </span>
+            </div>
+          )}
+
+          {story?.growth_areas && story.growth_areas.length > 0 && (
+            <div>
+              <span className="mb-2 flex items-center gap-1 text-[12px] font-bold tracking-wider text-[#A08170] uppercase">
+                <Heart size={14} /> Growth Areas
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {story.growth_areas.map((area: string, index: number) => (
+                  <span
+                    key={index}
+                    className="inline-block rounded-md border border-[#E1D7CE] bg-[#F5EFEA] px-2.5 py-1 text-xs font-semibold text-[#4A2E2B]"
+                  >
+                    {area}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Original User Input Prompt */}
+        {story?.story_input && (
+          <div className="border-t border-[#F0EAE5] pt-4">
+            <span className="mb-2 flex items-center gap-1 text-[12px] font-bold tracking-wider text-[#A08170] uppercase">
+              <MessageSquareText size={14} /> Original User Input
+            </span>
+            <div className="rounded-lg border border-[#EDE7E1] bg-[#FAF8F6] p-3 text-sm whitespace-pre-line text-[#614E43] italic">
+              {story.story_input}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Action Controller Footer */}

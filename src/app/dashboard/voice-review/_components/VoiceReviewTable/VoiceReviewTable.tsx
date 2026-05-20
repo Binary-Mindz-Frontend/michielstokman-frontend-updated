@@ -37,7 +37,7 @@ function VoiceReviewTable() {
   } = useGetVoiceReviewListQuery({
     search: searchQuery || undefined,
     story_type: currentTab === 'All' ? undefined : currentTab,
-    limit: 1,
+    limit: 10,
     page: currentPage,
   });
 

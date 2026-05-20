@@ -61,7 +61,7 @@ export default function DashboardSummary({
       title: 'Completion Rate',
       value:
         topStats?.completion?.value !== undefined && topStats?.completion?.value !== null
-          ? `${Number(topStats.completion.value)}%`
+          ? `${Number(topStats.completion.value).toFixed(2)}%`
           : '0.00%',
       subValue: topStats?.completion?.percentage,
       trend: topStats?.completion?.trend,

@@ -47,8 +47,6 @@ const TopResonanceContent = ({
             className="border-primary/20 flex items-center justify-between border-b py-5 last:border-0"
           >
             <div className="flex items-center gap-4">
-              <span className="text-secondary mt-1 text-xl">{content?.id}.</span>
-
               {/* <span className="text-secondary mt-1 text-xl">{content?.id}.</span> */}
 
               <div>

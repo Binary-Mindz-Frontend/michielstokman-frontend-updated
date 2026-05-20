@@ -92,6 +92,8 @@ const ModerationTable = () => {
     const exportData = stories.map((story: any) => ({
       ID: story.id,
       Title: story.title,
+      Cover_Image: story.cover_image_url,
+      Content: story.story_text,
       Type: story.story_type,
       Author: story.author,
       Date: story.created_at,
@@ -221,11 +223,7 @@ const ModerationTable = () => {
       {!isLoading && !isFetching && meta && <CustomPagination meta={meta} />}
 
       {/* --- Global Dynamic Modal --- */}
-      <DynamicModal
-        isOpen={modalState.isOpen}
-        onClose={closeModal}
-        title={`${modalState.type?.toUpperCase()}`}
-      >
+      <DynamicModal isOpen={modalState.isOpen} onClose={closeModal} title={`Review Details`}>
         {modalState.selectedStory && (
           <>
             {modalState.type === 'review' && (
