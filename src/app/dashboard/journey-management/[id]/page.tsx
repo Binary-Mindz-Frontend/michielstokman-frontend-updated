@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
   useCreateLiberationMutation,
-  useGetAllLiberationsQuery,
+  useGetSingleLiberationQuery,
   useUpdateLiberationMutation,
   useUploadDayImageMutation,
 } from '@/redux/features/admin/journeyManagement/journeyManagement.api';
@@ -73,17 +73,7 @@ export default function JourneyForm() {
   const [createLiberation, { isLoading: isCreating }] = useCreateLiberationMutation();
   const [updateLiberation, { isLoading: isUpdating }] = useUpdateLiberationMutation();
   const [uploadDayImage] = useUploadDayImageMutation();
-
-  // Get All Liberations Hook
-  const { data: allLiberations } = useGetAllLiberationsQuery({
-    limit: 50,
-    offset: 0,
-  });
-  const definitions = allLiberations?.data?.definitions || allLiberations?.data || [];
-  // Single liberation data find
-  const singleData = Array.isArray(definitions)
-    ? definitions.find((item: any) => item.id === id)
-    : undefined;
+  const { data: singleData } = useGetSingleLiberationQuery(id);
 
   const {
     control,
@@ -104,16 +94,16 @@ export default function JourneyForm() {
 
   // Use Effect
   useEffect(() => {
-    if (isEditMode && singleData) {
+    if (isEditMode && singleData?.data) {
       reset({
-        title: singleData.title || '',
-        price: String(singleData.price || ''),
-        description: singleData.description || '',
-        whatToExpect: singleData.what_to_expect || [],
+        title: singleData?.data.title || '',
+        price: String(singleData?.data.price || ''),
+        description: singleData?.data.description || '',
+        whatToExpect: singleData?.data.what_to_expect || [],
         days: Array(7)
           .fill(null)
           .map((_, index) => {
-            const backendDay = singleData.days?.find((d: any) => d.day_number === index + 1);
+            const backendDay = singleData?.data.days?.find((d: any) => d.day_number === index + 1);
             return {
               dayTitle: backendDay?.day_theme || '',
               whatToDo: backendDay?.exercise_text || '',
@@ -123,7 +113,7 @@ export default function JourneyForm() {
           }),
       });
     }
-  }, [isEditMode, singleData, reset]);
+  }, [isEditMode, singleData?.data, reset]);
 
   // Submit Handler
   const onSubmit = async (data: JourneyFormValues) => {

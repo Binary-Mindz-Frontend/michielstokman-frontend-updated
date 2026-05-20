@@ -69,7 +69,7 @@ const DayImageUpload = ({
               sizes="(max-width: 768px) 100vw, 50vw"
             />
 
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-black/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-black/25 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
               {uploading ? (
                 <>
                   <Loader2 size={20} className="animate-spin text-white" />

@@ -25,6 +25,14 @@ export const adminLiberationApi = apiClient.injectEndpoints({
       }),
       providesTags: ['Liberations'],
     }),
+    // Get Single Liberation (Only Admin)
+    getSingleLiberation: builder.query({
+      query: (id) => ({
+        url: `/admin/liberation/${id}`,
+        method: 'GET',
+      }),
+      providesTags: ['Liberations'],
+    }),
 
     // Upload Day Image
     uploadDayImage: builder.mutation({
@@ -63,4 +71,5 @@ export const {
   useUploadDayImageMutation,
   useDeactivateLiberationMutation,
   useUpdateLiberationMutation,
+  useGetSingleLiberationQuery,
 } = adminLiberationApi;
