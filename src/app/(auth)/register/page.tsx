@@ -60,21 +60,13 @@ export default function RegisterPage() {
           email: res?.data?.user?.email,
           is_admin: res?.data?.user?.is_admin || false,
         };
-
-        // Update Redux state immediately
         dispatch(setAuth({ user }));
 
-        try {
-          // Await the Server Action to guarantee cookies are fully set on the server before redirecting
-          await setUserProfile(user, res?.data?.access_token);
-          toast.success(res?.message || 'User Registered Successfully');
-          setTimeout(() => {
-            router.push('/register/stepper');
-          }, 1000);
-        } catch (error) {
-          console.error('Error during registration authentication synchronization:', error);
-          toast.error('Registration setup failed. Please try again.');
-        }
+        await setUserProfile(user, res?.data?.access_token);
+        toast.success(res?.message || 'User Registered Successfully');
+        setTimeout(() => {
+          router.push('/register/stepper');
+        }, 1000);
       },
     );
   };
