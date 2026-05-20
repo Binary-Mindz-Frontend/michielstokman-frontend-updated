@@ -16,7 +16,7 @@ import { useParams } from 'next/navigation';
 
 import { useMemo, useState } from 'react';
 
-import StoryDetailSkeleton from '@/components/main/Skeletons/StoryDetailSkeleton';
+import { StoryDetailSkeleton } from '@/components/main/Skeletons/StoryDetailSkeleton';
 import StoryPlayer from '../StoryPlayer/StoryPlayer';
 
 export default function StoryDetailPage() {
@@ -45,8 +45,6 @@ export default function StoryDetailPage() {
 
   // Word Counter
   let wordCounter = 0;
-
-  console.log(feedData);
 
   return (
     <div className="min-h-screen">

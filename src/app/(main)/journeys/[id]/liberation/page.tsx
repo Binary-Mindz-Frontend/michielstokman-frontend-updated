@@ -322,7 +322,7 @@ export default function JourneyPage() {
     try {
       if (journeyId) {
         await enrollJourney(journeyId).unwrap();
-        toast.success('Journey started successfully!');
+        // toast.success('Journey started successfully!');
       }
       checkinForm.reset({ feeling: '' });
       setCurrentExerciseIndex(0);
@@ -654,8 +654,19 @@ export default function JourneyPage() {
     if (activePhase === 'exercise') {
       const title = dayExercisesData?.day_theme || currentDay?.title;
       const greeting = dayExercisesData?.ai_greeting || currentDay?.exercises?.[0]?.quote;
-      const whatToDo = dayExercisesData?.ai_exercise_text || currentDay?.exercises?.[0]?.whatToDo;
-      const whyThis = dayExercisesData?.ai_why_text || currentDay?.exercises?.[0]?.whyThis;
+      const rawWhatToDo =
+        dayExercisesData?.ai_exercise_text || currentDay?.exercises?.[0]?.whatToDo;
+      const rawWhyThis = dayExercisesData?.ai_why_text || currentDay?.exercises?.[0]?.whyThis;
+
+      const formatLiberationText = (text: string | undefined): string => {
+        if (!text) return '';
+        let formatted = text.replace(/\\n/g, '\n');
+        formatted = formatted.replace(/(\d+)\.([^\s\d])/g, '$1. $2');
+        return formatted;
+      };
+
+      const whatToDo = formatLiberationText(rawWhatToDo);
+      const whyThis = formatLiberationText(rawWhyThis);
 
       return (
         <motion.section
@@ -699,7 +710,9 @@ export default function JourneyPage() {
             {whyThis && (
               <>
                 <h3 className="text-dark-primary mb-2 font-semibold">Why this exercise</h3>
-                <p className="text-secondary mb-8 text-sm leading-relaxed">{whyThis}</p>
+                <p className="text-secondary mb-8 text-sm leading-relaxed whitespace-pre-wrap">
+                  {whyThis}
+                </p>
               </>
             )}
 
