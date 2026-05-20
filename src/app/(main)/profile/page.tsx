@@ -141,10 +141,13 @@ export default function ProfilePage() {
               Daily Credits
             </h3>
             <span className="text-dark-primary text-lg font-semibold">
-              {profileData?.daily_credits || 'N/A'}
+              {`${profileData?.daily_credits}/3 Remaining`}
             </span>
           </div>
-          <Progress value={90} className="[&>div]:bg-primary bg-primary/20 h-2" />
+          <Progress
+            value={(profileData?.daily_credits / 3) * 100}
+            className="[&>div]:bg-primary bg-primary/20 h-2"
+          />
           <p className="text-secondary mt-3 text-sm">
             1 credit = 1 full story or meditation. Resets daily.
           </p>
