@@ -49,7 +49,7 @@ function MainFooter() {
 
         {/* Copyright or Secondary Info */}
         <div className="mt-10 text-center">
-          <p className="text-dark-primary text-[10px] tracking-widest opacity-80">
+          <p className="text-dark-primary text-xs tracking-widest opacity-80">
             © {new Date().getFullYear()} LIBERATION. ALL RIGHTS RESERVED.
           </p>
         </div>
