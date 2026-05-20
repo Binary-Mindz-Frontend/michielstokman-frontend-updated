@@ -63,20 +63,17 @@ export default function LoginPage() {
         const redirectUrl = searchParams.get('redirect');
         const redirectPath = redirectUrl ? decodeURIComponent(redirectUrl) : defaultRedirect;
 
-        // Update Redux state immediately
         dispatch(setAuth({ user }));
 
-        try {
-          // Await the Server Action to guarantee cookies are fully set on the server before redirecting
-          await setUserProfile(user, res?.data?.access_token);
-          toast.success(res?.message || 'User Logged in Successfully');
-          setTimeout(() => {
+        await setUserProfile(user, res?.data?.access_token);
+        toast.success(res?.message || 'User Logged in Successfully');
+        setTimeout(() => {
+          if (!res?.data?.user?.is_profile_setup) {
+            router.push('/register/stepper');
+          } else {
             router.push(redirectPath);
-          }, 1000);
-        } catch (error) {
-          console.error('Error during login authentication synchronization:', error);
-          toast.error('Authentication setup failed. Please try again.');
-        }
+          }
+        }, 1000);
       },
     );
   };
@@ -89,12 +86,14 @@ export default function LoginPage() {
       className="flex min-h-screen flex-col items-center justify-center px-4 py-12"
     >
       {/* Title Section */}
-      <motion.h2
-        variants={FADE_IN_UP_ITEM}
-        className="text-primary mb-16 font-serif text-2xl tracking-wide md:text-3xl"
-      >
-        Transform to Liberation
-      </motion.h2>
+      <Link href="/">
+        <motion.h2
+          variants={FADE_IN_UP_ITEM}
+          className="text-primary mb-16 font-serif text-2xl tracking-wide md:text-3xl"
+        >
+          Transform to Liberation
+        </motion.h2>
+      </Link>
 
       <motion.div variants={FADE_IN_UP_ITEM} className="w-full max-w-120 space-y-8 text-center">
         <div className="space-y-1">

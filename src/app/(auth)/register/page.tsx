@@ -60,21 +60,13 @@ export default function RegisterPage() {
           email: res?.data?.user?.email,
           is_admin: res?.data?.user?.is_admin || false,
         };
-
-        // Update Redux state immediately
         dispatch(setAuth({ user }));
 
-        try {
-          // Await the Server Action to guarantee cookies are fully set on the server before redirecting
-          await setUserProfile(user, res?.data?.access_token);
-          toast.success(res?.message || 'User Registered Successfully');
-          setTimeout(() => {
-            router.push('/register/stepper');
-          }, 1000);
-        } catch (error) {
-          console.error('Error during registration authentication synchronization:', error);
-          toast.error('Registration setup failed. Please try again.');
-        }
+        await setUserProfile(user, res?.data?.access_token);
+        toast.success(res?.message || 'User Registered Successfully');
+        setTimeout(() => {
+          router.push('/register/stepper');
+        }, 1000);
       },
     );
   };
@@ -86,12 +78,14 @@ export default function RegisterPage() {
       variants={FADE_IN_UP_CONTAINER}
       className="flex min-h-screen flex-col items-center justify-center px-4 py-12"
     >
-      <motion.h2
-        variants={FADE_IN_UP_ITEM}
-        className="text-primary mb-16 font-serif text-2xl tracking-wide md:text-3xl"
-      >
-        Transform to Liberation
-      </motion.h2>
+      <Link href="/">
+        <motion.h2
+          variants={FADE_IN_UP_ITEM}
+          className="text-primary mb-16 font-serif text-2xl tracking-wide md:text-3xl"
+        >
+          Transform to Liberation
+        </motion.h2>
+      </Link>
 
       <motion.div variants={FADE_IN_UP_ITEM} className="w-full max-w-120 space-y-8 text-center">
         <DynamicSectionHeader

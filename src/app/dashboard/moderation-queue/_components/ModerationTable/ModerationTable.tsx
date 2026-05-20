@@ -4,6 +4,7 @@
 'use client';
 
 import img from '@/assets/table_placeholder_image.jpg';
+import CustomPagination from '@/components/dashboard/CustomPagination/CustomPagination';
 import CustomTable from '@/components/dashboard/CustomTable/CustomTable';
 import TableEmptyState from '@/components/dashboard/CustomTable/TableEmptyState';
 import TableSkeleton from '@/components/dashboard/CustomTable/TableSkeleton';
@@ -34,7 +35,6 @@ import { useState } from 'react';
 import { ApproveAction, DeleteAction, RejectAction } from '../ApproveAction/ApproveAction';
 import EditAction from '../EditModeration/EditModeration';
 import { ReviewDetails } from '../ReviewDetails/ReviewDetails';
-import CustomPagination from '@/components/dashboard/CustomPagination/CustomPagination';
 
 interface IModerationStory {
   id: string;
@@ -92,6 +92,8 @@ const ModerationTable = () => {
     const exportData = stories.map((story: any) => ({
       ID: story.id,
       Title: story.title,
+      Cover_Image: story.cover_image_url,
+      Content: story.story_text,
       Type: story.story_type,
       Author: story.author,
       Date: story.created_at,
@@ -102,7 +104,10 @@ const ModerationTable = () => {
   };
 
   const tableConfig: TColumn<IModerationStory>[] = [
-    { header: 'Sl', accessor: 'id' },
+    {
+      header: 'Sl',
+      cell: (_, index) => <span className="text-secondary">{(index ?? 0) + 1}</span>,
+    },
     {
       header: 'Title',
       cell: (row) => (
@@ -221,11 +226,7 @@ const ModerationTable = () => {
       {!isLoading && !isFetching && meta && <CustomPagination meta={meta} />}
 
       {/* --- Global Dynamic Modal --- */}
-      <DynamicModal
-        isOpen={modalState.isOpen}
-        onClose={closeModal}
-        title={`${modalState.type?.toUpperCase()}`}
-      >
+      <DynamicModal isOpen={modalState.isOpen} onClose={closeModal} title={`Review Details`}>
         {modalState.selectedStory && (
           <>
             {modalState.type === 'review' && (
