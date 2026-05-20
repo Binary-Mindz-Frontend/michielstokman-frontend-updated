@@ -10,6 +10,7 @@ import {
   useCreateLiberationMutation,
   useGetAllLiberationsQuery,
   useUpdateLiberationMutation,
+  useUploadDayImageMutation,
 } from '@/redux/features/admin/journeyManagement/journeyManagement.api';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useParams, useRouter } from 'next/navigation';
@@ -17,6 +18,7 @@ import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
+import DayImageUpload from './_components/DayImageUpload/DayImageUpload';
 import DynamicListInput from './_components/DynamicListInput/DynamicListInput';
 import TiptapEditor from './_components/TiptapEditor/TiptapEditor';
 
@@ -35,6 +37,7 @@ export const journeySchema = z.object({
         dayTitle: z.string().min(1, 'Day title is required'),
         whatToDo: z.string().min(1, 'What to do is required'),
         whyThisExercise: z.string().min(1, 'Why this exercise is required'),
+        imageUrl: z.string().optional(),
       }),
     )
     .length(7),
@@ -69,6 +72,7 @@ export default function JourneyForm() {
   // Mutation & Query Hooks
   const [createLiberation, { isLoading: isCreating }] = useCreateLiberationMutation();
   const [updateLiberation, { isLoading: isUpdating }] = useUpdateLiberationMutation();
+  const [uploadDayImage] = useUploadDayImageMutation();
 
   // Get All Liberations Hook
   const { data: allLiberations } = useGetAllLiberationsQuery({
@@ -94,7 +98,7 @@ export default function JourneyForm() {
       price: '',
       description: '',
       whatToExpect: [],
-      days: Array(7).fill({ dayTitle: '', whatToDo: '', whyThisExercise: '' }),
+      days: Array(7).fill({ dayTitle: '', whatToDo: '', whyThisExercise: '', imageUrl: '' }),
     },
   });
 
@@ -114,6 +118,7 @@ export default function JourneyForm() {
               dayTitle: backendDay?.day_theme || '',
               whatToDo: backendDay?.exercise_text || '',
               whyThisExercise: backendDay?.why_text || '',
+              imageUrl: backendDay?.image_url || '',
             };
           }),
       });
@@ -138,6 +143,7 @@ export default function JourneyForm() {
             dayItem.whyThisExercise && dayItem.whyThisExercise !== '<p></p>'
               ? dayItem.whyThisExercise
               : '',
+          image_url: dayItem.imageUrl || '',
         })),
       };
 
@@ -279,6 +285,18 @@ export default function JourneyForm() {
                       value={field.value}
                       onChange={field.onChange}
                       error={errors.days?.[index]?.whyThisExercise?.message}
+                    />
+                  )}
+                />
+
+                <Controller
+                  name={`days.${index}.imageUrl`}
+                  control={control}
+                  render={({ field }) => (
+                    <DayImageUpload
+                      value={field.value ?? ''}
+                      onChange={field.onChange}
+                      uploadFn={uploadDayImage}
                     />
                   )}
                 />

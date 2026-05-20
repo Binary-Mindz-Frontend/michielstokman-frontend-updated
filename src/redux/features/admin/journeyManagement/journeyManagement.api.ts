@@ -26,6 +26,15 @@ export const adminLiberationApi = apiClient.injectEndpoints({
       providesTags: ['Liberations'],
     }),
 
+    // Upload Day Image
+    uploadDayImage: builder.mutation({
+      query: (formData) => ({
+        url: '/admin/liberation/upload-image',
+        method: 'POST',
+        body: formData,
+      }),
+    }),
+
     // Deactivate Liberation (Only Admin)
     deactivateLiberation: builder.mutation({
       query: ({ id, isActive }) => ({
@@ -51,6 +60,7 @@ export const adminLiberationApi = apiClient.injectEndpoints({
 export const {
   useCreateLiberationMutation,
   useGetAllLiberationsQuery,
+  useUploadDayImageMutation,
   useDeactivateLiberationMutation,
   useUpdateLiberationMutation,
 } = adminLiberationApi;
