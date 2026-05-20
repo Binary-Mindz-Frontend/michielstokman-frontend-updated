@@ -322,7 +322,7 @@ export default function JourneyPage() {
     try {
       if (journeyId) {
         await enrollJourney(journeyId).unwrap();
-        toast.success('Journey started successfully!');
+        // toast.success('Journey started successfully!');
       }
       checkinForm.reset({ feeling: '' });
       setCurrentExerciseIndex(0);
