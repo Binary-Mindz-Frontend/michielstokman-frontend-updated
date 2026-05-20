@@ -18,6 +18,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import GoogleSignInButton from '../login/_components/GoogleLogin/GoogleLogin';
 
 // Zod Schema definition
 const registerSchema = z.object({
@@ -138,13 +139,7 @@ export default function RegisterPage() {
 
         {/* Social Actions */}
         <motion.div variants={FADE_IN_UP_ITEM} className="space-y-3">
-          <Button
-            type="button"
-            className="btn-styles border-primary/20 flex items-center justify-center gap-3 border bg-transparent hover:bg-[#F5F1EA]"
-          >
-            <img src="https://www.google.com/favicon.ico" alt="Google" className="h-5 w-5" />
-            <span className="text-dark-primary font-medium">Sign in with Google</span>
-          </Button>
+          <GoogleSignInButton />
           <Button
             type="button"
             className="btn-styles border-primary/20 flex items-center justify-center gap-3 border bg-black hover:bg-gray-900"
