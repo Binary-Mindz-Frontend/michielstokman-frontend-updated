@@ -46,7 +46,6 @@ const schema = z.object({
 export default function UnifiedStoryForm({ category }: { category: string }) {
   const [isSuccess, setIsSuccess] = useState(false);
   const [generateStory, { isLoading: isGenerating }] = useGenerateStoryMutation();
-
   const isConfession = category === 'Confessions';
 
   const {
@@ -90,6 +89,7 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
 
       if (res.success) {
         setIsSuccess(true);
+
         reset({
           content: '',
           title: '',

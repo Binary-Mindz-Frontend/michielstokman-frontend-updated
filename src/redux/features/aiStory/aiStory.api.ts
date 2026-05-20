@@ -9,6 +9,7 @@ export const aiStoryApi = apiClient.injectEndpoints({
         method: 'POST',
         body: storyData,
       }),
+      invalidatesTags: ['PROFILE'],
     }),
   }),
 });
