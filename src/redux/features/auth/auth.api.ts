@@ -26,6 +26,17 @@ const authManagementApi = apiClient.injectEndpoints({
       },
       invalidatesTags: ['PROFILE', 'Discovery_Feed', 'Liberations'],
     }),
+    socialLogin: builder.mutation({
+      query: (data) => {
+        const result = {
+          url: '/social-login',
+          method: 'POST',
+          body: data,
+        };
+        return result;
+      },
+      invalidatesTags: ['PROFILE', 'Discovery_Feed', 'Liberations'],
+    }),
     updateUserProfile: builder.mutation({
       query: (data) => {
         const result = {
@@ -55,4 +66,5 @@ export const {
   useRegisterUserMutation,
   useUpdateUserProfileMutation,
   useGetUserProfileQuery,
+  useSocialLoginMutation,
 } = authManagementApi;
