@@ -55,7 +55,7 @@ function OrderHistoryTable() {
   const tableConfig: TColumn<IOrderHistory>[] = [
     {
       header: 'Sl',
-      accessor: 'id',
+      cell: (_, index) => <span className="text-secondary">{(index ?? 0) + 1}</span>,
     },
     {
       header: 'Name',
