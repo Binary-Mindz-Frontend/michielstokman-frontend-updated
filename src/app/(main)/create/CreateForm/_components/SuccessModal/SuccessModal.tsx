@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { useRouter } from 'next/navigation';
 
 interface SuccessModalProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface SuccessModalProps {
 }
 
 export default function SuccessModal({ isOpen, onClose }: SuccessModalProps) {
+  const router = useRouter();
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-xl bg-[#FAF7F5] [&>button]:hidden">
@@ -17,7 +19,13 @@ export default function SuccessModal({ isOpen, onClose }: SuccessModalProps) {
             Your submission will be reviewed within 1-4 months. We&apos;ll notify you via email.
           </h2>
 
-          <Button onClick={onClose} className="btn-styles mt-6">
+          <Button
+            onClick={() => {
+              onClose();
+              router.push('/');
+            }}
+            className="btn-styles mt-6"
+          >
             Close
           </Button>
         </div>
