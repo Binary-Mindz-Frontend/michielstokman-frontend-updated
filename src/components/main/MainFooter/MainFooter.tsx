@@ -1,6 +1,19 @@
+import { useAuthState } from '@/redux/features/auth/authSlice';
+import { useAppSelector } from '@/redux/hooks';
 import Link from 'next/link';
 
 function MainFooter() {
+  const { user } = useAppSelector(useAuthState);
+  let redirectPath;
+  if (user) {
+    if (user.is_admin) {
+      redirectPath = '/dashboard/overview';
+    } else {
+      redirectPath = '/profile';
+    }
+  } else {
+    redirectPath = '/login';
+  }
   return (
     <footer className="w-full py-6">
       <div className="mx-auto w-full max-w-400 px-4">
@@ -39,9 +52,17 @@ function MainFooter() {
                 </Link>
               </li>
               <li>
-                <Link href="/profile" className="hover:text-primary transition-colors">
-                  PROFILE
+                <Link
+                  href={redirectPath}
+                  className="hover:text-primary uppercase transition-colors"
+                >
+                  {user ? (user.is_admin ? 'Dashboard' : 'Profile') : 'Login/Signup'}
                 </Link>
+
+                {/* <div
+                  className={`bg-primary absolute bottom-0 left-1/2 h-[1.5px] -translate-x-1/2 transition-all duration-300 ${pathname === redirectPath ? 'w-full' : 'w-0 group-hover:w-full'
+                    }`}
+                /> */}
               </li>
             </ul>
           </nav>
