@@ -1,8 +1,8 @@
 /* eslint-disable no-unused-vars */
-import { useGetStoryDetailsQuery } from '@/redux/features/admin/adminModeration/adminModeration.api';
-import { User, Compass, Heart, MessageSquareText, Volume2 } from 'lucide-react';
-import Image from 'next/image';
 import img from '@/assets/table_placeholder_image.jpg';
+import { useGetStoryDetailsQuery } from '@/redux/features/admin/adminModeration/adminModeration.api';
+import { Compass, Heart, MessageSquareText, User, Volume2 } from 'lucide-react';
+import Image from 'next/image';
 
 interface ReviewDetailsProps {
   id: string;
@@ -113,7 +113,9 @@ export const ReviewDetails = ({
           </span>
           <div className="max-h-87.5 overflow-y-auto pr-2 font-serif text-[15px] leading-relaxed whitespace-pre-line text-[#4A3B32] selection:bg-[#E6DFDA]">
             {story?.story_text || (
-              <p className="font-sans text-sm text-neutral-400 italic">No content provided.</p>
+              <p className="font-sans text-sm text-neutral-400 italic">
+                Place wait, Content is processing...
+              </p>
             )}
           </div>
         </div>
