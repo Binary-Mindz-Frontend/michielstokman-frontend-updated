@@ -2,6 +2,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { setAuth, useCurrentUser } from '@/redux/features/auth/authSlice';
 import { useGetLiberationDetailsQuery } from '@/redux/features/discoveryFeed/discoveryFeed.api';
 import { useStartCheckoutMutation } from '@/redux/features/payment/payment.api';
@@ -11,12 +12,10 @@ import { Check } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { Skeleton } from '@/components/ui/skeleton';
 
-import { useEffect } from 'react';
 import { IPaymentCheckoutRequest } from '@/types/payment.types';
+import { useEffect } from 'react';
 import { toast } from 'sonner';
-import { cardData } from '../../(home)/_components/ResonanceGrid/_components/data/cardData.data';
 
 export default function JourneyDetailPage() {
   const params = useParams();
@@ -57,13 +56,9 @@ export default function JourneyDetailPage() {
     }
   }, [profileData, user, dispatch]);
 
-  console.log('response', librationData);
-  console.log('user', user);
-  console.log('profileData', profileData);
-
   // Data find logic
-  const journey = cardData.find((item) => item.id.toString() === storyId);
-  console.log('journey', journey);
+
+  console.log('journey', librationData);
 
   if (isDetailsLoading || (!librationData && !isError)) {
     return (
@@ -191,15 +186,6 @@ export default function JourneyDetailPage() {
     }
   };
 
-  const expectations = [
-    'Daily 15-minute guided practices',
-    'Morning check-ins to tune into your energy',
-    'Gentle movement & breathwork exercises',
-    'Evening reflections to deepen awareness',
-    'A blooming flower tracking your inner growth',
-    'A medal of transformation upon completion',
-  ];
-
   return (
     <div className="min-h-screen">
       {/* Hero Section - Matching Story Page */}
@@ -282,12 +268,12 @@ export default function JourneyDetailPage() {
           <div className="space-y-6 pt-6">
             <h2 className="text-dark-primary font-serif text-2xl font-semibold">What to Expect</h2>
             <ul className="grid grid-cols-1 gap-y-4 md:max-w-xl">
-              {expectations.map((item, index) => (
+              {librationData?.what_to_expect.map((item: string, index: number) => (
                 <li key={index} className="flex items-start gap-4">
                   <div className="bg-primary/10 mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded-full">
                     <Check className="text-primary h-3 w-3" strokeWidth={3} />
                   </div>
-                  <span className="text-secondary text-[15px] font-light">{item}</span>
+                  <span className="text-secondary text-base font-light">{item}</span>
                 </li>
               ))}
             </ul>
@@ -302,7 +288,7 @@ export default function JourneyDetailPage() {
                   ? 'Continue Your liberation'
                   : `Start This Liberation — €${librationData?.price}`}
             </Button>
-            <p className="text-secondary text-xs">
+            <p className="text-secondary text-sm">
               One-time payment · Lifetime access · 30-day guarantee
             </p>
           </div>
