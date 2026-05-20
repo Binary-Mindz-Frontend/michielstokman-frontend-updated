@@ -148,7 +148,6 @@ export default function LoginPage() {
 
         {/* Social Buttons */}
         <motion.div variants={FADE_IN_UP_ITEM} className="space-y-3">
-          {/* এখানে আলাদা করা গুগল বাটনটি রেন্ডার হচ্ছে */}
           <GoogleSignInButton />
 
           <Button
