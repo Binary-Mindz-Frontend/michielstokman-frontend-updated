@@ -63,20 +63,17 @@ export default function LoginPage() {
         const redirectUrl = searchParams.get('redirect');
         const redirectPath = redirectUrl ? decodeURIComponent(redirectUrl) : defaultRedirect;
 
-        // Update Redux state immediately
         dispatch(setAuth({ user }));
 
-        try {
-          // Await the Server Action to guarantee cookies are fully set on the server before redirecting
-          await setUserProfile(user, res?.data?.access_token);
-          toast.success(res?.message || 'User Logged in Successfully');
-          setTimeout(() => {
+        await setUserProfile(user, res?.data?.access_token);
+        toast.success(res?.message || 'User Logged in Successfully');
+        setTimeout(() => {
+          if (!res?.data?.user?.is_profile_setup) {
+            router.push('/register/stepper');
+          } else {
             router.push(redirectPath);
-          }, 1000);
-        } catch (error) {
-          console.error('Error during login authentication synchronization:', error);
-          toast.error('Authentication setup failed. Please try again.');
-        }
+          }
+        }, 1000);
       },
     );
   };
