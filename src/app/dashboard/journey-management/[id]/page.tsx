@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
   useCreateLiberationMutation,
-  useGetAllLiberationsQuery,
+  useGetSingleLiberationQuery,
   useUpdateLiberationMutation,
+  useUploadDayImageMutation,
 } from '@/redux/features/admin/journeyManagement/journeyManagement.api';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useParams, useRouter } from 'next/navigation';
@@ -17,6 +18,7 @@ import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
+import DayImageUpload from './_components/DayImageUpload/DayImageUpload';
 import DynamicListInput from './_components/DynamicListInput/DynamicListInput';
 import TiptapEditor from './_components/TiptapEditor/TiptapEditor';
 
@@ -35,6 +37,7 @@ export const journeySchema = z.object({
         dayTitle: z.string().min(1, 'Day title is required'),
         whatToDo: z.string().min(1, 'What to do is required'),
         whyThisExercise: z.string().min(1, 'Why this exercise is required'),
+        imageUrl: z.string().optional(),
       }),
     )
     .length(7),
@@ -69,17 +72,8 @@ export default function JourneyForm() {
   // Mutation & Query Hooks
   const [createLiberation, { isLoading: isCreating }] = useCreateLiberationMutation();
   const [updateLiberation, { isLoading: isUpdating }] = useUpdateLiberationMutation();
-
-  // Get All Liberations Hook
-  const { data: allLiberations } = useGetAllLiberationsQuery({
-    limit: 50,
-    offset: 0,
-  });
-  const definitions = allLiberations?.data?.definitions || allLiberations?.data || [];
-  // Single liberation data find
-  const singleData = Array.isArray(definitions)
-    ? definitions.find((item: any) => item.id === id)
-    : undefined;
+  const [uploadDayImage] = useUploadDayImageMutation();
+  const { data: singleData } = useGetSingleLiberationQuery(id);
 
   const {
     control,
@@ -94,31 +88,32 @@ export default function JourneyForm() {
       price: '',
       description: '',
       whatToExpect: [],
-      days: Array(7).fill({ dayTitle: '', whatToDo: '', whyThisExercise: '' }),
+      days: Array(7).fill({ dayTitle: '', whatToDo: '', whyThisExercise: '', imageUrl: '' }),
     },
   });
 
   // Use Effect
   useEffect(() => {
-    if (isEditMode && singleData) {
+    if (isEditMode && singleData?.data) {
       reset({
-        title: singleData.title || '',
-        price: String(singleData.price || ''),
-        description: singleData.description || '',
-        whatToExpect: singleData.what_to_expect || [],
+        title: singleData?.data.title || '',
+        price: String(singleData?.data.price || ''),
+        description: singleData?.data.description || '',
+        whatToExpect: singleData?.data.what_to_expect || [],
         days: Array(7)
           .fill(null)
           .map((_, index) => {
-            const backendDay = singleData.days?.find((d: any) => d.day_number === index + 1);
+            const backendDay = singleData?.data.days?.find((d: any) => d.day_number === index + 1);
             return {
               dayTitle: backendDay?.day_theme || '',
               whatToDo: backendDay?.exercise_text || '',
               whyThisExercise: backendDay?.why_text || '',
+              imageUrl: backendDay?.image_url || '',
             };
           }),
       });
     }
-  }, [isEditMode, singleData, reset]);
+  }, [isEditMode, singleData?.data, reset]);
 
   // Submit Handler
   const onSubmit = async (data: JourneyFormValues) => {
@@ -138,6 +133,7 @@ export default function JourneyForm() {
             dayItem.whyThisExercise && dayItem.whyThisExercise !== '<p></p>'
               ? dayItem.whyThisExercise
               : '',
+          image_url: dayItem.imageUrl || '',
         })),
       };
 
@@ -279,6 +275,18 @@ export default function JourneyForm() {
                       value={field.value}
                       onChange={field.onChange}
                       error={errors.days?.[index]?.whyThisExercise?.message}
+                    />
+                  )}
+                />
+
+                <Controller
+                  name={`days.${index}.imageUrl`}
+                  control={control}
+                  render={({ field }) => (
+                    <DayImageUpload
+                      value={field.value ?? ''}
+                      onChange={field.onChange}
+                      uploadFn={uploadDayImage}
                     />
                   )}
                 />
