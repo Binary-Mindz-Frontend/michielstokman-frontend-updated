@@ -6,9 +6,6 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'Transform to Liberation',
   description: 'Personal website of Michiel Stokman!',
-  icons: {
-    icon: '/favicon.svg',
-  },
 };
 
 export default function RootLayout({
@@ -18,6 +15,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <meta name="apple-mobile-web-app-title" content="TTL" />
+      </head>
       <body
         className="max-w-screen overflow-x-hidden antialiased"
         style={{ fontFamily: '"Times New Roman", Times, serif' }}
