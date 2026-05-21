@@ -4,6 +4,7 @@ import { Toaster } from 'sonner';
 import './globals.css';
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://transformtoliberation.com'),
   title: 'Transform to Liberation',
   description: 'Personal website of Michiel Stokman!',
   openGraph: {
@@ -17,6 +18,7 @@ export const metadata: Metadata = {
         width: 1200,
         height: 630,
         alt: 'Transform to Liberation',
+        type: 'image/jpeg',
       },
     ],
     type: 'website',
@@ -25,7 +27,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Transform to Liberation',
     description: 'Personal website of Michiel Stokman!',
-    images: ['/og-image.jpg'],
+    images: ['/og-image.jpg'], // Next.js uses metadataBase to convert this to an absolute URL
   },
 };
 
