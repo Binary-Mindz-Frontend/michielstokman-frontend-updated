@@ -21,12 +21,12 @@ import {
   useRepeatJourneyMutation,
 } from '@/redux/features/liberation/liberation.api';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 import Image from 'next/image';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'sonner';
 import * as z from 'zod';
 import { JOURNEY } from './data/Journey.data';
