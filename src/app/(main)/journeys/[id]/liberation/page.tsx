@@ -661,25 +661,13 @@ export default function JourneyPage() {
       );
     }
 
-    // ─────────────────────────────────────────────────────────────────────────────
     // SCREEN: EXERCISE
-    // ─────────────────────────────────────────────────────────────────────────────
     if (activePhase === 'exercise') {
       const title = dayExercisesData?.day_theme || currentDay?.title;
       const greeting = dayExercisesData?.ai_greeting || currentDay?.exercises?.[0]?.quote;
       const rawWhatToDo =
         dayExercisesData?.ai_exercise_text || currentDay?.exercises?.[0]?.whatToDo;
       const rawWhyThis = dayExercisesData?.ai_why_text || currentDay?.exercises?.[0]?.whyThis;
-
-      const formatLiberationText = (text: string | undefined): string => {
-        if (!text) return '';
-        let formatted = text.replace(/\\n/g, '\n');
-        formatted = formatted.replace(/(\d+)\.([^\s\d])/g, '$1. $2');
-        return formatted;
-      };
-
-      const whatToDo = formatLiberationText(rawWhatToDo);
-      const whyThis = formatLiberationText(rawWhyThis);
 
       return (
         <motion.section
@@ -706,26 +694,34 @@ export default function JourneyPage() {
             )}
 
             {greeting && (
-              <div className="border-primary/10 bg-primary/5 mb-5 rounded-md border px-4 py-3 text-sm text-[#7A6155] italic">
+              <div className="border-primary/10 bg-primary/5 text-primary mb-5 rounded-md border px-4 py-3 text-sm italic">
                 {greeting}
               </div>
             )}
 
-            {whatToDo && (
+            {rawWhatToDo && (
               <>
                 <h3 className="text-dark-primary mb-2 font-semibold">What to do</h3>
-                <p className="text-secondary mb-8 text-sm leading-relaxed whitespace-pre-wrap">
-                  {whatToDo}
-                </p>
+
+                <div className="mb-8">
+                  <div
+                    className="text-dark-primary space-y-4 text-base leading-relaxed [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
+                    dangerouslySetInnerHTML={{ __html: rawWhatToDo }}
+                  />
+                </div>
               </>
             )}
 
-            {whyThis && (
+            {rawWhyThis && (
               <>
                 <h3 className="text-dark-primary mb-2 font-semibold">Why this exercise</h3>
-                <p className="text-secondary mb-8 text-sm leading-relaxed whitespace-pre-wrap">
-                  {whyThis}
-                </p>
+
+                <div className="mb-8">
+                  <div
+                    className="text-dark-primary space-y-4 text-base leading-relaxed [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
+                    dangerouslySetInnerHTML={{ __html: rawWhyThis }}
+                  />
+                </div>
               </>
             )}
 
