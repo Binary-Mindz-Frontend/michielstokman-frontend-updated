@@ -21,12 +21,12 @@ import {
   useRepeatJourneyMutation,
 } from '@/redux/features/liberation/liberation.api';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 import Image from 'next/image';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'sonner';
 import * as z from 'zod';
 import { JOURNEY } from './data/Journey.data';
@@ -97,32 +97,45 @@ function StepBar({ current, total }: { current: number; total: number }) {
 }
 
 // ─── Exercise Image Placeholder ───────────────────────────────────────────────
-function ExerciseImage() {
+function ExerciseImage({ imageUrl }: { imageUrl?: string }) {
   return (
     <div className="mb-6 overflow-hidden rounded-lg bg-[#F0EBE0]" style={{ minHeight: 200 }}>
-      <div className="flex h-52 items-center justify-center">
-        <div className="flex flex-col items-center gap-2 text-[#C4855A]/40">
-          <svg width="48" height="48" fill="none" viewBox="0 0 24 24">
-            <rect
-              x="3"
-              y="3"
-              width="18"
-              height="18"
-              rx="2"
-              stroke="currentColor"
-              strokeWidth="1.5"
-            />
-            <circle cx="8.5" cy="8.5" r="1.5" stroke="currentColor" strokeWidth="1.5" />
-            <path
-              d="M21 15l-5-5L5 21"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-          </svg>
-          <span className="text-xs">Exercise illustration</span>
+      {imageUrl ? (
+        <div className="relative h-52 w-full">
+          <Image
+            src={imageUrl}
+            alt="Exercise illustration"
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 768px"
+            unoptimized
+          />
         </div>
-      </div>
+      ) : (
+        <div className="flex h-52 items-center justify-center">
+          <div className="flex flex-col items-center gap-2 text-[#C4855A]/40">
+            <svg width="48" height="48" fill="none" viewBox="0 0 24 24">
+              <rect
+                x="3"
+                y="3"
+                width="18"
+                height="18"
+                rx="2"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              />
+              <circle cx="8.5" cy="8.5" r="1.5" stroke="currentColor" strokeWidth="1.5" />
+              <path
+                d="M21 15l-5-5L5 21"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </svg>
+            <span className="text-xs">Exercise illustration</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -686,7 +699,7 @@ export default function JourneyPage() {
           <StepBar current={currentStep} total={totalSteps} />
 
           <div>
-            <ExerciseImage />
+            <ExerciseImage imageUrl={dayExercisesData?.image_url} />
 
             {title && (
               <h2 className="text-dark-primary mb-3 font-serif text-xl font-bold">{title}</h2>

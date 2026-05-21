@@ -8,15 +8,18 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
   useCreateLiberationMutation,
-  useGetAllLiberationsQuery,
+  useGetSingleLiberationQuery,
   useUpdateLiberationMutation,
+  useUploadDayImageMutation,
 } from '@/redux/features/admin/journeyManagement/journeyManagement.api';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { ArrowLeft } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
+import DayImageUpload from './_components/DayImageUpload/DayImageUpload';
 import DynamicListInput from './_components/DynamicListInput/DynamicListInput';
 import TiptapEditor from './_components/TiptapEditor/TiptapEditor';
 
@@ -35,6 +38,7 @@ const journeySchema = z.object({
         dayTitle: z.string().min(1, 'Day title is required'),
         whatToDo: z.string().min(1, 'What to do is required'),
         whyThisExercise: z.string().min(1, 'Why this exercise is required'),
+        imageUrl: z.string().optional(),
       }),
     )
     .length(7),
@@ -69,17 +73,8 @@ export default function JourneyForm() {
   // Mutation & Query Hooks
   const [createLiberation, { isLoading: isCreating }] = useCreateLiberationMutation();
   const [updateLiberation, { isLoading: isUpdating }] = useUpdateLiberationMutation();
-
-  // Get All Liberations Hook
-  const { data: allLiberations } = useGetAllLiberationsQuery({
-    limit: 50,
-    offset: 0,
-  });
-  const definitions = allLiberations?.data?.definitions || allLiberations?.data || [];
-  // Single liberation data find
-  const singleData = Array.isArray(definitions)
-    ? definitions.find((item: any) => item.id === id)
-    : undefined;
+  const [uploadDayImage] = useUploadDayImageMutation();
+  const { data: singleData } = useGetSingleLiberationQuery(id);
 
   const {
     control,
@@ -94,31 +89,32 @@ export default function JourneyForm() {
       price: '',
       description: '',
       whatToExpect: [],
-      days: Array(7).fill({ dayTitle: '', whatToDo: '', whyThisExercise: '' }),
+      days: Array(7).fill({ dayTitle: '', whatToDo: '', whyThisExercise: '', imageUrl: '' }),
     },
   });
 
   // Use Effect
   useEffect(() => {
-    if (isEditMode && singleData) {
+    if (isEditMode && singleData?.data) {
       reset({
-        title: singleData.title || '',
-        price: String(singleData.price || ''),
-        description: singleData.description || '',
-        whatToExpect: singleData.what_to_expect || [],
+        title: singleData?.data.title || '',
+        price: String(singleData?.data.price || ''),
+        description: singleData?.data.description || '',
+        whatToExpect: singleData?.data.what_to_expect || [],
         days: Array(7)
           .fill(null)
           .map((_, index) => {
-            const backendDay = singleData.days?.find((d: any) => d.day_number === index + 1);
+            const backendDay = singleData?.data.days?.find((d: any) => d.day_number === index + 1);
             return {
               dayTitle: backendDay?.day_theme || '',
               whatToDo: backendDay?.exercise_text || '',
               whyThisExercise: backendDay?.why_text || '',
+              imageUrl: backendDay?.image_url || '',
             };
           }),
       });
     }
-  }, [isEditMode, singleData, reset]);
+  }, [isEditMode, singleData?.data, reset]);
 
   // Submit Handler
   const onSubmit = async (data: JourneyFormValues) => {
@@ -138,6 +134,7 @@ export default function JourneyForm() {
             dayItem.whyThisExercise && dayItem.whyThisExercise !== '<p></p>'
               ? dayItem.whyThisExercise
               : '',
+          image_url: dayItem.imageUrl || '',
         })),
       };
 
@@ -173,129 +170,150 @@ export default function JourneyForm() {
   const isLoading = isCreating || isUpdating;
 
   return (
-    <div className="min-h-screen w-full rounded-md bg-[#FAF7F5] p-4 md:p-6">
-      <DynamicPageHeader title={isEditMode ? 'Journey Details Edit' : 'Journey Details Create'} />
+    <section>
+      <p
+        onClick={() => router.back()}
+        className="mb-4 flex cursor-pointer items-center gap-2 hover:underline"
+      >
+        <ArrowLeft size={18} /> Back to Journey Management
+      </p>
 
-      {/* Tabs Header */}
-      <div className="no-scrollbar border-primary/10 mb-8 flex items-center overflow-x-auto border-b">
-        {tabs.map((tab, i) => (
-          <button
-            key={tab}
-            type="button"
-            onClick={() => setActiveTab(tab)}
-            disabled={i > activeTabIndex && !isEditMode}
-            className={cn(
-              'relative cursor-pointer px-8 py-4 text-sm font-medium whitespace-nowrap transition-all',
-              activeTab === tab ? 'text-primary font-bold' : 'text-[#978279]',
-              i > activeTabIndex && !isEditMode && 'cursor-not-allowed opacity-40',
-            )}
-          >
-            {tab}
-            {activeTab === tab && (
-              <div className="bg-primary absolute bottom-0 left-0 h-0.5 w-full" />
-            )}
-          </button>
-        ))}
-      </div>
+      <div className="min-h-screen w-full rounded-md bg-[#FAF7F5] p-4 md:p-6">
+        <DynamicPageHeader title={isEditMode ? 'Journey Details Edit' : 'Journey Details Create'} />
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* ── Basic Info Tab ── */}
-        {activeTab === 'Basic Info' && (
-          <div className="space-y-6">
-            <InputField
-              label="Title"
-              name="title"
-              control={control}
-              placeholder="Enter Title"
-              required
-              error={errors.title?.message}
-            />
-            <InputField
-              label="Price"
-              name="price"
-              type="number"
-              control={control}
-              placeholder="Enter Price"
-              required
-              error={errors.price?.message}
-            />
-            <TextAreaField
-              label="Description"
-              name="description"
-              control={control}
-              placeholder="Enter Description"
-              error={errors.description?.message}
-            />
-            <Controller
-              name="whatToExpect"
-              control={control}
-              render={({ field }) => (
-                <DynamicListInput
-                  label="What to Expect"
-                  value={field.value ?? []}
-                  onChange={field.onChange}
-                  error={
-                    Array.isArray(errors.whatToExpect)
-                      ? errors.whatToExpect[0]?.message
-                      : (errors.whatToExpect as { message?: string } | undefined)?.message
-                  }
-                />
+        {/* Tabs Header */}
+        <div className="no-scrollbar border-primary/10 mb-8 flex items-center overflow-x-auto border-b">
+          {tabs.map((tab, i) => (
+            <button
+              key={tab}
+              type="button"
+              onClick={() => setActiveTab(tab)}
+              disabled={i > activeTabIndex && !isEditMode}
+              className={cn(
+                'relative cursor-pointer px-8 py-4 text-sm font-medium whitespace-nowrap transition-all',
+                activeTab === tab ? 'text-primary font-bold' : 'text-[#978279]',
+                i > activeTabIndex && !isEditMode && 'cursor-not-allowed opacity-40',
               )}
-            />
-          </div>
-        )}
+            >
+              {tab}
+              {activeTab === tab && (
+                <div className="bg-primary absolute bottom-0 left-0 h-0.5 w-full" />
+              )}
+            </button>
+          ))}
+        </div>
 
-        {/* ── Day Tabs ── */}
-        {tabs.slice(1).map(
-          (tab, index) =>
-            activeTab === tab && (
-              <div key={tab} className="space-y-6">
-                <InputField
-                  label="Title"
-                  name={`days.${index}.dayTitle`}
-                  control={control}
-                  placeholder={`Enter Day ${index + 1} Title`}
-                  required
-                  error={errors.days?.[index]?.dayTitle?.message}
-                />
-                <Controller
-                  name={`days.${index}.whatToDo`}
-                  control={control}
-                  render={({ field }) => (
-                    <TiptapEditor
-                      label="What to Do"
-                      value={field.value}
-                      onChange={field.onChange}
-                      error={errors.days?.[index]?.whatToDo?.message}
-                    />
-                  )}
-                />
-                <Controller
-                  name={`days.${index}.whyThisExercise`}
-                  control={control}
-                  render={({ field }) => (
-                    <TiptapEditor
-                      label="Why This Exercise"
-                      value={field.value}
-                      onChange={field.onChange}
-                      error={errors.days?.[index]?.whyThisExercise?.message}
-                    />
-                  )}
-                />
-              </div>
-            ),
-        )}
-        {/* ── Action Button ── */}
-        {isLastTab ? (
-          <Button type="submit" className="btn-styles" disabled={isLoading}>
-            {isLoading ? 'Submitting...' : isEditMode ? 'Update Journey' : 'Submit Journey'}
-          </Button>
-        ) : (
-          <Button type="button" onClick={handleNext} className="btn-styles">
-            Next
-          </Button>
-        )}
-      </form>
-    </div>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* ── Basic Info Tab ── */}
+          {activeTab === 'Basic Info' && (
+            <div className="space-y-6">
+              <InputField
+                label="Title"
+                name="title"
+                control={control}
+                placeholder="Enter Title"
+                required
+                error={errors.title?.message}
+              />
+              <InputField
+                label="Price"
+                name="price"
+                type="number"
+                control={control}
+                placeholder="Enter Price"
+                required
+                error={errors.price?.message}
+              />
+              <TextAreaField
+                label="Description"
+                name="description"
+                control={control}
+                placeholder="Enter Description"
+                error={errors.description?.message}
+              />
+              <Controller
+                name="whatToExpect"
+                control={control}
+                render={({ field }) => (
+                  <DynamicListInput
+                    label="What to Expect"
+                    value={field.value ?? []}
+                    onChange={field.onChange}
+                    error={
+                      Array.isArray(errors.whatToExpect)
+                        ? errors.whatToExpect[0]?.message
+                        : (errors.whatToExpect as { message?: string } | undefined)?.message
+                    }
+                  />
+                )}
+              />
+            </div>
+          )}
+
+          {/* ── Day Tabs ── */}
+          {tabs.slice(1).map(
+            (tab, index) =>
+              activeTab === tab && (
+                <div key={tab} className="space-y-6">
+                  <InputField
+                    label="Title"
+                    name={`days.${index}.dayTitle`}
+                    control={control}
+                    placeholder={`Enter Day ${index + 1} Title`}
+                    required
+                    error={errors.days?.[index]?.dayTitle?.message}
+                  />
+                  <Controller
+                    name={`days.${index}.whatToDo`}
+                    control={control}
+                    render={({ field }) => (
+                      <TiptapEditor
+                        label="What to Do"
+                        value={field.value}
+                        onChange={field.onChange}
+                        error={errors.days?.[index]?.whatToDo?.message}
+                      />
+                    )}
+                  />
+                  <Controller
+                    name={`days.${index}.whyThisExercise`}
+                    control={control}
+                    render={({ field }) => (
+                      <TiptapEditor
+                        label="Why This Exercise"
+                        value={field.value}
+                        onChange={field.onChange}
+                        error={errors.days?.[index]?.whyThisExercise?.message}
+                      />
+                    )}
+                  />
+
+                  <Controller
+                    name={`days.${index}.imageUrl`}
+                    control={control}
+                    render={({ field }) => (
+                      <DayImageUpload
+                        value={field.value ?? ''}
+                        onChange={field.onChange}
+                        uploadFn={uploadDayImage}
+                      />
+                    )}
+                  />
+                </div>
+              ),
+          )}
+          {/* ── Action Button ── */}
+          {isLastTab ? (
+            <Button type="submit" className="btn-styles" disabled={isLoading}>
+              {isLoading ? 'Submitting...' : isEditMode ? 'Update Journey' : 'Submit Journey'}
+            </Button>
+          ) : (
+            <Button type="button" onClick={handleNext} className="btn-styles">
+              Next
+            </Button>
+          )}
+        </form>
+      </div>
+    </section>
   );
 }

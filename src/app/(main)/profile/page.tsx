@@ -100,7 +100,7 @@ export default function ProfilePage() {
             className="btn-styles border-primary/20 text-dark-primary w-full bg-transparent hover:bg-[#F5F1EA]"
             onClick={handleLogout}
           >
-            Go to Login
+            log out
           </Button>
         </div>
       </div>
