@@ -181,7 +181,7 @@ export default function StoryDetailPage() {
           </div>
 
           <div className="flex flex-col items-center pt-10 pb-20">
-            <Link href={`/details/${feedData?.id}/reflect`}>
+            <Link href={`/details/${storyId}/reflect`}>
               <Button className="btn-styles w-full sm:w-auto">Reflect on this</Button>
             </Link>
           </div>
