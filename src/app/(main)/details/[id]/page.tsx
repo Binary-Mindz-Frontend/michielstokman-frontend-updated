@@ -24,7 +24,9 @@ export default function StoryDetailPage() {
 
   const storyId = params?.id as string;
 
-  const { data: response, isLoading } = useGetStoryDetailsQuery(storyId);
+  const { data: response, isLoading } = useGetStoryDetailsQuery(storyId, {
+    skip: !storyId,
+  });
 
   const feedData = response?.data;
 
@@ -41,7 +43,7 @@ export default function StoryDetailPage() {
     return feedData?.story_text?.split('\n').filter((p: string) => p.trim() !== '') || [];
   }, [feedData?.story_text]);
 
-  if (isLoading) return <StoryDetailSkeleton />;
+  if (!storyId || isLoading) return <StoryDetailSkeleton />;
 
   // Word Counter
   let wordCounter = 0;

@@ -28,7 +28,9 @@ export default function JourneyDetailPage() {
     data: response,
     isLoading: isDetailsLoading,
     isError,
-  } = useGetLiberationDetailsQuery(storyId);
+  } = useGetLiberationDetailsQuery(storyId, {
+    skip: !storyId,
+  });
   const librationData = response?.data;
   const { data: profileResponse } = useGetProfileQuery(undefined);
   const profileData = profileResponse?.data;
@@ -57,9 +59,9 @@ export default function JourneyDetailPage() {
   }, [profileData, user, dispatch]);
 
   // Data find logic
-  console.log('journey', librationData);
+  // console.log('journey', librationData);
 
-  if (isDetailsLoading || (!librationData && !isError)) {
+  if (!storyId || isDetailsLoading || (!librationData && !isError)) {
     return <JourneyDetailSkeleton />;
   }
 
