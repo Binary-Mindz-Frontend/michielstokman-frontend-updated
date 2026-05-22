@@ -4,7 +4,7 @@
 
 import InputField from '@/components/dashboard/Fields/InputField/InputField';
 import { Button } from '@/components/ui/button';
-import { useLoginUserMutation } from '@/redux/features/auth/auth.api';
+import { useLoginUserMutation, useGuestLoginMutation } from '@/redux/features/auth/auth.api';
 import { setAuth } from '@/redux/features/auth/authSlice';
 import { useAppDispatch } from '@/redux/hooks';
 import { setUserProfile } from '@/services/auth/auth.service';
@@ -31,6 +31,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   // Hooks
   const [loginUser, { isLoading }] = useLoginUserMutation();
+  const [guestLogin, { isLoading: isGuestLoading }] = useGuestLoginMutation();
   const dispatch = useAppDispatch();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -77,6 +78,30 @@ export default function LoginPage() {
         }, 1000);
       },
     );
+  };
+
+  // Guest Login
+  const handleGuestLogin = async () => {
+    await catchAsyncMutation(guestLogin({}).unwrap(), async (res) => {
+      const guestUser: TLoginUser = {
+        id: res?.data?.guest_id,
+        user_id: res?.data?.guest_id,
+        email: '', // No email for guest
+        is_admin: false,
+        is_guest: true,
+      };
+
+      dispatch(setAuth({ user: guestUser }));
+      await setUserProfile(guestUser, res?.data?.access_token);
+
+      // Clear any old guest reading history so the new guest can freely choose their first story
+      localStorage.removeItem('guest_reads');
+
+      toast.success(res?.message || 'Guest session created');
+      setTimeout(() => {
+        router.push('/');
+      }, 1000);
+    });
   };
 
   return (
@@ -171,7 +196,18 @@ export default function LoginPage() {
               Sign up
             </Link>
           </p>
-          <p className="text-dark-primary text-sm">Continue as guest — 1 item every other day</p>
+          <Button
+            type="button"
+            onClick={handleGuestLogin}
+            disabled={isGuestLoading}
+            className={`btn-styles border-primary/20 flex w-full items-center justify-center gap-3 border bg-transparent ${
+              isGuestLoading ? 'cursor-not-allowed opacity-70' : 'hover:bg-[#F5F1EA]'
+            }`}
+          >
+            <span className="text-dark-primary text-sm">
+              Continue as guest — 1 item every other day
+            </span>
+          </Button>
         </motion.div>
       </motion.div>
     </motion.div>

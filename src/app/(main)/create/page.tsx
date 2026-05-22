@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import UnifiedStoryFormSkeleton from '@/components/main/Skeletons/UnifiedStoryFormSkeleton';
 import { useCurrentUser } from '@/redux/features/auth/authSlice';
@@ -16,9 +17,9 @@ export default function CreateFormPage() {
   const searchParams = useSearchParams();
   const selectedCategory = searchParams.get('type') || 'Confessions';
 
-  const user = useAppSelector(useCurrentUser);
+  const user = useAppSelector(useCurrentUser) as any;
 
-  const isAuthModalOpen = !user;
+  const isAuthModalOpen = !user || user?.is_guest;
 
   return (
     <section className="mx-auto max-w-3xl px-4 py-12">
@@ -34,7 +35,7 @@ export default function CreateFormPage() {
             <CreateFormCategoryTabs selected={selectedCategory} />
           </motion.div>
 
-          {user ? (
+          {!isAuthModalOpen ? (
             <UnifiedStoryForm category={selectedCategory} />
           ) : (
             <div className="pointer-events-none opacity-40 blur-[2px] select-none">

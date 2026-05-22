@@ -1,16 +1,19 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import cardImage6 from '@/assets/home/card6.png';
 import NoDataFound from '@/components/main/NoDataFound/NoDataFound';
 import CardGridSkeleton from '@/components/main/Skeletons/CardGridSkeleton';
 import { Button } from '@/components/ui/button';
-import { useIsAuthenticated } from '@/redux/features/auth/authSlice';
+import { useIsAuthenticated, useCurrentUser } from '@/redux/features/auth/authSlice';
 import { useGetDiscoveryFeedQuery } from '@/redux/features/discoveryFeed/discoveryFeed.api';
 import { useAppSelector } from '@/redux/hooks';
 import { TDiscoveryItemType } from '@/types/discoveryFeed.types';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+import LoginRequiredModal from '@/app/(main)/create/CreateForm/_components/LoginRequiredModal/LoginRequiredModal';
 
 const getValidImageUrl = (url?: string | null) => {
   if (!url) return cardImage6;
@@ -27,6 +30,8 @@ const CardGrid = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const isAuthenticated = useAppSelector(useIsAuthenticated);
+  const user = useAppSelector(useCurrentUser) as any;
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const activeFilters = searchParams.getAll('story_type');
 
   const { data, isLoading, isFetching } = useGetDiscoveryFeedQuery(activeFilters);
@@ -44,6 +49,7 @@ const CardGrid = () => {
 
   return (
     <div>
+      <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
       {/* Feed Data Check */}
       {sortedFeedData.length === 0 && !isLoading ? (
         <NoDataFound
@@ -78,6 +84,50 @@ const CardGrid = () => {
                   if (!isAuthenticated) {
                     e.preventDefault();
                     router.push(`/login?redirect=${encodeURIComponent(detailPath)}`);
+                    return;
+                  }
+
+                  if (user?.is_guest) {
+                    if (isJourney) {
+                      e.preventDefault();
+                      setShowLoginModal(true);
+                      return;
+                    } else {
+                      const guestReadsStr = localStorage.getItem('guest_reads') || '{}';
+                      let guestReads;
+                      try {
+                        guestReads = JSON.parse(guestReadsStr);
+                      } catch {
+                        guestReads = {};
+                      }
+
+                      const now = new Date().getTime();
+                      const twentyFourHours = 24 * 60 * 60 * 1000;
+
+                      if (guestReads.timestamp && guestReads.storyId) {
+                        const timePassed = now - guestReads.timestamp;
+                        if (timePassed < twentyFourHours) {
+                          if (guestReads.storyId !== card?.id) {
+                            // Block: different story within 24 hours
+                            e.preventDefault();
+                            setShowLoginModal(true);
+                            return;
+                          } else {
+                            // Allow: same story within 24 hours. Do not reset the timer.
+                            return;
+                          }
+                        }
+                      }
+
+                      // If no previous read, or 24 hours have passed: lock in the new story!
+                      localStorage.setItem(
+                        'guest_reads',
+                        JSON.stringify({
+                          timestamp: now,
+                          storyId: card?.id,
+                        }),
+                      );
+                    }
                   }
                 }}
                 className="group relative flex cursor-pointer flex-col overflow-hidden rounded-md transition-all duration-500 hover:-translate-y-2"

@@ -72,6 +72,7 @@ export default function ResonanceReflection() {
   const router = useRouter();
   const storyId = params?.id as string;
 
+  // All hooks must be called unconditionally (Rules of Hooks)
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [feedbackTag, setFeedbackTag] = useState<string>('');
   const [starRating, setStarRating] = useState<number>(5);
@@ -97,6 +98,9 @@ export default function ResonanceReflection() {
   });
 
   const resonanceScore = watch('resonanceScore');
+
+  // Guard: after all hooks, wait for route params to resolve
+  if (!storyId) return null;
 
   const toggleTag = (tag: string) => {
     const updated = selectedTags.includes(tag)

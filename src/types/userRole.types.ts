@@ -5,8 +5,9 @@ export type TAccountStatus = 'ACTIVE' | 'PENDING' | 'INACTIVE';
 export type TLoginUser = {
   id?: string;
   user_id?: string;
-  email: string;
-  is_admin: boolean;
+  email?: string;
+  is_admin?: boolean;
+  is_guest?: boolean;
 };
 
 export interface IUser {
