@@ -29,6 +29,7 @@ export default function ProfilePage() {
   const user = useAppSelector(useCurrentUser) as any;
   const isGuest = user?.is_guest;
 
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [growthFocusValues, setGrowthFocusValues] = useState<Record<string, number>>({
     'Desire & Relationship': 0,
     'Life & Purpose': 0,
@@ -57,7 +58,7 @@ export default function ProfilePage() {
 
   // Handle unauthorized or failed session states dynamically
   useEffect(() => {
-    if (isError && error && typeof error === 'object' && !isGuest) {
+    if (isError && error && typeof error === 'object' && !isGuest && !isLoggingOut) {
       const err = error as { status?: number; data?: unknown };
       if (err.status === 401) {
         toast.error('Session expired or unauthorized. Please log in again.');
@@ -65,7 +66,7 @@ export default function ProfilePage() {
         router.push('/login?redirect=%2Fprofile');
       }
     }
-  }, [isError, error, router, logout, isGuest]);
+  }, [isError, error, router, logout, isGuest, isLoggingOut]);
 
   useEffect(() => {
     if (profileData) {
@@ -88,7 +89,7 @@ export default function ProfilePage() {
     router.push('/');
   };
 
-  if (isGuest) {
+  if (isGuest || isLoggingOut) {
     return (
       <div className="mx-auto max-w-md space-y-6 px-4 py-20 text-center">
         <h2 className="text-primary font-serif text-2xl font-semibold">Guest Session</h2>
@@ -98,17 +99,20 @@ export default function ProfilePage() {
         <div className="space-y-3">
           <Button
             className="btn-styles w-full"
+            disabled={isLoggingOut}
             onClick={async () => {
+              setIsLoggingOut(true);
               dispatch(authLogout());
               dispatch(apiClient.util.resetApiState());
               await logoutUser();
               window.location.href = '/login';
             }}
           >
-            Log In Now
+            {isLoggingOut ? 'Log In Now' : 'Log In Now'}
           </Button>
           <Button
             variant="outline"
+            disabled={isLoggingOut}
             className="btn-styles border-primary/20 text-dark-primary w-full bg-transparent hover:bg-[#F5F1EA]"
             onClick={() => router.push('/')}
           >
