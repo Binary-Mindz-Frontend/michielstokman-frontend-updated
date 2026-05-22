@@ -13,7 +13,8 @@ const SHARE_OPTIONS = [
 
 export default function ShareSection() {
   const handleShare = (platform: string) => {
-    const currentUrl = window.location.href;
+    // Strip /reflect so shared links always point to the story detail page
+    const currentUrl = window.location.href.replace('/reflect', '');
     const shareText = 'Check out this inspiring story!';
 
     switch (platform) {
