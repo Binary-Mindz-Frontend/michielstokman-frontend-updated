@@ -28,7 +28,9 @@ export default function JourneyDetailPage() {
     data: response,
     isLoading: isDetailsLoading,
     isError,
-  } = useGetLiberationDetailsQuery(storyId);
+  } = useGetLiberationDetailsQuery(storyId, {
+    skip: !storyId,
+  });
   const librationData = response?.data;
   const { data: profileResponse } = useGetProfileQuery(undefined);
   const profileData = profileResponse?.data;
@@ -57,9 +59,9 @@ export default function JourneyDetailPage() {
   }, [profileData, user, dispatch]);
 
   // Data find logic
-  console.log('journey', librationData);
+  // console.log('journey', librationData);
 
-  if (isDetailsLoading || (!librationData && !isError)) {
+  if (!storyId || isDetailsLoading || (!librationData && !isError)) {
     return <JourneyDetailSkeleton />;
   }
 
@@ -69,8 +71,15 @@ export default function JourneyDetailPage() {
       return;
     }
 
-    if (!user) {
-      toast.error('Please login to start checkout');
+    if (!user || user?.is_guest) {
+      toast.error(
+        user?.is_guest
+          ? 'Please register an account to unlock purchases'
+          : 'Please login to start checkout',
+      );
+      if (user?.is_guest) {
+        setTimeout(() => router.push('/register'), 2000);
+      }
       return;
     }
 
