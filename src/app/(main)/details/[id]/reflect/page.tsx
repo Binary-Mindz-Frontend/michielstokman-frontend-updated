@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react-hooks/incompatible-library */
 'use client';
 
@@ -16,6 +17,9 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import ShareSection from './_components/ShareSection/ShareSection';
+import LoginRequiredModal from '@/app/(main)/create/CreateForm/_components/LoginRequiredModal/LoginRequiredModal';
+import { useIsAuthenticated, useCurrentUser } from '@/redux/features/auth/authSlice';
+import { useAppSelector } from '@/redux/hooks';
 
 // Zod Schema
 const resonanceSchema = z.object({
@@ -77,6 +81,9 @@ export default function ResonanceReflection() {
   const [feedbackTag, setFeedbackTag] = useState<string>('');
   const [starRating, setStarRating] = useState<number>(5);
   const [hoverRating, setHoverRating] = useState<number>(0);
+  const isAuthenticated = useAppSelector(useIsAuthenticated);
+  const user = useAppSelector(useCurrentUser) as any;
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const [submitFeedback, { isLoading }] = useSubmitStoryFeedbackMutation();
 
@@ -124,6 +131,10 @@ export default function ResonanceReflection() {
   };
 
   const onSubmit = async (data: ResonanceFormData) => {
+    if (!isAuthenticated || user?.is_guest) {
+      setShowLoginModal(true);
+      return;
+    }
     try {
       const payload = {
         storyId,
@@ -142,7 +153,6 @@ export default function ResonanceReflection() {
         toast.success(response.message || 'Feedback submitted successfully!');
         router.push(`/details/${storyId}`);
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(error?.data?.message || 'Something went wrong. Please try again.');
     }
@@ -159,6 +169,13 @@ export default function ResonanceReflection() {
       variants={FADE_IN_UP_CONTAINER}
       className="mx-auto max-w-3xl px-4 py-12"
     >
+      <LoginRequiredModal
+        isOpen={showLoginModal}
+        onClose={() => {
+          setShowLoginModal(false);
+          router.push('/');
+        }}
+      />
       <motion.div variants={FADE_IN_UP_ITEM}>
         <DynamicSectionHeader
           title="Resonance Reflection"
