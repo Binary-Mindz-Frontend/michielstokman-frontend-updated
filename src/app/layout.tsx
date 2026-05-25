@@ -2,7 +2,7 @@ import Providers from '@/providers/Providers';
 import type { Metadata } from 'next';
 import { Toaster } from 'sonner';
 import './globals.css';
-import './tw-animate.css';
+// import './tw-animate.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://transformtoliberation.com'),
