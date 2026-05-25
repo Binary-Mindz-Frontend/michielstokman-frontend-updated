@@ -37,6 +37,15 @@ const authManagementApi = apiClient.injectEndpoints({
       },
       invalidatesTags: ['PROFILE', 'Discovery_Feed', 'Liberations'],
     }),
+    guestLogin: builder.mutation({
+      query: () => {
+        return {
+          url: '/guest-login',
+          method: 'POST',
+        };
+      },
+      invalidatesTags: ['PROFILE', 'Discovery_Feed', 'Liberations'],
+    }),
     updateUserProfile: builder.mutation({
       query: (data) => {
         const result = {
@@ -67,4 +76,5 @@ export const {
   useUpdateUserProfileMutation,
   useGetUserProfileQuery,
   useSocialLoginMutation,
+  useGuestLoginMutation,
 } = authManagementApi;

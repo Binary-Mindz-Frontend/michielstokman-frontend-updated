@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import DynamicSectionHeader from '@/components/main/DynamicSectionHeader/DynamicSectionHeader';
@@ -7,6 +8,10 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useLogout } from '@/hooks/useLogout';
 import { useGetProfileQuery } from '@/redux/features/userProfile/userProfile.api';
+import { useCurrentUser, logout as authLogout } from '@/redux/features/auth/authSlice';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { logoutUser } from '@/services/auth/auth.service';
+import { apiClient } from '@/redux/apiClient/apiClient';
 import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -16,10 +21,15 @@ import { toast } from 'sonner';
 export default function ProfilePage() {
   const router = useRouter();
   const logout = useLogout();
+  const dispatch = useAppDispatch();
 
   const { data, isLoading, isError, error } = useGetProfileQuery(undefined);
   const profileData = data?.data;
 
+  const user = useAppSelector(useCurrentUser) as any;
+  const isGuest = user?.is_guest;
+
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [growthFocusValues, setGrowthFocusValues] = useState<Record<string, number>>({
     'Desire & Relationship': 0,
     'Life & Purpose': 0,
@@ -48,7 +58,7 @@ export default function ProfilePage() {
 
   // Handle unauthorized or failed session states dynamically
   useEffect(() => {
-    if (isError && error && typeof error === 'object') {
+    if (isError && error && typeof error === 'object' && !isGuest && !isLoggingOut) {
       const err = error as { status?: number; data?: unknown };
       if (err.status === 401) {
         toast.error('Session expired or unauthorized. Please log in again.');
@@ -56,7 +66,7 @@ export default function ProfilePage() {
         router.push('/login?redirect=%2Fprofile');
       }
     }
-  }, [isError, error, router, logout]);
+  }, [isError, error, router, logout, isGuest, isLoggingOut]);
 
   useEffect(() => {
     if (profileData) {
@@ -79,6 +89,40 @@ export default function ProfilePage() {
     router.push('/');
   };
 
+  if (isGuest || isLoggingOut) {
+    return (
+      <div className="mx-auto max-w-md space-y-6 px-4 py-20 text-center">
+        <h2 className="text-primary font-serif text-2xl font-semibold">Guest Session</h2>
+        <p className="text-secondary text-sm">
+          You are using as a guest user. Please log in to access your profile.
+        </p>
+        <div className="space-y-3">
+          <Button
+            className="btn-styles w-full"
+            disabled={isLoggingOut}
+            onClick={async () => {
+              setIsLoggingOut(true);
+              dispatch(authLogout());
+              dispatch(apiClient.util.resetApiState());
+              await logoutUser();
+              window.location.href = '/login';
+            }}
+          >
+            {isLoggingOut ? 'Log In Now' : 'Log In Now'}
+          </Button>
+          <Button
+            variant="outline"
+            disabled={isLoggingOut}
+            className="btn-styles border-primary/20 text-dark-primary w-full bg-transparent hover:bg-[#F5F1EA]"
+            onClick={() => router.push('/')}
+          >
+            Go to Homepage
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   if (isLoading && !loadingTimeout) return <ProfileSkeleton />;
 
   // Display proper fallback screen when loading fails, times out, or when unauthorized
@@ -100,7 +144,7 @@ export default function ProfilePage() {
             className="btn-styles border-primary/20 text-dark-primary w-full bg-transparent hover:bg-[#F5F1EA]"
             onClick={handleLogout}
           >
-            Go to Login
+            log out
           </Button>
         </div>
       </div>

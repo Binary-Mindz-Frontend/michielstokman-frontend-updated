@@ -2,7 +2,6 @@
 
 import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
 import { motion } from 'framer-motion';
-import { Play } from 'lucide-react';
 import Link from 'next/link';
 
 function WhyTransformToLiberationPage() {
@@ -41,7 +40,7 @@ function WhyTransformToLiberationPage() {
         </motion.div>
 
         {/* --- Interactive Play Button --- */}
-        <motion.div variants={FADE_IN_UP_ITEM}>
+        {/* <motion.div variants={FADE_IN_UP_ITEM}>
           <button
             onClick={() => console.log('Play Video')}
             className="bg-primary flex cursor-pointer items-center gap-2 rounded-full px-8 py-3.5 text-sm font-medium text-white shadow-md transition-all duration-300 hover:bg-[#A65D3D] hover:shadow-lg active:scale-95"
@@ -49,7 +48,7 @@ function WhyTransformToLiberationPage() {
             <Play size={14} fill="white" strokeWidth={0} />
             <span>Why I started Transform to Liberation</span>
           </button>
-        </motion.div>
+        </motion.div> */}
 
         {/* --- Section 2: The Cost of Adaptation --- */}
         <motion.div variants={FADE_IN_UP_ITEM} className="space-y-4">

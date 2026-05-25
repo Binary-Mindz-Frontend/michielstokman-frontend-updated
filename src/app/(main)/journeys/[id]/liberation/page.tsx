@@ -21,12 +21,12 @@ import {
   useRepeatJourneyMutation,
 } from '@/redux/features/liberation/liberation.api';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 import Image from 'next/image';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'sonner';
 import * as z from 'zod';
 import { JOURNEY } from './data/Journey.data';
@@ -97,32 +97,45 @@ function StepBar({ current, total }: { current: number; total: number }) {
 }
 
 // ─── Exercise Image Placeholder ───────────────────────────────────────────────
-function ExerciseImage() {
+function ExerciseImage({ imageUrl }: { imageUrl?: string }) {
   return (
     <div className="mb-6 overflow-hidden rounded-lg bg-[#F0EBE0]" style={{ minHeight: 200 }}>
-      <div className="flex h-52 items-center justify-center">
-        <div className="flex flex-col items-center gap-2 text-[#C4855A]/40">
-          <svg width="48" height="48" fill="none" viewBox="0 0 24 24">
-            <rect
-              x="3"
-              y="3"
-              width="18"
-              height="18"
-              rx="2"
-              stroke="currentColor"
-              strokeWidth="1.5"
-            />
-            <circle cx="8.5" cy="8.5" r="1.5" stroke="currentColor" strokeWidth="1.5" />
-            <path
-              d="M21 15l-5-5L5 21"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-          </svg>
-          <span className="text-xs">Exercise illustration</span>
+      {imageUrl ? (
+        <div className="relative h-52 w-full">
+          <Image
+            src={imageUrl}
+            alt="Exercise illustration"
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 768px"
+            unoptimized
+          />
         </div>
-      </div>
+      ) : (
+        <div className="flex h-52 items-center justify-center">
+          <div className="flex flex-col items-center gap-2 text-[#C4855A]/40">
+            <svg width="48" height="48" fill="none" viewBox="0 0 24 24">
+              <rect
+                x="3"
+                y="3"
+                width="18"
+                height="18"
+                rx="2"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              />
+              <circle cx="8.5" cy="8.5" r="1.5" stroke="currentColor" strokeWidth="1.5" />
+              <path
+                d="M21 15l-5-5L5 21"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </svg>
+            <span className="text-xs">Exercise illustration</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -648,25 +661,13 @@ export default function JourneyPage() {
       );
     }
 
-    // ─────────────────────────────────────────────────────────────────────────────
     // SCREEN: EXERCISE
-    // ─────────────────────────────────────────────────────────────────────────────
     if (activePhase === 'exercise') {
       const title = dayExercisesData?.day_theme || currentDay?.title;
       const greeting = dayExercisesData?.ai_greeting || currentDay?.exercises?.[0]?.quote;
       const rawWhatToDo =
         dayExercisesData?.ai_exercise_text || currentDay?.exercises?.[0]?.whatToDo;
       const rawWhyThis = dayExercisesData?.ai_why_text || currentDay?.exercises?.[0]?.whyThis;
-
-      const formatLiberationText = (text: string | undefined): string => {
-        if (!text) return '';
-        let formatted = text.replace(/\\n/g, '\n');
-        formatted = formatted.replace(/(\d+)\.([^\s\d])/g, '$1. $2');
-        return formatted;
-      };
-
-      const whatToDo = formatLiberationText(rawWhatToDo);
-      const whyThis = formatLiberationText(rawWhyThis);
 
       return (
         <motion.section
@@ -686,33 +687,41 @@ export default function JourneyPage() {
           <StepBar current={currentStep} total={totalSteps} />
 
           <div>
-            <ExerciseImage />
+            <ExerciseImage imageUrl={dayExercisesData?.image_url} />
 
             {title && (
               <h2 className="text-dark-primary mb-3 font-serif text-xl font-bold">{title}</h2>
             )}
 
             {greeting && (
-              <div className="border-primary/10 bg-primary/5 mb-5 rounded-md border px-4 py-3 text-sm text-[#7A6155] italic">
+              <div className="border-primary/10 bg-primary/5 text-primary mb-5 rounded-md border px-4 py-3 text-sm italic">
                 {greeting}
               </div>
             )}
 
-            {whatToDo && (
+            {rawWhatToDo && (
               <>
                 <h3 className="text-dark-primary mb-2 font-semibold">What to do</h3>
-                <p className="text-secondary mb-8 text-sm leading-relaxed whitespace-pre-wrap">
-                  {whatToDo}
-                </p>
+
+                <div className="mb-8">
+                  <div
+                    className="text-dark-primary space-y-4 text-base leading-relaxed [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
+                    dangerouslySetInnerHTML={{ __html: rawWhatToDo }}
+                  />
+                </div>
               </>
             )}
 
-            {whyThis && (
+            {rawWhyThis && (
               <>
                 <h3 className="text-dark-primary mb-2 font-semibold">Why this exercise</h3>
-                <p className="text-secondary mb-8 text-sm leading-relaxed whitespace-pre-wrap">
-                  {whyThis}
-                </p>
+
+                <div className="mb-8">
+                  <div
+                    className="text-dark-primary space-y-4 text-base leading-relaxed [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
+                    dangerouslySetInnerHTML={{ __html: rawWhyThis }}
+                  />
+                </div>
               </>
             )}
 
