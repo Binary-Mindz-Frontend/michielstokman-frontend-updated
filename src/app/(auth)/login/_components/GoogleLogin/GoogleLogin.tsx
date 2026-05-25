@@ -26,7 +26,7 @@ export default function GoogleSignInButton() {
       googleProvider.setCustomParameters({ prompt: 'select_account' });
       const result = await signInWithPopup(auth, googleProvider);
       const token = await result.user.getIdToken();
-      return socialLogin({ provider: 'firebase', token }).unwrap();
+      return socialLogin({ provider: 'google', token }).unwrap();
     };
 
     await catchAsyncMutation(

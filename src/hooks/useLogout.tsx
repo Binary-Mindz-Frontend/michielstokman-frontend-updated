@@ -18,7 +18,7 @@ export const useLogout = () => {
     dispatch(apiClient.util.resetApiState());
 
     await logoutUser();
-    if (protectedRoutes.some((route) => pathname.match(route))) {
+    if (protectedRoutes.some((route) => pathname.startsWith(route))) {
       router.push('/');
     }
   };
