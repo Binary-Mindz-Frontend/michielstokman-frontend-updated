@@ -73,7 +73,7 @@ export default function StoryDetailPage() {
         <div className="relative z-20 container mx-auto pt-10">
           <Link
             href="/"
-            className="text-primary inline-flex items-center gap-1 text-base font-medium hover:underline"
+            className="text-dark-primary inline-flex items-center gap-1 text-base font-medium hover:underline"
           >
             <ArrowLeft size={16} strokeWidth={1.5} /> Back
           </Link>
