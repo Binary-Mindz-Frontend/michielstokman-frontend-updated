@@ -136,7 +136,7 @@ export default function JourneyDetailPage() {
         <div className="relative z-20 container mx-auto pt-12">
           <Link
             href="/"
-            className="text-primary inline-flex items-center text-sm font-medium hover:underline"
+            className="text-dark-primary inline-flex items-center text-sm font-medium hover:underline"
           >
             ← Back
           </Link>
