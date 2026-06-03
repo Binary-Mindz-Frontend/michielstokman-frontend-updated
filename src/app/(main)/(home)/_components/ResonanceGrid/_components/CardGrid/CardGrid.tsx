@@ -152,7 +152,7 @@ const CardGrid = () => {
                     )}
 
                     <div className="bg-bg-primary text-primary rounded px-3 py-1 text-xs font-medium">
-                      Rating {card?.rating ? (card.rating / 10).toFixed(1) : '0.0'}
+                      Rating {card?.rating || 0}
                     </div>
                   </div>
 
