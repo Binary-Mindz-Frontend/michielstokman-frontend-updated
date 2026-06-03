@@ -84,6 +84,13 @@ const CardGrid = () => {
                 href={detailPath}
                 key={`${card?.id || 'card'}-${index}`}
                 onClick={(e) => {
+                  // TODO: Remove this block and restore liberation card navigation once the feature is live.
+                  if (isJourney) {
+                    e.preventDefault();
+                    setShowDevModal(true);
+                    return;
+                  }
+
                   if (!isAuthenticated) {
                     e.preventDefault();
                     router.push(`/login?redirect=${encodeURIComponent(detailPath)}`);
@@ -91,46 +98,47 @@ const CardGrid = () => {
                   }
 
                   if (user?.is_guest) {
+                    /* TODO: Restore this block once liberation feature is live.
                     if (isJourney) {
                       e.preventDefault();
                       setShowLoginModal(true);
                       return;
-                    } else {
-                      const guestReadsStr = localStorage.getItem('guest_reads') || '{}';
-                      let guestReads;
-                      try {
-                        guestReads = JSON.parse(guestReadsStr);
-                      } catch {
-                        guestReads = {};
-                      }
+                    } else { */
+                    const guestReadsStr = localStorage.getItem('guest_reads') || '{}';
+                    let guestReads;
+                    try {
+                      guestReads = JSON.parse(guestReadsStr);
+                    } catch {
+                      guestReads = {};
+                    }
 
-                      const now = new Date().getTime();
-                      const twentyFourHours = 24 * 60 * 60 * 1000;
+                    const now = new Date().getTime();
+                    const twentyFourHours = 24 * 60 * 60 * 1000;
 
-                      if (guestReads.timestamp && guestReads.storyId) {
-                        const timePassed = now - guestReads.timestamp;
-                        if (timePassed < twentyFourHours) {
-                          if (guestReads.storyId !== card?.id) {
-                            // Block: different story within 24 hours
-                            e.preventDefault();
-                            setShowLoginModal(true);
-                            return;
-                          } else {
-                            // Allow: same story within 24 hours. Do not reset the timer.
-                            return;
-                          }
+                    if (guestReads.timestamp && guestReads.storyId) {
+                      const timePassed = now - guestReads.timestamp;
+                      if (timePassed < twentyFourHours) {
+                        if (guestReads.storyId !== card?.id) {
+                          // Block: different story within 24 hours
+                          e.preventDefault();
+                          setShowLoginModal(true);
+                          return;
+                        } else {
+                          // Allow: same story within 24 hours. Do not reset the timer.
+                          return;
                         }
                       }
-
-                      // If no previous read, or 24 hours have passed: lock in the new story!
-                      localStorage.setItem(
-                        'guest_reads',
-                        JSON.stringify({
-                          timestamp: now,
-                          storyId: card?.id,
-                        }),
-                      );
                     }
+
+                    // If no previous read, or 24 hours have passed: lock in the new story!
+                    localStorage.setItem(
+                      'guest_reads',
+                      JSON.stringify({
+                        timestamp: now,
+                        storyId: card?.id,
+                      }),
+                    );
+                    /* } */
                   }
                 }}
                 className="group relative flex cursor-pointer flex-col overflow-hidden rounded-md transition-all duration-500 hover:-translate-y-2"
