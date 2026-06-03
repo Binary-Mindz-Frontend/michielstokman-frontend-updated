@@ -14,6 +14,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import LoginRequiredModal from '@/app/(main)/create/CreateForm/_components/LoginRequiredModal/LoginRequiredModal';
+import FeatureUnderDevelopmentModal from '../FeatureUnderDevelopmentModal/FeatureUnderDevelopmentModal';
 
 const getValidImageUrl = (url?: string | null) => {
   if (!url) return cardImage6;
@@ -32,6 +33,8 @@ const CardGrid = () => {
   const isAuthenticated = useAppSelector(useIsAuthenticated);
   const user = useAppSelector(useCurrentUser) as any;
   const [showLoginModal, setShowLoginModal] = useState(false);
+  // TODO: Remove this state once the Liberation purchase feature is live.
+  const [showDevModal, setShowDevModal] = useState(false);
   const activeFilters = searchParams.getAll('story_type');
 
   const { data, isLoading, isFetching } = useGetDiscoveryFeedQuery(activeFilters);
@@ -191,11 +194,26 @@ const CardGrid = () => {
                             €{card?.price_display || '0.00'}
                           </p>
 
-                          <Button className="btn-styles">
+                          {/* <Button className="btn-styles">
                             {card?.has_access
                               ? 'Continue Your Liberation'
                               : 'Begin Your Liberation'}
-                          </Button>
+                          </Button> */}
+                          {/* TODO: Remove the block below and restore the button above once the feature is live. */}
+                          {card?.has_access ? (
+                            <Button className="btn-styles">Continue Your Liberation</Button>
+                          ) : (
+                            <Button
+                              className="btn-styles"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setShowDevModal(true);
+                              }}
+                            >
+                              Begin Your Liberation
+                            </Button>
+                          )}
                         </div>
                       ) : (
                         <div className="text-xs font-light text-white/60">
@@ -210,6 +228,8 @@ const CardGrid = () => {
           })}
         </div>
       )}
+      {/* ── Feature Under Development Modal (temporary) ── */}
+      <FeatureUnderDevelopmentModal isOpen={showDevModal} onClose={() => setShowDevModal(false)} />
     </div>
   );
 };
