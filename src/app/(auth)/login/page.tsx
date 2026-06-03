@@ -4,7 +4,7 @@
 
 import InputField from '@/components/dashboard/Fields/InputField/InputField';
 import { Button } from '@/components/ui/button';
-import { useLoginUserMutation, useGuestLoginMutation } from '@/redux/features/auth/auth.api';
+import { useGuestLoginMutation, useLoginUserMutation } from '@/redux/features/auth/auth.api';
 import { setAuth } from '@/redux/features/auth/authSlice';
 import { useAppDispatch } from '@/redux/hooks';
 import { setUserProfile } from '@/services/auth/auth.service';
@@ -61,7 +61,7 @@ export default function LoginPage() {
           email: res?.data?.user?.email,
           is_admin: res?.data?.user?.is_admin || false,
         };
-        const defaultRedirect = res?.data?.user?.is_admin ? '/dashboard/overview' : '/profile';
+        const defaultRedirect = res?.data?.user?.is_admin ? '/dashboard/overview' : '/';
         const redirectUrl = searchParams.get('redirect');
         const redirectPath = redirectUrl ? decodeURIComponent(redirectUrl) : defaultRedirect;
 
