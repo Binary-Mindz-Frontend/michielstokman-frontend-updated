@@ -77,10 +77,16 @@ export const setAccessToken = async (accessToken: string) => {
   cookieStore.set('accessToken', accessToken);
 };
 export const setUserProfile = async (user: TLoginUser, token: string) => {
-  const cookieStore = await cookies();
-  cookieStore.set('accessToken', token);
-  cookieStore.set('user', JSON.stringify(user));
+  // const cookieStore = await cookies();
+  // cookieStore.set('accessToken', token);
+  // cookieStore.set('user', JSON.stringify(user));
   // cookieStore.set("refreshToken", tokens?.refreshToken);
+
+  const cookieStore = await cookies();
+  const EIGHT_DAYS_IN_SECONDS = 15 * 24 * 60 * 60;
+
+  cookieStore.set('accessToken', token, { maxAge: EIGHT_DAYS_IN_SECONDS });
+  cookieStore.set('user', JSON.stringify(user), { maxAge: EIGHT_DAYS_IN_SECONDS });
 };
 export const updateUserProfile = async (user: TLoginUser) => {
   const cookieStore = await cookies();
