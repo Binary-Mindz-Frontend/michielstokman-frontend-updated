@@ -36,7 +36,7 @@ const LIFE_PHASES = ['Discovering', 'Building', 'Recalibrating', 'Deepening', 'P
 const schema = z.object({
   title: z.string().min(1, 'Title is required'),
   firstName: z.string().min(1, 'First name is required'),
-  content: z.string().min(1, 'Content is required').max(5000, 'Max 5000 characters'),
+  content: z.string().min(1, 'Content is required').max(8000, 'Max 8000 characters'),
   growthAreas: z.array(z.string()).min(1, 'Select at least one growth area'),
   lifePhase: z.string().min(1, 'Select a life phase'),
   tags: z.string().optional(),
@@ -145,10 +145,10 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
             <div
               className={cn(
                 'mt-1 text-right text-xs',
-                contentValue.length > 5000 ? 'text-error font-bold' : 'text-secondary',
+                contentValue.length > 8000 ? 'text-error font-bold' : 'text-secondary',
               )}
             >
-              {contentValue.length}/5000
+              {contentValue.length}/8000
             </div>
           </div>
         </motion.div>
