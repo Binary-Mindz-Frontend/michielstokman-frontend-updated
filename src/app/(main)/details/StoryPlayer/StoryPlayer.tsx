@@ -1,15 +1,26 @@
 'use client';
 
-import { Pause, Play } from 'lucide-react';
+import { Pause, Play, SkipBack, SkipForward } from 'lucide-react';
 import { useRef, useState } from 'react';
 
 interface IStoryPlayerProps {
   story: string;
   // eslint-disable-next-line no-unused-vars
   onTimeUpdateCallback: (current: number, duration: number) => void;
+  onPrev?: () => void;
+  onNext?: () => void;
+  hasPrev?: boolean;
+  hasNext?: boolean;
 }
 
-export default function StoryPlayer({ story, onTimeUpdateCallback }: IStoryPlayerProps) {
+export default function StoryPlayer({
+  story,
+  onTimeUpdateCallback,
+  onPrev,
+  onNext,
+  hasPrev = false,
+  hasNext = false,
+}: IStoryPlayerProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const progressBarRef = useRef<HTMLDivElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -121,10 +132,28 @@ export default function StoryPlayer({ story, onTimeUpdateCallback }: IStoryPlaye
         </div>
       </div>
 
-      <div className="flex justify-center">
+      <div className="flex items-center justify-center gap-6 sm:gap-10">
+        {(onPrev || onNext) && (
+          <button
+            onClick={onPrev}
+            disabled={!hasPrev}
+            className={`flex cursor-pointer flex-col items-center gap-1 transition-all ${
+              hasPrev
+                ? 'text-primary hover:opacity-80 active:scale-95'
+                : 'text-primary pointer-events-none cursor-not-allowed opacity-30'
+            }`}
+            aria-label="Previous Story"
+          >
+            <div className="hover:bg-primary/5 flex h-10 w-10 items-center justify-center rounded-full border border-current">
+              <SkipBack size={18} fill="currentColor" />
+            </div>
+            <span className="text-[10px] font-semibold tracking-widest uppercase">Prev</span>
+          </button>
+        )}
+
         <button
           onClick={togglePlay}
-          className="bg-primary flex h-16 w-16 cursor-pointer items-center justify-center rounded-full text-white shadow-sm transition-transform hover:scale-110 active:scale-95"
+          className="bg-primary flex h-16 w-16 shrink-0 cursor-pointer items-center justify-center rounded-full text-white shadow-sm transition-transform hover:scale-110 active:scale-95"
         >
           {isPlaying ? (
             <Pause fill="currentColor" size={28} />
@@ -132,6 +161,24 @@ export default function StoryPlayer({ story, onTimeUpdateCallback }: IStoryPlaye
             <Play fill="currentColor" size={28} className="ml-1" />
           )}
         </button>
+
+        {(onPrev || onNext) && (
+          <button
+            onClick={onNext}
+            disabled={!hasNext}
+            className={`flex cursor-pointer flex-col items-center gap-1 transition-all ${
+              hasNext
+                ? 'text-primary hover:opacity-80 active:scale-95'
+                : 'text-primary pointer-events-none cursor-not-allowed opacity-30'
+            }`}
+            aria-label="Next Story"
+          >
+            <div className="hover:bg-primary/5 flex h-10 w-10 items-center justify-center rounded-full border border-current">
+              <SkipForward size={18} fill="currentColor" />
+            </div>
+            <span className="text-[10px] font-semibold tracking-widest uppercase">Next</span>
+          </button>
+        )}
       </div>
     </div>
   );
