@@ -53,7 +53,10 @@ export default function LoginRequiredModal({ isOpen, onClose }: LoginRequiredMod
         <DialogFooter className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button
             variant="outline"
-            onClick={onClose || (() => router.push('/'))}
+            onClick={() => {
+              if (onClose) onClose();
+              router.push('/');
+            }}
             className="w-full sm:w-auto"
           >
             Go Back Home
