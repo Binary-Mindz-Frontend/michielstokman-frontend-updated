@@ -22,6 +22,9 @@ import { useMemo, useState } from 'react';
 
 import { StoryDetailSkeleton } from '@/components/main/Skeletons/StoryDetailSkeleton';
 import StoryPlayer from '../StoryPlayer/StoryPlayer';
+import { useIsAuthenticated, useCurrentUser } from '@/redux/features/auth/authSlice';
+import { useAppSelector } from '@/redux/hooks';
+import LoginRequiredModal from '@/app/(main)/create/CreateForm/_components/LoginRequiredModal/LoginRequiredModal';
 
 export default function StoryDetailPage() {
   const params = useParams();
@@ -34,6 +37,10 @@ export default function StoryDetailPage() {
   });
 
   const feedData = response?.data;
+
+  const isAuthenticated = useAppSelector(useIsAuthenticated);
+  const user = useAppSelector(useCurrentUser) as any;
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   // Fetch all feed items to support previous / next story navigation
   const { data: feedResponse } = useGetDiscoveryFeedQuery([]);
@@ -54,15 +61,95 @@ export default function StoryDetailPage() {
   const hasNext = currentIndex !== -1 && currentIndex < stories.length - 1;
 
   const handlePrev = () => {
-    if (hasPrev) {
-      router.push(`/details/${stories[currentIndex - 1].id}`);
+    if (!hasPrev) return;
+    const targetStoryId = stories[currentIndex - 1].id;
+    const detailPath = `/details/${targetStoryId}`;
+
+    if (!isAuthenticated) {
+      router.push(`/login?redirect=${encodeURIComponent(detailPath)}`);
+      return;
     }
+
+    if (user?.is_guest) {
+      const guestReadsStr = localStorage.getItem('guest_reads') || '{}';
+      let guestReads;
+      try {
+        guestReads = JSON.parse(guestReadsStr);
+      } catch {
+        guestReads = {};
+      }
+
+      const now = new Date().getTime();
+      const twentyFourHours = 24 * 60 * 60 * 1000;
+
+      if (guestReads.timestamp && guestReads.storyId) {
+        const timePassed = now - guestReads.timestamp;
+        if (timePassed < twentyFourHours) {
+          if (guestReads.storyId !== targetStoryId) {
+            // Block: different story within 24 hours
+            setShowLoginModal(true);
+            return;
+          }
+        }
+      }
+
+      // If allowed, lock in the new story
+      localStorage.setItem(
+        'guest_reads',
+        JSON.stringify({
+          timestamp: now,
+          storyId: targetStoryId,
+        }),
+      );
+    }
+
+    router.push(detailPath);
   };
 
   const handleNext = () => {
-    if (hasNext) {
-      router.push(`/details/${stories[currentIndex + 1].id}`);
+    if (!hasNext) return;
+    const targetStoryId = stories[currentIndex + 1].id;
+    const detailPath = `/details/${targetStoryId}`;
+
+    if (!isAuthenticated) {
+      router.push(`/login?redirect=${encodeURIComponent(detailPath)}`);
+      return;
     }
+
+    if (user?.is_guest) {
+      const guestReadsStr = localStorage.getItem('guest_reads') || '{}';
+      let guestReads;
+      try {
+        guestReads = JSON.parse(guestReadsStr);
+      } catch {
+        guestReads = {};
+      }
+
+      const now = new Date().getTime();
+      const twentyFourHours = 24 * 60 * 60 * 1000;
+
+      if (guestReads.timestamp && guestReads.storyId) {
+        const timePassed = now - guestReads.timestamp;
+        if (timePassed < twentyFourHours) {
+          if (guestReads.storyId !== targetStoryId) {
+            // Block: different story within 24 hours
+            setShowLoginModal(true);
+            return;
+          }
+        }
+      }
+
+      // If allowed, lock in the new story
+      localStorage.setItem(
+        'guest_reads',
+        JSON.stringify({
+          timestamp: now,
+          storyId: targetStoryId,
+        }),
+      );
+    }
+
+    router.push(detailPath);
   };
 
   // audio current and duration time tracker
@@ -85,6 +172,7 @@ export default function StoryDetailPage() {
 
   return (
     <div className="min-h-screen">
+      <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
       {/* Hero Section */}
       <div className="relative h-[55vh] w-full overflow-hidden">
         <Image
