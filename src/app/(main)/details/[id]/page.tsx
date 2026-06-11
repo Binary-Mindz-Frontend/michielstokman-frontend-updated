@@ -1,8 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { Button } from '@/components/ui/button';
 
-import { useGetStoryDetailsQuery } from '@/redux/features/discoveryFeed/discoveryFeed.api';
+import {
+  useGetStoryDetailsQuery,
+  useGetDiscoveryFeedQuery,
+} from '@/redux/features/discoveryFeed/discoveryFeed.api';
 
 import { motion } from 'framer-motion';
 
@@ -12,7 +16,7 @@ import Image from 'next/image';
 
 import Link from 'next/link';
 
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 
 import { useMemo, useState } from 'react';
 
@@ -21,6 +25,7 @@ import StoryPlayer from '../StoryPlayer/StoryPlayer';
 
 export default function StoryDetailPage() {
   const params = useParams();
+  const router = useRouter();
 
   const storyId = params?.id as string;
 
@@ -29,6 +34,36 @@ export default function StoryDetailPage() {
   });
 
   const feedData = response?.data;
+
+  // Fetch all feed items to support previous / next story navigation
+  const { data: feedResponse } = useGetDiscoveryFeedQuery([]);
+
+  const stories = useMemo(() => {
+    const items = feedResponse?.data?.items || [];
+    const sorted = [...items].sort((a, b) => {
+      return (b.has_access ? 1 : 0) - (a.has_access ? 1 : 0);
+    });
+    return sorted.filter((item: any) => item?.card_type !== 'liberation_journey');
+  }, [feedResponse]);
+
+  const currentIndex = useMemo(() => {
+    return stories.findIndex((item: any) => item?.id === storyId);
+  }, [stories, storyId]);
+
+  const hasPrev = currentIndex > 0;
+  const hasNext = currentIndex !== -1 && currentIndex < stories.length - 1;
+
+  const handlePrev = () => {
+    if (hasPrev) {
+      router.push(`/details/${stories[currentIndex - 1].id}`);
+    }
+  };
+
+  const handleNext = () => {
+    if (hasNext) {
+      router.push(`/details/${stories[currentIndex + 1].id}`);
+    }
+  };
 
   // audio current and duration time tracker
   const [audioProgress, setAudioProgress] = useState({ current: 0, duration: 0 });
@@ -141,6 +176,10 @@ export default function StoryDetailPage() {
           <StoryPlayer
             story={feedData?.audio_path || ''}
             onTimeUpdateCallback={(current, duration) => setAudioProgress({ current, duration })}
+            onPrev={handlePrev}
+            onNext={handleNext}
+            hasPrev={hasPrev}
+            hasNext={hasNext}
           />
 
           {/* Paragraphs and Typewriter Effect*/}
