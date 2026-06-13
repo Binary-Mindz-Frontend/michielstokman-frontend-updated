@@ -4,8 +4,8 @@
 import { Button } from '@/components/ui/button';
 
 import {
-  useGetStoryDetailsQuery,
   useGetDiscoveryFeedQuery,
+  useGetStoryDetailsQuery,
 } from '@/redux/features/discoveryFeed/discoveryFeed.api';
 
 import { motion } from 'framer-motion';
@@ -20,11 +20,11 @@ import { useParams, useRouter } from 'next/navigation';
 
 import { useMemo, useState } from 'react';
 
-import { StoryDetailSkeleton } from '@/components/main/Skeletons/StoryDetailSkeleton';
-import StoryPlayer from '../StoryPlayer/StoryPlayer';
-import { useIsAuthenticated, useCurrentUser } from '@/redux/features/auth/authSlice';
-import { useAppSelector } from '@/redux/hooks';
 import LoginRequiredModal from '@/app/(main)/create/CreateForm/_components/LoginRequiredModal/LoginRequiredModal';
+import { StoryDetailSkeleton } from '@/components/main/Skeletons/StoryDetailSkeleton';
+import { useCurrentUser, useIsAuthenticated } from '@/redux/features/auth/authSlice';
+import { useAppSelector } from '@/redux/hooks';
+import StoryPlayer from '../StoryPlayer/StoryPlayer';
 
 export default function StoryDetailPage() {
   const params = useParams();
@@ -284,6 +284,10 @@ export default function StoryDetailPage() {
   return (
     <div className="min-h-screen">
       <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
+      <LoginRequiredModal
+        isOpen={!isAuthenticated}
+        redirectUrl={`/login?redirect=/details/${storyId}`}
+      />
       {/* Hero Section */}
       <div className="relative h-[55vh] w-full overflow-hidden">
         <Image
