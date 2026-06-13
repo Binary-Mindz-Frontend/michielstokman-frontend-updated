@@ -10,12 +10,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { apiClient } from '@/redux/apiClient/apiClient';
+import { logout as authLogout } from '@/redux/features/auth/authSlice';
+import { useAppDispatch } from '@/redux/hooks';
+import { logoutUser } from '@/services/auth/auth.service';
 import { Heart } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { logoutUser } from '@/services/auth/auth.service';
-import { logout as authLogout } from '@/redux/features/auth/authSlice';
-import { apiClient } from '@/redux/apiClient/apiClient';
-import { useAppDispatch } from '@/redux/hooks';
 
 import { useCurrentUser } from '@/redux/features/auth/authSlice';
 import { useAppSelector } from '@/redux/hooks';
@@ -23,9 +23,14 @@ import { useAppSelector } from '@/redux/hooks';
 interface LoginRequiredModalProps {
   isOpen: boolean;
   onClose?: () => void;
+  redirectUrl?: string;
 }
 
-export default function LoginRequiredModal({ isOpen, onClose }: LoginRequiredModalProps) {
+export default function LoginRequiredModal({
+  isOpen,
+  onClose,
+  redirectUrl = '/login',
+}: LoginRequiredModalProps) {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const user = useAppSelector(useCurrentUser) as any;
@@ -66,7 +71,7 @@ export default function LoginRequiredModal({ isOpen, onClose }: LoginRequiredMod
               dispatch(authLogout());
               dispatch(apiClient.util.resetApiState());
               await logoutUser();
-              window.location.href = '/login';
+              window.location.href = redirectUrl;
             }}
             className="bg-primary hover:bg-primary/90 w-full text-white sm:w-auto"
           >
