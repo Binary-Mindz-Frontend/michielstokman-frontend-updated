@@ -27,13 +27,6 @@ export default function StoryPlayer({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [speed, setSpeed] = useState(1);
-  const requestRef = useRef<number | null>(null);
-  const callbackRef = useRef(onTimeUpdateCallback);
-
-  // Keep callback ref fresh to prevent re-triggering requestAnimationFrame
-  useEffect(() => {
-    callbackRef.current = onTimeUpdateCallback;
-  }, [onTimeUpdateCallback]);
 
   // Sync playbackRate when speed or story changes
   useEffect(() => {
@@ -42,34 +35,19 @@ export default function StoryPlayer({
     }
   }, [speed, story]);
 
-  // High-resolution progress update loop at 60fps using requestAnimationFrame
+  // Reset player state when a new story loads
   useEffect(() => {
-    const updateProgressLoop = () => {
-      if (audioRef.current) {
-        const cur = audioRef.current.currentTime;
-        const dur = audioRef.current.duration;
-        setCurrentTime(cur);
-        callbackRef.current(cur, dur, speed);
-      }
-      if (isPlaying) {
-        requestRef.current = requestAnimationFrame(updateProgressLoop);
-      }
-    };
-
-    if (isPlaying) {
-      requestRef.current = requestAnimationFrame(updateProgressLoop);
-    } else {
-      if (requestRef.current !== null) {
-        cancelAnimationFrame(requestRef.current);
-      }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCurrentTime(0);
+    setDuration(0);
+    setIsPlaying(false);
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.playbackRate = speed;
     }
-
-    return () => {
-      if (requestRef.current !== null) {
-        cancelAnimationFrame(requestRef.current);
-      }
-    };
-  }, [isPlaying, speed]);
+    onTimeUpdateCallback(0, 0, speed);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [story]);
 
   const cycleSpeed = () => {
     const speeds = [1, 1.2, 1.5, 2];
@@ -78,6 +56,11 @@ export default function StoryPlayer({
     setSpeed(nextSpeed);
     if (audioRef.current) {
       audioRef.current.playbackRate = nextSpeed;
+      onTimeUpdateCallback(
+        audioRef.current.currentTime,
+        audioRef.current.duration || duration,
+        nextSpeed,
+      );
     }
   };
 
@@ -87,7 +70,6 @@ export default function StoryPlayer({
         audioRef.current.pause();
       } else {
         audioRef.current.play();
-        // Force sync playback rate on play start
         audioRef.current.playbackRate = speed;
       }
       setIsPlaying(!isPlaying);
@@ -105,8 +87,19 @@ export default function StoryPlayer({
 
   const handleLoadedMetadata = () => {
     if (audioRef.current) {
-      setDuration(audioRef.current.duration);
+      const dur = audioRef.current.duration;
+      setDuration(dur);
       audioRef.current.playbackRate = speed;
+      onTimeUpdateCallback(audioRef.current.currentTime, dur, speed);
+    }
+  };
+
+  const handleEnded = () => {
+    setIsPlaying(false);
+    if (audioRef.current) {
+      const dur = audioRef.current.duration;
+      setCurrentTime(dur);
+      onTimeUpdateCallback(dur, dur, speed);
     }
   };
 
@@ -122,7 +115,10 @@ export default function StoryPlayer({
     const rect = progressBarRef.current.getBoundingClientRect();
     const clickX = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
     const percent = clickX / rect.width;
-    audioRef.current.currentTime = percent * duration;
+    const targetTime = percent * duration;
+    audioRef.current.currentTime = targetTime;
+    setCurrentTime(targetTime);
+    onTimeUpdateCallback(targetTime, duration, speed);
   };
 
   const progressPercent = (currentTime / duration) * 100 || 0;
@@ -134,7 +130,7 @@ export default function StoryPlayer({
         src={story}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
-        onEnded={() => setIsPlaying(false)}
+        onEnded={handleEnded}
       />
 
       <div className="space-y-4">
