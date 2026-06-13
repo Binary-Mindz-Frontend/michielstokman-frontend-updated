@@ -153,7 +153,7 @@ export default function StoryDetailPage() {
   };
 
   // audio current and duration time tracker
-  const [audioProgress, setAudioProgress] = useState({ current: 0, duration: 0 });
+  const [audioProgress, setAudioProgress] = useState({ current: 0, duration: 0, speed: 1 });
 
   // Paragraphs of the story
   const paragraphs = useMemo(() => {
@@ -374,7 +374,9 @@ export default function StoryDetailPage() {
 
           <StoryPlayer
             story={feedData?.audio_path || ''}
-            onTimeUpdateCallback={(current, duration) => setAudioProgress({ current, duration })}
+            onTimeUpdateCallback={(current, duration, speed) =>
+              setAudioProgress({ current, duration, speed: speed || 1 })
+            }
             onPrev={handlePrev}
             onNext={handleNext}
             hasPrev={hasPrev}
@@ -403,7 +405,7 @@ export default function StoryDetailPage() {
 
                             color: isVisible ? '#bf7758' : '#414651',
                           }}
-                          transition={{ duration: 0.2 }}
+                          transition={{ duration: 0.2 / audioProgress.speed }}
                           className="inline-block"
                         >
                           {word}

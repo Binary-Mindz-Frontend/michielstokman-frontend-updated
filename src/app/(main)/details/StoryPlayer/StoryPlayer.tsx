@@ -1,12 +1,12 @@
 'use client';
 
 import { Pause, Play, SkipBack, SkipForward } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 
 interface IStoryPlayerProps {
   story: string;
   // eslint-disable-next-line no-unused-vars
-  onTimeUpdateCallback: (current: number, duration: number) => void;
+  onTimeUpdateCallback: (current: number, duration: number, speed?: number) => void;
   onPrev?: () => void;
   onNext?: () => void;
   hasPrev?: boolean;
@@ -26,6 +26,60 @@ export default function StoryPlayer({
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [speed, setSpeed] = useState(1);
+  const requestRef = useRef<number | null>(null);
+  const callbackRef = useRef(onTimeUpdateCallback);
+
+  // Keep callback ref fresh to prevent re-triggering requestAnimationFrame
+  useEffect(() => {
+    callbackRef.current = onTimeUpdateCallback;
+  }, [onTimeUpdateCallback]);
+
+  // Sync playbackRate when speed or story changes
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.playbackRate = speed;
+    }
+  }, [speed, story]);
+
+  // High-resolution progress update loop at 60fps using requestAnimationFrame
+  useEffect(() => {
+    const updateProgressLoop = () => {
+      if (audioRef.current) {
+        const cur = audioRef.current.currentTime;
+        const dur = audioRef.current.duration;
+        setCurrentTime(cur);
+        callbackRef.current(cur, dur, speed);
+      }
+      if (isPlaying) {
+        requestRef.current = requestAnimationFrame(updateProgressLoop);
+      }
+    };
+
+    if (isPlaying) {
+      requestRef.current = requestAnimationFrame(updateProgressLoop);
+    } else {
+      if (requestRef.current !== null) {
+        cancelAnimationFrame(requestRef.current);
+      }
+    }
+
+    return () => {
+      if (requestRef.current !== null) {
+        cancelAnimationFrame(requestRef.current);
+      }
+    };
+  }, [isPlaying, speed]);
+
+  const cycleSpeed = () => {
+    const speeds = [1, 1.2, 1.5, 2];
+    const currentIndex = speeds.indexOf(speed);
+    const nextSpeed = speeds[(currentIndex + 1) % speeds.length];
+    setSpeed(nextSpeed);
+    if (audioRef.current) {
+      audioRef.current.playbackRate = nextSpeed;
+    }
+  };
 
   const togglePlay = () => {
     if (audioRef.current) {
@@ -33,6 +87,8 @@ export default function StoryPlayer({
         audioRef.current.pause();
       } else {
         audioRef.current.play();
+        // Force sync playback rate on play start
+        audioRef.current.playbackRate = speed;
       }
       setIsPlaying(!isPlaying);
     }
@@ -43,13 +99,14 @@ export default function StoryPlayer({
       const cur = audioRef.current.currentTime;
       const dur = audioRef.current.duration;
       setCurrentTime(cur);
-      onTimeUpdateCallback(cur, dur);
+      onTimeUpdateCallback(cur, dur, speed);
     }
   };
 
   const handleLoadedMetadata = () => {
     if (audioRef.current) {
       setDuration(audioRef.current.duration);
+      audioRef.current.playbackRate = speed;
     }
   };
 
@@ -179,6 +236,17 @@ export default function StoryPlayer({
             <span className="text-[10px] font-semibold tracking-widest uppercase">Next</span>
           </button>
         )}
+
+        <button
+          onClick={cycleSpeed}
+          className="text-primary flex cursor-pointer flex-col items-center gap-1 transition-all hover:opacity-80 active:scale-95"
+          aria-label="Playback Speed"
+        >
+          <div className="hover:bg-primary/5 flex h-10 w-10 items-center justify-center rounded-full border border-current text-xs font-bold">
+            {speed}x
+          </div>
+          <span className="text-[10px] font-semibold tracking-widest uppercase">Speed</span>
+        </button>
       </div>
     </div>
   );
