@@ -155,20 +155,131 @@ export default function StoryDetailPage() {
   // audio current and duration time tracker
   const [audioProgress, setAudioProgress] = useState({ current: 0, duration: 0 });
 
-  // Total words of the story
-  const totalWordsCount = useMemo(() => {
-    return feedData?.story_text?.split(/\s+/).length || 0;
-  }, [feedData?.story_text]);
-
   // Paragraphs of the story
   const paragraphs = useMemo(() => {
     return feedData?.story_text?.split('\n').filter((p: string) => p.trim() !== '') || [];
   }, [feedData?.story_text]);
 
-  if (!storyId || isLoading) return <StoryDetailSkeleton />;
+  // Word timings based on API alignment data
+  const wordTimings = useMemo(() => {
+    if (!feedData) return [];
 
-  // Word Counter
-  let wordCounter = 0;
+    // 1. Flatten all words from paragraphs
+    const flatTextWords: { word: string; pIdx: number; wIdx: number }[] = [];
+    paragraphs.forEach((paragraph: string, pIdx: number) => {
+      const words = paragraph.split(/\s+/);
+      words.forEach((word: string, wIdx: number) => {
+        flatTextWords.push({ word, pIdx, wIdx });
+      });
+    });
+
+    const alignment = feedData.alignment;
+    const duration = audioProgress.duration || feedData.audio_duration_seconds || 0;
+    const totalWords = flatTextWords.length;
+
+    // Initialize timings array structure
+    const timings: { start: number; end: number }[][] = paragraphs.map((paragraph: string) => {
+      return paragraph.split(/\s+/).map(() => ({ start: 0, end: 0 }));
+    });
+
+    // Helper to clean a word for matching
+    const cleanWord = (w: string) => {
+      if (!w) return '';
+      return w.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+    };
+
+    // If no alignment data is available, fall back to uniform calculation
+    if (!alignment || !Array.isArray(alignment) || alignment.length === 0) {
+      let counter = 0;
+      paragraphs.forEach((paragraph: string, pIdx: number) => {
+        const words = paragraph.split(/\s+/);
+        words.forEach((_: string, wIdx: number) => {
+          const start = duration ? (duration / totalWords) * counter : 0;
+          const end = duration ? (duration / totalWords) * (counter + 1) : 0;
+          timings[pIdx][wIdx] = { start, end };
+          counter++;
+        });
+      });
+      return timings;
+    }
+
+    // 2. Perform greedy alignment matching
+    const matchedTimings: ({ start: number; end: number } | null)[] = new Array(totalWords).fill(
+      null,
+    );
+    let aIdx = 0;
+
+    for (let tIdx = 0; tIdx < totalWords; tIdx++) {
+      const textWord = flatTextWords[tIdx];
+      const cleanText = cleanWord(textWord.word);
+      if (!cleanText) continue;
+
+      const lookahead = Math.min(alignment.length - aIdx, 40);
+      for (let k = 0; k < lookahead; k++) {
+        const entryIdx = aIdx + k;
+        const entry = alignment[entryIdx];
+        const cleanAlign = cleanWord(entry.word);
+
+        if (
+          cleanText === cleanAlign ||
+          (cleanAlign && (cleanText.includes(cleanAlign) || cleanAlign.includes(cleanText)))
+        ) {
+          matchedTimings[tIdx] = {
+            start: Number(entry.start),
+            end: Number(entry.end),
+          };
+          aIdx = entryIdx + 1;
+          break;
+        }
+      }
+    }
+
+    // 3. Interpolate unmatched words to ensure every word has a timestamp
+    let lastEnd = 0;
+    let i = 0;
+
+    while (i < totalWords) {
+      if (matchedTimings[i] !== null) {
+        lastEnd = matchedTimings[i]!.end;
+        i++;
+      } else {
+        // Find the next matched word
+        let j = i;
+        while (j < totalWords && matchedTimings[j] === null) {
+          j++;
+        }
+
+        const nextStart = j < totalWords ? matchedTimings[j]!.start : duration || lastEnd;
+        const count = j - i;
+
+        // Interpolate the timings for unmatched words between i and j-1
+        for (let u = 0; u < count; u++) {
+          const idx = i + u;
+          const start = lastEnd + ((nextStart - lastEnd) * u) / (count + 1);
+          const end = lastEnd + ((nextStart - lastEnd) * (u + 1)) / (count + 1);
+          matchedTimings[idx] = { start, end };
+        }
+
+        i = j;
+      }
+    }
+
+    // 4. Map the flat matched/interpolated timings back to 2D structure
+    let flatIdx = 0;
+    paragraphs.forEach((paragraph: string, pIdx: number) => {
+      const words = paragraph.split(/\s+/);
+      words.forEach((_: string, wIdx: number) => {
+        if (matchedTimings[flatIdx]) {
+          timings[pIdx][wIdx] = matchedTimings[flatIdx]!;
+        }
+        flatIdx++;
+      });
+    });
+
+    return timings;
+  }, [feedData, paragraphs, audioProgress.duration]);
+
+  if (!storyId || isLoading) return <StoryDetailSkeleton />;
 
   return (
     <div className="min-h-screen">
@@ -280,12 +391,8 @@ export default function StoryDetailPage() {
                 return (
                   <p key={pIdx} className="flex flex-wrap gap-x-1.5">
                     {words.map((word: string, wIdx: number) => {
-                      const currentWordIndex = wordCounter++;
-
-                      const wordThreshold =
-                        (audioProgress.duration / totalWordsCount) * currentWordIndex;
-
-                      const isVisible = audioProgress.current >= wordThreshold;
+                      const timing = wordTimings[pIdx]?.[wIdx];
+                      const isVisible = timing ? audioProgress.current >= timing.start : false;
 
                       return (
                         <motion.span
