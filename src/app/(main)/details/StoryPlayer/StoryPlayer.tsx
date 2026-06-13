@@ -194,7 +194,7 @@ export default function StoryPlayer({
           <button
             onClick={onPrev}
             disabled={!hasPrev}
-            className={`flex cursor-pointer flex-col items-center gap-1 transition-all ${
+            className={`relative flex cursor-pointer flex-col items-center transition-all ${
               hasPrev
                 ? 'text-primary hover:opacity-80 active:scale-95'
                 : 'text-primary pointer-events-none cursor-not-allowed opacity-30'
@@ -204,7 +204,9 @@ export default function StoryPlayer({
             <div className="hover:bg-primary/5 flex h-10 w-10 items-center justify-center rounded-full border border-current">
               <SkipBack size={18} fill="currentColor" />
             </div>
-            <span className="text-[10px] font-semibold tracking-widest uppercase">Prev</span>
+            <span className="absolute top-full left-1/2 mt-1 -translate-x-1/2 text-[10px] font-semibold tracking-widest whitespace-nowrap uppercase">
+              Prev
+            </span>
           </button>
         )}
 
@@ -223,7 +225,7 @@ export default function StoryPlayer({
           <button
             onClick={onNext}
             disabled={!hasNext}
-            className={`flex cursor-pointer flex-col items-center gap-1 transition-all ${
+            className={`relative flex cursor-pointer flex-col items-center transition-all ${
               hasNext
                 ? 'text-primary hover:opacity-80 active:scale-95'
                 : 'text-primary pointer-events-none cursor-not-allowed opacity-30'
@@ -233,19 +235,23 @@ export default function StoryPlayer({
             <div className="hover:bg-primary/5 flex h-10 w-10 items-center justify-center rounded-full border border-current">
               <SkipForward size={18} fill="currentColor" />
             </div>
-            <span className="text-[10px] font-semibold tracking-widest uppercase">Next</span>
+            <span className="absolute top-full left-1/2 mt-1 -translate-x-1/2 text-[10px] font-semibold tracking-widest whitespace-nowrap uppercase">
+              Next
+            </span>
           </button>
         )}
 
         <button
           onClick={cycleSpeed}
-          className="text-primary flex cursor-pointer flex-col items-center gap-1 transition-all hover:opacity-80 active:scale-95"
+          className="text-primary relative flex cursor-pointer flex-col items-center transition-all hover:opacity-80 active:scale-95"
           aria-label="Playback Speed"
         >
           <div className="hover:bg-primary/5 flex h-10 w-10 items-center justify-center rounded-full border border-current text-xs font-bold">
             {speed}x
           </div>
-          <span className="text-[10px] font-semibold tracking-widest uppercase">Speed</span>
+          <span className="absolute top-full left-1/2 mt-1 -translate-x-1/2 text-[10px] font-semibold tracking-widest whitespace-nowrap uppercase">
+            Speed
+          </span>
         </button>
       </div>
     </div>
