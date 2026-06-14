@@ -20,10 +20,15 @@ export default function CreateFormPage() {
   const user = useAppSelector(useCurrentUser) as any;
 
   const isAuthModalOpen = !user || user?.is_guest;
+  const typeParam = searchParams.get('type');
+  const createPath = typeParam ? `/create?type=${typeParam}` : '/create';
 
   return (
     <section className="mx-auto max-w-3xl px-4 py-12">
-      <LoginRequiredModal isOpen={isAuthModalOpen} />
+      <LoginRequiredModal
+        isOpen={isAuthModalOpen}
+        redirectUrl={`/login?redirect=${encodeURIComponent(createPath)}`}
+      />
 
       <Suspense fallback={<UnifiedStoryFormSkeleton />}>
         <motion.div initial="hidden" animate="visible" variants={FADE_IN_UP_CONTAINER}>
