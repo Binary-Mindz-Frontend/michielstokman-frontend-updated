@@ -97,9 +97,11 @@ export default function LoginPage() {
       dispatch(setAuth({ user: guestUser }));
       await setUserProfile(guestUser, res?.data?.access_token);
 
+      const redirectPath = redirectUrl ? decodeURIComponent(redirectUrl) : '/';
+
       toast.success(res?.message || 'Guest session created');
       setTimeout(() => {
-        router.push('/');
+        router.push(redirectPath);
       }, 1000);
     });
   };
