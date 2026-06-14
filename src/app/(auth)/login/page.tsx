@@ -97,9 +97,6 @@ export default function LoginPage() {
       dispatch(setAuth({ user: guestUser }));
       await setUserProfile(guestUser, res?.data?.access_token);
 
-      // Clear any old guest reading history so the new guest can freely choose their first story
-      localStorage.removeItem('guest_reads');
-
       toast.success(res?.message || 'Guest session created');
       setTimeout(() => {
         router.push('/');
