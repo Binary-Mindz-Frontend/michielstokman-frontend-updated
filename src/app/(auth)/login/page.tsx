@@ -35,6 +35,7 @@ export default function LoginPage() {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get('redirect');
 
   // Form
   const {
@@ -62,7 +63,6 @@ export default function LoginPage() {
           is_admin: res?.data?.user?.is_admin || false,
         };
         const defaultRedirect = res?.data?.user?.is_admin ? '/dashboard/overview' : '/';
-        const redirectUrl = searchParams.get('redirect');
         const redirectPath = redirectUrl ? decodeURIComponent(redirectUrl) : defaultRedirect;
 
         dispatch(setAuth({ user }));
@@ -71,7 +71,10 @@ export default function LoginPage() {
         toast.success(res?.message || 'User Logged in Successfully');
         setTimeout(() => {
           if (!res?.data?.user?.is_profile_setup) {
-            router.push('/register/stepper');
+            const stepperPath = redirectUrl
+              ? `/register/stepper?redirect=${encodeURIComponent(redirectUrl)}`
+              : '/register/stepper';
+            router.push(stepperPath);
           } else {
             router.push(redirectPath);
           }
@@ -192,7 +195,12 @@ export default function LoginPage() {
         <motion.div variants={FADE_IN_UP_ITEM} className="space-y-3">
           <p className="text-dark-primary text-sm">
             New here?{' '}
-            <Link href="/register" className="text-primary font-bold hover:underline">
+            <Link
+              href={
+                redirectUrl ? `/register?redirect=${encodeURIComponent(redirectUrl)}` : '/register'
+              }
+              className="text-primary font-bold hover:underline"
+            >
               Sign up
             </Link>
           </p>

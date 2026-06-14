@@ -51,7 +51,10 @@ export default function GoogleSignInButton() {
 
         setTimeout(() => {
           if (!res?.data?.user?.is_profile_setup) {
-            router.push('/register/stepper');
+            const stepperPath = redirectUrl
+              ? `/register/stepper?redirect=${encodeURIComponent(redirectUrl)}`
+              : '/register/stepper';
+            router.push(stepperPath);
           } else {
             router.push(redirectPath);
           }
