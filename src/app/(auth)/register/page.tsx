@@ -14,7 +14,7 @@ import { catchAsyncMutation } from '@/utils/apiReqRes.utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion'; // motion এবং Variants ইমপোর্ট করুন
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -31,6 +31,8 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 export default function RegisterPage() {
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get('redirect');
   const [registerUser] = useRegisterUserMutation();
 
   const {
@@ -66,7 +68,10 @@ export default function RegisterPage() {
         await setUserProfile(user, res?.data?.access_token);
         toast.success(res?.message || 'User Registered Successfully');
         setTimeout(() => {
-          router.push('/register/stepper');
+          const stepperPath = redirectUrl
+            ? `/register/stepper?redirect=${encodeURIComponent(redirectUrl)}`
+            : '/register/stepper';
+          router.push(stepperPath);
         }, 1000);
       },
     );
@@ -157,7 +162,10 @@ export default function RegisterPage() {
         <motion.div variants={FADE_IN_UP_ITEM} className="space-y-3">
           <p className="text-dark-primary text-sm">
             Already have an account?{' '}
-            <Link href="/login" className="text-primary font-bold hover:underline">
+            <Link
+              href={redirectUrl ? `/login?redirect=${encodeURIComponent(redirectUrl)}` : '/login'}
+              className="text-primary font-bold hover:underline"
+            >
               Sign in
             </Link>
           </p>

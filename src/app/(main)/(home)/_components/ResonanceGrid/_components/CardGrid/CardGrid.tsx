@@ -33,6 +33,7 @@ const CardGrid = () => {
   const isAuthenticated = useAppSelector(useIsAuthenticated);
   const user = useAppSelector(useCurrentUser) as any;
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [pendingRedirectUrl, setPendingRedirectUrl] = useState('');
   // TODO: Remove this state once the Liberation purchase feature is live.
   const [showDevModal, setShowDevModal] = useState(false);
   const activeFilters = searchParams.getAll('story_type');
@@ -52,7 +53,18 @@ const CardGrid = () => {
 
   return (
     <div>
-      <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
+      <LoginRequiredModal
+        isOpen={showLoginModal}
+        onClose={() => {
+          setShowLoginModal(false);
+          setPendingRedirectUrl('');
+        }}
+        redirectUrl={
+          pendingRedirectUrl
+            ? `/login?redirect=${encodeURIComponent(pendingRedirectUrl)}`
+            : '/login'
+        }
+      />
       {/* Feed Data Check */}
       {sortedFeedData.length === 0 && !isLoading ? (
         <NoDataFound
@@ -121,6 +133,7 @@ const CardGrid = () => {
                         if (guestReads.storyId !== card?.id) {
                           // Block: different story within 24 hours
                           e.preventDefault();
+                          setPendingRedirectUrl(detailPath);
                           setShowLoginModal(true);
                           return;
                         } else {
