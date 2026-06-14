@@ -175,6 +175,7 @@ export default function ResonanceReflection() {
           setShowLoginModal(false);
           router.push('/');
         }}
+        redirectUrl={`/login?redirect=${encodeURIComponent(`/details/${storyId}/reflect`)}`}
       />
       <motion.div variants={FADE_IN_UP_ITEM}>
         <DynamicSectionHeader

@@ -526,7 +526,9 @@ function RegistrationStepperContent() {
 
   const setStep = (s: number | ((prev: number) => number)) => {
     const nextStep = typeof s === 'function' ? s(step) : s;
-    router.push(`?step=${nextStep}`);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('step', nextStep.toString());
+    router.push(`?${params.toString()}`);
   };
 
   const { data: profileResponse, isLoading: isFetchingProfile } = useGetProfileQuery(undefined);
@@ -659,7 +661,10 @@ function RegistrationStepperContent() {
       // ৩. সফলভাবে সাবমিট হওয়ার পর লোকাল স্টোরেজ থেকে ডাটা ক্লিয়ার করে দেওয়া হলো
       localStorage.removeItem(STORAGE_KEY);
 
-      setTimeout(() => router.push('/profile'), 1000);
+      const redirectUrl = searchParams.get('redirect');
+      const redirectPath = redirectUrl ? decodeURIComponent(redirectUrl) : '/profile';
+
+      setTimeout(() => router.push(redirectPath), 1000);
     });
   };
 
