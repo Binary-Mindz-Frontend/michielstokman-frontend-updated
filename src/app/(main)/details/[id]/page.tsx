@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
@@ -18,7 +19,7 @@ import Link from 'next/link';
 
 import { useParams, useRouter } from 'next/navigation';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 
 import LoginRequiredModal from '@/app/(main)/create/CreateForm/_components/LoginRequiredModal/LoginRequiredModal';
 import { StoryDetailSkeleton } from '@/components/main/Skeletons/StoryDetailSkeleton';
@@ -41,6 +42,45 @@ export default function StoryDetailPage() {
   const isAuthenticated = useAppSelector(useIsAuthenticated);
   const user = useAppSelector(useCurrentUser) as any;
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [pendingRedirectUrl, setPendingRedirectUrl] = useState('');
+
+  useEffect(() => {
+    if (isAuthenticated && user?.is_guest && storyId) {
+      const guestReadsStr = localStorage.getItem('guest_reads') || '{}';
+      let guestReads;
+      try {
+        guestReads = JSON.parse(guestReadsStr);
+      } catch {
+        guestReads = {};
+      }
+
+      const now = new Date().getTime();
+      const twentyFourHours = 24 * 60 * 60 * 1000;
+
+      if (guestReads.timestamp && guestReads.storyId) {
+        const timePassed = now - guestReads.timestamp;
+        if (timePassed < twentyFourHours) {
+          if (guestReads.storyId !== storyId) {
+            // Block: trying to access a different story directly
+            setPendingRedirectUrl(`/details/${storyId}`);
+            setShowLoginModal(true);
+            return;
+          } else {
+            return;
+          }
+        }
+      }
+
+      // Lock in the current story if none is active or 24 hours have passed
+      localStorage.setItem(
+        'guest_reads',
+        JSON.stringify({
+          timestamp: now,
+          storyId: storyId,
+        }),
+      );
+    }
+  }, [isAuthenticated, user, storyId]);
 
   // Fetch all feed items to support previous / next story navigation
   const { data: feedResponse } = useGetDiscoveryFeedQuery([]);
@@ -87,6 +127,7 @@ export default function StoryDetailPage() {
         if (timePassed < twentyFourHours) {
           if (guestReads.storyId !== targetStoryId) {
             // Block: different story within 24 hours
+            setPendingRedirectUrl(detailPath);
             setShowLoginModal(true);
             return;
           }
@@ -133,6 +174,7 @@ export default function StoryDetailPage() {
         if (timePassed < twentyFourHours) {
           if (guestReads.storyId !== targetStoryId) {
             // Block: different story within 24 hours
+            setPendingRedirectUrl(detailPath);
             setShowLoginModal(true);
             return;
           }
@@ -283,7 +325,28 @@ export default function StoryDetailPage() {
 
   return (
     <div className="min-h-screen">
-      <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
+      <LoginRequiredModal
+        isOpen={showLoginModal}
+        onClose={() => {
+          setShowLoginModal(false);
+          setPendingRedirectUrl('');
+          const guestReadsStr = localStorage.getItem('guest_reads') || '{}';
+          let guestReads;
+          try {
+            guestReads = JSON.parse(guestReadsStr);
+          } catch {
+            guestReads = {};
+          }
+          if (guestReads.storyId && guestReads.storyId !== storyId) {
+            router.push('/');
+          }
+        }}
+        redirectUrl={
+          pendingRedirectUrl
+            ? `/login?redirect=${encodeURIComponent(pendingRedirectUrl)}`
+            : '/login'
+        }
+      />
       <LoginRequiredModal
         isOpen={!isAuthenticated}
         redirectUrl={`/login?redirect=/details/${storyId}`}
