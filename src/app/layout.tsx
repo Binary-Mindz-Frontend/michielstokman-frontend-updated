@@ -42,10 +42,7 @@ export default function RootLayout({
       <head>
         <meta name="apple-mobile-web-app-title" content="TTL" />
       </head>
-      <body
-        className="max-w-screen overflow-x-hidden antialiased"
-        style={{ fontFamily: '"Times New Roman", Times, serif' }}
-      >
+      <body className="max-w-screen overflow-x-hidden antialiased">
         <Providers>
           {children}
           {/* Toaster */}
