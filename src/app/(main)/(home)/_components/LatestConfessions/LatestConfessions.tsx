@@ -67,7 +67,7 @@ const LatestConfessions = () => {
         {confessions.map((item, index) => (
           <div
             key={index}
-            className={`relative flex min-h-[180px] w-full overflow-hidden rounded-xl sm:min-h-[195px] lg:min-h-[200px] xl:min-h-[220px] ${item?.bg} p-4 sm:p-5 lg:p-4.5 xl:p-6`}
+            className={`relative flex min-h-45 w-full overflow-hidden rounded-xl sm:min-h-48.75 lg:min-h-50 xl:min-h-55 ${item?.bg} p-4 sm:p-5 lg:p-4.5 xl:p-6`}
           >
             {/* Left Content */}
             <div className="z-10 flex w-[60%] flex-col justify-between pr-2 lg:w-[62%]">

@@ -104,7 +104,7 @@ const YouBelongHere = () => {
         {/* ===== Column 2: Woman Photo ===== */}
         <motion.div
           variants={FADE_IN_UP_ITEM}
-          className="relative h-[320px] w-full shrink-0 overflow-hidden rounded-xl sm:h-[380px] md:col-span-1 lg:h-[420px] xl:h-[480px] xl:w-[22%]"
+          className="relative h-80 w-full shrink-0 overflow-hidden rounded-xl sm:h-95 md:col-span-1 lg:h-105 xl:h-120 xl:w-[22%]"
         >
           <Image
             src={belongWoman}
@@ -136,7 +136,7 @@ const YouBelongHere = () => {
         {/* ===== Column 4: Man Photo ===== */}
         <motion.div
           variants={FADE_IN_UP_ITEM}
-          className="relative h-[320px] w-full shrink-0 overflow-hidden rounded-xl sm:h-[380px] md:col-span-1 lg:h-[420px] xl:h-[480px] xl:w-[22%]"
+          className="relative h-80 w-full shrink-0 overflow-hidden rounded-xl sm:h-95 md:col-span-1 lg:h-105 xl:h-120 xl:w-[22%]"
         >
           <Image
             src={belongMan}

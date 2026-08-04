@@ -1,8 +1,8 @@
 'use client';
 
+import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicActionButton';
 import Image, { StaticImageData } from 'next/image';
 import React from 'react';
-import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicActionButton';
 
 export interface FeatureItem {
   number: string;
@@ -24,7 +24,7 @@ interface FeatureCardProps {
 
 const FeatureCard: React.FC<FeatureCardProps> = ({ item }) => {
   return (
-    <div className="relative flex min-h-[350px] flex-col justify-between overflow-hidden rounded-md bg-[#F8F3ED] p-5 shadow-xs sm:min-h-[370px] sm:p-6 lg:min-h-95 lg:p-7">
+    <div className="relative flex min-h-87.5 flex-col justify-between overflow-hidden rounded-md bg-[#F8F3ED] p-5 shadow-xs sm:min-h-92.5 sm:p-6 lg:min-h-95 lg:p-7">
       {/* Left Content Area */}
       <div className="relative z-10 max-w-[50%] sm:max-w-[48%]">
         {/* Card Top: Number */}
