@@ -1,27 +1,22 @@
 'use client';
 
+import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicActionButton';
 import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicActionButton';
 
 // Assets
 import belongMan from '@/assets/home/belong-man.png';
 import belongWoman from '@/assets/home/belong-woman.png';
-import heartPinkDeco from '@/assets/home/heart-pink.png';
 import iconButterfly from '@/assets/home/icon-butterfly.png';
 import iconGlobe from '@/assets/home/icon-globe.png';
 import iconPerson from '@/assets/home/icon-person.png';
+import pinkHeartDrawn from '@/assets/home/pink-heart-drawn.png';
 import pinkUnderline from '@/assets/home/pink-underline.png';
 
 const YouBelongHere = () => {
   return (
-    <motion.section
-      initial="hidden"
-      animate="visible"
-      variants={FADE_IN_UP_CONTAINER}
-      className="w-full py-12"
-    >
+    <motion.section initial="hidden" animate="visible" variants={FADE_IN_UP_CONTAINER}>
       <div className="mx-auto flex w-full flex-col items-center justify-between gap-6 lg:flex-row lg:items-stretch">
         {/* ===== Column 1: Left (Title, Stats & CTA) ===== */}
         <motion.div
@@ -39,8 +34,8 @@ const YouBelongHere = () => {
                   <Image src={pinkUnderline} alt="underline" fill className="object-cover" />
                 </div>
               </div>
-              <div className="relative h-8 w-8 shrink-0 -translate-y-2">
-                <Image src={heartPinkDeco} alt="Heart" fill className="object-contain" />
+              <div className="relative h-10 w-10 shrink-0 -translate-y-2">
+                <Image src={pinkHeartDrawn} alt="Heart" fill className="object-contain" />
               </div>
             </div>
 

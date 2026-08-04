@@ -40,12 +40,7 @@ const confessions = [
 
 const LatestConfessions = () => {
   return (
-    <motion.section
-      initial="hidden"
-      animate="visible"
-      variants={FADE_IN_UP_CONTAINER}
-      className="w-full py-10"
-    >
+    <motion.section initial="hidden" animate="visible" variants={FADE_IN_UP_CONTAINER}>
       {/* Title with green wave decorations */}
       <motion.div
         variants={FADE_IN_UP_ITEM}
