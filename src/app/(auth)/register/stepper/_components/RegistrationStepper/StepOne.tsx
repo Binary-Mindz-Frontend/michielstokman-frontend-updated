@@ -2,7 +2,14 @@
 
 import Image from 'next/image';
 import { Switch } from '@/components/ui/switch';
-import { UseFormRegister, UseFormSetValue } from 'react-hook-form';
+import { FieldErrors, UseFormRegister, UseFormSetValue } from 'react-hook-form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { StepperFormData } from './RegistrationStepper.types';
 
 import step1Hero from '@/assets/account-step/step1-hero.png';
@@ -14,6 +21,8 @@ interface StepOneProps {
   register: UseFormRegister<StepperFormData>;
   isOrientationEnabled: boolean;
   setValue: UseFormSetValue<StepperFormData>;
+  errors: FieldErrors<StepperFormData>;
+  genderValue: string;
   onNext: () => void;
 }
 
@@ -21,6 +30,8 @@ export default function StepOne({
   register,
   isOrientationEnabled,
   setValue,
+  errors,
+  genderValue,
   onNext,
 }: StepOneProps) {
   return (
@@ -86,19 +97,24 @@ export default function StepOne({
       <div className="mt-10 flex w-full max-w-lg flex-col gap-5 text-left sm:max-w-xl md:max-w-2xl lg:max-w-3xl">
         {/* Field 1: Name */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-foreground text-sm font-semibold">What Should We Call You?</label>
+          <label className="text-foreground text-sm font-semibold">
+            What Should We Call You? <span className="text-red-500">*</span>
+          </label>
           <input
             {...register('name')}
             type="text"
             placeholder="Enter Your Name"
             className="text-foreground placeholder:text-muted-foreground w-full rounded-md border border-[#EADFCF] bg-[#FAF7F0] px-4 py-3 text-sm transition-colors outline-none focus:border-[#D29B38]"
           />
+          {errors.name && (
+            <span className="text-xs font-medium text-red-500">{errors.name.message}</span>
+          )}
         </div>
 
         {/* Field 2: Age */}
         <div className="flex flex-col gap-1.5">
           <label className="text-foreground text-sm font-semibold">
-            How Many Years Have You Been Here?
+            How Many Years Have You Been Here? <span className="text-red-500">*</span>
           </label>
           <input
             {...register('age')}
@@ -106,28 +122,41 @@ export default function StepOne({
             placeholder="Enter Your Age"
             className="text-foreground placeholder:text-muted-foreground w-full rounded-md border border-[#EADFCF] bg-[#FAF7F0] px-4 py-3 text-sm transition-colors outline-none focus:border-[#D29B38]"
           />
+          {errors.age && (
+            <span className="text-xs font-medium text-red-500">{errors.age.message}</span>
+          )}
         </div>
 
         {/* Field 3: Country */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-foreground text-sm font-semibold">Where Do You Call Home?</label>
+          <label className="text-foreground text-sm font-semibold">
+            Where Do You Call Home? <span className="text-red-500">*</span>
+          </label>
           <input
             {...register('country')}
             type="text"
             placeholder="Enter Your Country"
             className="text-foreground placeholder:text-muted-foreground w-full rounded-md border border-[#EADFCF] bg-[#FAF7F0] px-4 py-3 text-sm transition-colors outline-none focus:border-[#D29B38]"
           />
+          {errors.country && (
+            <span className="text-xs font-medium text-red-500">{errors.country.message}</span>
+          )}
         </div>
 
         {/* Field 4: City */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-foreground text-sm font-semibold">Where Are You Today?</label>
+          <label className="text-foreground text-sm font-semibold">
+            Where Are You Today? <span className="text-red-500">*</span>
+          </label>
           <input
             {...register('city')}
             type="text"
             placeholder="Enter Your City"
             className="text-foreground placeholder:text-muted-foreground w-full rounded-md border border-[#EADFCF] bg-[#FAF7F0] px-4 py-3 text-sm transition-colors outline-none focus:border-[#D29B38]"
           />
+          {errors.city && (
+            <span className="text-xs font-medium text-red-500">{errors.city.message}</span>
+          )}
         </div>
 
         {/* Field 5: Height */}
@@ -156,13 +185,32 @@ export default function StepOne({
 
         {/* Field 7: Gender */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-foreground text-sm font-semibold">How Do You Identify?</label>
-          <input
-            {...register('gender')}
-            type="text"
-            placeholder="Select Your Gender"
-            className="text-foreground placeholder:text-muted-foreground w-full rounded-md border border-[#EADFCF] bg-[#FAF7F0] px-4 py-3 text-sm transition-colors outline-none focus:border-[#D29B38]"
-          />
+          <label className="text-foreground text-sm font-semibold">
+            How Do You Identify? <span className="text-red-500">*</span>
+          </label>
+          <Select
+            value={genderValue || ''}
+            onValueChange={(val) => {
+              setValue('gender', val, {
+                shouldValidate: true,
+                shouldDirty: true,
+                shouldTouch: true,
+              });
+            }}
+          >
+            <SelectTrigger className="text-foreground data-[placeholder]:text-muted-foreground w-full rounded-md border border-[#EADFCF] bg-[#FAF7F0] px-4 py-3 text-sm shadow-none transition-colors outline-none focus:border-[#D29B38] focus:ring-0 focus-visible:ring-0">
+              <SelectValue placeholder="Select Your Gender" />
+            </SelectTrigger>
+            <SelectContent className="border-[#EADFCF] bg-[#FAF7F0]">
+              <SelectItem value="Male">Male</SelectItem>
+              <SelectItem value="Female">Female</SelectItem>
+              <SelectItem value="Non-binary">Non-binary</SelectItem>
+              <SelectItem value="Prefer not to say">Prefer not to say</SelectItem>
+            </SelectContent>
+          </Select>
+          {errors.gender && (
+            <span className="text-xs font-medium text-red-500">{errors.gender.message}</span>
+          )}
         </div>
 
         {/* Field 8: Sexual Orientation */}

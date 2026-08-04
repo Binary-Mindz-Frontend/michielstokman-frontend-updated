@@ -5,14 +5,14 @@ import { Variants } from 'framer-motion';
 export const STORAGE_KEY = 'registration_stepper_data';
 
 export const stepperSchema = z.object({
-  name: z.string().optional(),
-  age: z.string().optional(),
-  country: z.string().optional(),
-  city: z.string().optional(),
+  name: z.string().min(1, 'Name is required'),
+  age: z.string().min(1, 'Age is required'),
+  country: z.string().min(1, 'Country is required'),
+  city: z.string().min(1, 'City is required'),
   height: z.string().optional(),
   education: z.string().optional(),
   income: z.string().optional(),
-  gender: z.string().optional(),
+  gender: z.string().min(1, 'Gender is required'),
   isSexualOrientationEnabled: z.boolean(),
   sexualOrientation: z.string().optional(),
   lifePhase: z.string().min(1, 'Life phase is required'),

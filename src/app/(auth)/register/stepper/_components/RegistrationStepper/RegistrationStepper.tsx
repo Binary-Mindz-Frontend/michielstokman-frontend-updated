@@ -3,12 +3,14 @@
 'use client';
 
 import { Suspense, useEffect } from 'react';
+import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
+
+import buttonArrow from '@/assets/account-step/button-arrow.png';
 
 import { cn } from '@/lib/utils';
 import { useUpdateUserProfileMutation } from '@/redux/features/auth/auth.api';
@@ -41,7 +43,15 @@ function RegistrationStepperContent() {
   const { data: profileResponse, isLoading: isFetchingProfile } = useGetProfileQuery(undefined);
   const [updateUserProfile, { isLoading }] = useUpdateUserProfileMutation();
 
-  const { register, setValue, watch, handleSubmit, reset } = useForm<StepperFormData>({
+  const {
+    register,
+    setValue,
+    watch,
+    handleSubmit,
+    reset,
+    trigger,
+    formState: { errors },
+  } = useForm<StepperFormData>({
     resolver: zodResolver(stepperSchema),
     mode: 'onChange',
     defaultValues: {
@@ -64,6 +74,13 @@ function RegistrationStepperContent() {
       },
     },
   });
+
+  const handleStepOneNext = async () => {
+    const isStepOneValid = await trigger(['name', 'age', 'country', 'city', 'gender']);
+    if (isStepOneValid) {
+      setStep(2);
+    }
+  };
 
   useEffect(() => {
     const savedData = localStorage.getItem(STORAGE_KEY);
@@ -179,18 +196,9 @@ function RegistrationStepperContent() {
 
   return (
     <section className="bg-bg-primary text-foreground flex min-h-screen flex-col items-center justify-center px-4 py-12 font-sans md:px-12">
-      {step > 1 && (
-        <button
-          onClick={() => setStep((s) => s - 1)}
-          className="text-primary mx-auto mb-4 flex max-w-5xl cursor-pointer items-center gap-1 self-start text-sm font-medium transition-opacity hover:opacity-90"
-        >
-          <ArrowLeft className="h-4 w-4" /> Back To Step {step - 1}
-        </button>
-      )}
-
       <div className="flex w-full max-w-5xl flex-col items-center">
-        {/* Progress Bar */}
-        <div className="mb-10 flex w-full max-w-5xl justify-center gap-4">
+        {/* Top Step Tracker Bar (Centered at Top) */}
+        <div className="mb-6 flex w-full max-w-md justify-center gap-4 sm:max-w-lg md:max-w-xl">
           {[1, 2, 3].map((i) => (
             <div
               key={i}
@@ -201,6 +209,26 @@ function RegistrationStepperContent() {
             />
           ))}
         </div>
+
+        {/* Back Button Row (Only for StepTwo & StepThree - Aligned Left under Step Tracker Bar) */}
+        {step > 1 && (
+          <div className="mb-6 flex w-full justify-start">
+            <button
+              type="button"
+              onClick={() => setStep((s) => s - 1)}
+              className="bg-primary hover:bg-primary/90 flex cursor-pointer items-center justify-center gap-2 rounded-none px-3.5 py-1.5 text-xs font-semibold text-white transition-all hover:opacity-95 sm:px-4 sm:py-2 sm:text-sm"
+            >
+              <Image
+                src={buttonArrow}
+                alt="Back Arrow"
+                width={24}
+                height={24}
+                className="h-5 w-5 rotate-180 object-contain sm:h-6 sm:w-6"
+              />
+              Back
+            </button>
+          </div>
+        )}
 
         {/* Animation Container */}
         <AnimatePresence mode="wait">
@@ -217,7 +245,9 @@ function RegistrationStepperContent() {
                 register={register}
                 isOrientationEnabled={isOrientationEnabled}
                 setValue={setValue}
-                onNext={() => setStep(2)}
+                errors={errors}
+                genderValue={allFormValues.gender || ''}
+                onNext={handleStepOneNext}
               />
             </motion.div>
           )}
