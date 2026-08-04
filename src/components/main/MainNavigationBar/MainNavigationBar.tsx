@@ -110,7 +110,7 @@ function MainNavigationBar() {
 
           {/* ================= NAVIGATION LINKS ================= */}
           <ul
-            className={`fixed top-0 right-0 z-40 flex h-screen w-full flex-col items-center justify-center gap-8 bg-[#FDFCFB] px-6 text-lg transition-all duration-300 ease-in-out md:static md:h-auto md:w-auto md:flex-row md:gap-8 md:bg-transparent md:px-0 md:opacity-100 lg:gap-10 ${
+            className={`fixed top-0 right-0 z-40 flex h-screen w-full flex-col items-center justify-center gap-8 bg-[#FDFCFB] px-6 text-lg transition-all duration-300 ease-in-out md:static md:h-auto md:w-auto md:flex-row md:gap-3.5 md:bg-transparent md:px-0 md:text-xs md:opacity-100 lg:gap-7 lg:text-sm xl:gap-10 xl:text-base ${
               isOpen
                 ? 'pointer-events-auto translate-x-0 opacity-100'
                 : 'pointer-events-none translate-x-full opacity-0 md:pointer-events-auto md:translate-x-0'
