@@ -15,8 +15,8 @@ import buttonArrow from '@/assets/account-step/button-arrow.png';
 import { cn } from '@/lib/utils';
 import { useUpdateUserProfileMutation } from '@/redux/features/auth/auth.api';
 import { useGetProfileQuery } from '@/redux/features/userProfile/userProfile.api';
-import { Skeleton } from '@/components/ui/skeleton';
 import { catchAsyncMutation } from '@/utils/apiReqRes.utils';
+import { StepperSkeleton } from './RegistrationStepperSkeletons';
 
 import {
   STORAGE_KEY,
@@ -165,33 +165,7 @@ function RegistrationStepperContent() {
   };
 
   if (isFetchingProfile) {
-    return (
-      <section className="mx-auto max-w-4xl px-4 py-12">
-        <div className="mb-12 flex gap-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-primary/30 h-0.75 flex-1" />
-          ))}
-        </div>
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <Skeleton className="h-8 w-1/3" />
-            <Skeleton className="h-4 w-1/2" />
-          </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="space-y-2">
-                <Skeleton className="h-4 w-1/4" />
-                <Skeleton className="h-10 w-full" />
-              </div>
-            ))}
-            <div className="col-span-full">
-              <Skeleton className="h-10 w-full" />
-            </div>
-          </div>
-          <Skeleton className="h-10 w-32" />
-        </div>
-      </section>
-    );
+    return <StepperSkeleton step={step} />;
   }
 
   return (
@@ -294,35 +268,7 @@ function RegistrationStepperContent() {
 
 export default function RegistrationStepper() {
   return (
-    <Suspense
-      fallback={
-        <section className="mx-auto max-w-4xl px-4 py-12">
-          <div className="mb-12 flex gap-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-primary/30 h-0.75 flex-1" />
-            ))}
-          </div>
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <Skeleton className="h-8 w-1/3" />
-              <Skeleton className="h-4 w-1/2" />
-            </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {[...Array(8)].map((_, i) => (
-                <div key={i} className="space-y-2">
-                  <Skeleton className="h-4 w-1/4" />
-                  <Skeleton className="h-10 w-full" />
-                </div>
-              ))}
-              <div className="col-span-full">
-                <Skeleton className="h-10 w-full" />
-              </div>
-            </div>
-            <Skeleton className="h-10 w-32" />
-          </div>
-        </section>
-      }
-    >
+    <Suspense fallback={<StepperSkeleton step={1} />}>
       <RegistrationStepperContent />
     </Suspense>
   );
