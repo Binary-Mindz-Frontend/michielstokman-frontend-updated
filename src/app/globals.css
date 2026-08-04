@@ -168,6 +168,15 @@
   }
 }
 
+@layer utilities {
+  .font-playpen {
+    font-family: 'Playpen Sans', cursive, sans-serif !important;
+  }
+  .font-edo {
+    font-family: 'Edo', cursive, sans-serif !important;
+  }
+}
+
 /* Tiptap Editor Styles */
 .tiptap ul {
   list-style-type: disc;

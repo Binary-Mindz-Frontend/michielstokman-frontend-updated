@@ -2,13 +2,13 @@
 
 import Image from 'next/image';
 import { Switch } from '@/components/ui/switch';
-import { ArrowRight } from 'lucide-react';
 import { UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import { StepperFormData } from './RegistrationStepper.types';
 
 import step1Hero from '@/assets/account-step/step1-hero.png';
 import step1HeroMobile from '@/assets/account-step/step1-hero-mobile.png';
 import stepBrushBg from '@/assets/account-step/step-brush-bg.png';
+import buttonArrow from '@/assets/account-step/button-arrow.png';
 
 interface StepOneProps {
   register: UseFormRegister<StepperFormData>;
@@ -53,7 +53,7 @@ export default function StepOne({
         </div>
 
         {/* Text Column */}
-        <div className="order-2 mt-4 flex w-full max-w-110 flex-col items-center text-center md:order-1 md:w-1/2 md:items-start md:text-left">
+        <div className="order-2 mt-4 flex w-full max-w-110 flex-col items-center text-center md:order-1 md:w-1/2 md:max-w-full md:items-start md:text-left">
           <div className="font-edo flex w-full flex-col items-start justify-center pl-4 leading-none font-black uppercase md:pl-0">
             <span className="-rotate-3 transform self-start text-[2.75rem] tracking-wider text-[#486221] sm:text-5xl md:text-[3.6rem] lg:text-[4.2rem]">
               TELL US
@@ -83,7 +83,7 @@ export default function StepOne({
       </div>
 
       {/* Form Inputs Section */}
-      <div className="mt-10 flex w-full max-w-lg flex-col gap-5 text-left">
+      <div className="mt-10 flex w-full max-w-lg flex-col gap-5 text-left sm:max-w-xl md:max-w-2xl lg:max-w-3xl">
         {/* Field 1: Name */}
         <div className="flex flex-col gap-1.5">
           <label className="text-foreground text-sm font-semibold">What Should We Call You?</label>
@@ -194,9 +194,16 @@ export default function StepOne({
         <button
           type="button"
           onClick={onNext}
-          className="bg-primary hover:bg-primary/90 mx-auto mt-6 flex w-full max-w-xs cursor-pointer items-center justify-center gap-2 rounded-md py-3.5 text-sm font-bold tracking-wider text-white uppercase transition-colors"
+          className="bg-primary hover:bg-primary/90 mx-auto mt-6 flex w-full max-w-xs cursor-pointer items-center justify-center gap-2 rounded-md py-3.5 text-sm font-bold tracking-wider text-white uppercase transition-colors sm:rounded-none sm:font-medium sm:not-italic"
         >
-          CONTINUE THE JOURNEY <ArrowRight className="h-4 w-4" />
+          CONTINUE THE JOURNEY{' '}
+          <Image
+            src={buttonArrow}
+            alt="Arrow"
+            width={32}
+            height={32}
+            className="h-7 w-7 object-contain"
+          />
         </button>
       </div>
     </div>

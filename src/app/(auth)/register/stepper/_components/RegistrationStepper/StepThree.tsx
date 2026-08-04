@@ -6,13 +6,13 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Slider } from '@/components/ui/slider';
-import { ArrowRight } from 'lucide-react';
 import { UseFormSetValue } from 'react-hook-form';
 import { StepperFormData } from './RegistrationStepper.types';
 
 import step3Hero from '@/assets/account-step/step3-hero-image.png';
 import step3HeroMobile from '@/assets/account-step/step3-hero-image-mobile.png';
 import stepBrushBg from '@/assets/account-step/step-brush-bg.png';
+import buttonArrow from '@/assets/account-step/button-arrow.png';
 
 interface StepThreeProps {
   growthValues: Record<string, number> | undefined;
@@ -101,7 +101,7 @@ export default function StepThree({ growthValues, setValue, onSubmit, isLoading 
         </div>
 
         {/* Text Column */}
-        <div className="order-2 mt-4 flex w-full max-w-110 flex-col items-center text-center md:order-1 md:w-1/2 md:items-start md:text-left">
+        <div className="order-2 mt-4 flex w-full max-w-110 flex-col items-center text-center md:order-1 md:w-1/2 md:max-w-full md:items-start md:text-left">
           <div className="font-edo flex w-full flex-col items-start justify-center pl-4 leading-none font-black uppercase md:pl-0">
             <span className="-rotate-3 transform self-start text-[2.75rem] tracking-wider text-[#486221] sm:text-5xl md:text-[3.6rem] lg:text-[4.2rem]">
               WHAT MATTERS
@@ -131,7 +131,7 @@ export default function StepThree({ growthValues, setValue, onSubmit, isLoading 
       </div>
 
       {/* Sliders Container Box */}
-      <div className="mt-10 flex w-full max-w-lg flex-col gap-6 rounded-2xl border border-[#EADFCF] bg-[#FAF7F0] p-6 text-left shadow-sm sm:p-8">
+      <div className="mt-10 flex w-full max-w-lg flex-col gap-6 rounded-2xl border border-[#FEC332] bg-[#FAF7F0] p-6 text-left shadow-sm sm:max-w-xl sm:p-8 md:max-w-2xl lg:max-w-3xl">
         {GROWTH_KEYS.map((key) => {
           const val = Number((growthValues as any)?.[key] ?? 5);
           return (
@@ -156,13 +156,20 @@ export default function StepThree({ growthValues, setValue, onSubmit, isLoading 
         type="button"
         onClick={onSubmit}
         disabled={isLoading}
-        className="bg-primary hover:bg-primary/90 mx-auto mt-8 flex w-full max-w-xs cursor-pointer items-center justify-center gap-2 rounded-md py-3.5 text-sm font-bold tracking-wider text-white uppercase transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+        className="bg-primary hover:bg-primary/90 mx-auto mt-8 flex w-full max-w-xs cursor-pointer items-center justify-center gap-2 rounded-md py-3.5 text-sm font-bold tracking-wider text-white uppercase transition-colors disabled:cursor-not-allowed disabled:opacity-60 sm:rounded-none sm:font-medium sm:not-italic"
       >
         {isLoading ? (
           'Please wait...'
         ) : (
           <>
-            Begin Your Journey <ArrowRight className="h-4 w-4" />
+            Begin Your Journey{' '}
+            <Image
+              src={buttonArrow}
+              alt="Arrow"
+              width={32}
+              height={32}
+              className="h-7 w-7 object-contain"
+            />
           </>
         )}
       </button>

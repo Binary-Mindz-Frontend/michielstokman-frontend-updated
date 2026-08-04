@@ -1,7 +1,6 @@
 'use client';
 
 import Image from 'next/image';
-import { ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { UseFormSetValue } from 'react-hook-form';
 import { StepperFormData } from './RegistrationStepper.types';
@@ -9,6 +8,7 @@ import { StepperFormData } from './RegistrationStepper.types';
 import step2Hero from '@/assets/account-step/step2-hero-image.png';
 import step2HeroMobile from '@/assets/account-step/step2-hero-image-mobile.png';
 import stepBrushBg from '@/assets/account-step/step-brush-bg.png';
+import buttonArrow from '@/assets/account-step/button-arrow.png';
 
 interface StepTwoProps {
   selectedLifePhase: string;
@@ -55,7 +55,7 @@ export default function StepTwo({ selectedLifePhase, setValue, onNext }: StepTwo
         </div>
 
         {/* Text Column */}
-        <div className="order-2 mt-4 flex w-full max-w-110 flex-col items-center text-center md:order-1 md:w-1/2 md:items-start md:text-left">
+        <div className="order-2 mt-4 flex w-full max-w-110 flex-col items-center text-center md:order-1 md:w-1/2 md:max-w-full md:items-start md:text-left">
           <div className="font-edo flex w-full flex-col items-start justify-center pl-4 leading-none font-black uppercase md:pl-0">
             <span className="-rotate-3 transform self-start text-[2.75rem] tracking-wider text-[#486221] sm:text-5xl md:text-[3.6rem] lg:text-[4.2rem]">
               TELL US
@@ -85,7 +85,7 @@ export default function StepTwo({ selectedLifePhase, setValue, onNext }: StepTwo
       </div>
 
       {/* Options Container Box */}
-      <div className="mt-10 flex w-full max-w-lg flex-col gap-6 rounded-2xl border border-[#EADFCF] bg-[#FAF7F0] p-6 text-left shadow-sm sm:p-8">
+      <div className="mt-10 flex w-full max-w-lg flex-col gap-6 rounded-2xl border border-[#FEC332] bg-[#FAF7F0] p-6 text-left shadow-sm sm:max-w-xl sm:p-8 md:max-w-2xl lg:max-w-3xl">
         {LIFE_PHASE_OPTIONS.map((phase) => {
           const isSelected = selectedLifePhase === phase.id;
           return (
@@ -97,15 +97,17 @@ export default function StepTwo({ selectedLifePhase, setValue, onNext }: StepTwo
               {/* Radio Circle Indicator */}
               <div
                 className={cn(
-                  'mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 border-[#F3A134] transition-all',
-                  isSelected ? 'bg-[#F3A134]' : 'bg-transparent',
+                  'mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 border-[#FEC332] transition-all',
+                  isSelected ? 'bg-[#FEC332]' : 'bg-transparent',
                 )}
               >
                 {isSelected && <div className="h-2 w-2 rounded-full bg-white" />}
               </div>
 
               <div className="flex flex-col">
-                <h4 className="text-foreground text-base font-bold sm:text-lg">{phase.title}</h4>
+                <h4 className="font-playpen text-foreground text-base font-bold sm:text-lg">
+                  {phase.title}
+                </h4>
                 <p className="text-muted-foreground text-xs font-normal italic sm:text-sm">
                   {phase.desc}
                 </p>
@@ -119,9 +121,16 @@ export default function StepTwo({ selectedLifePhase, setValue, onNext }: StepTwo
       <button
         type="button"
         onClick={onNext}
-        className="bg-primary hover:bg-primary/90 mx-auto mt-8 flex w-full max-w-xs cursor-pointer items-center justify-center gap-2 rounded-md py-3.5 text-sm font-bold tracking-wider text-white uppercase transition-colors"
+        className="bg-primary hover:bg-primary/90 mx-auto mt-8 flex w-full max-w-xs cursor-pointer items-center justify-center gap-2 rounded-md py-3.5 text-sm font-bold tracking-wider text-white uppercase transition-colors sm:rounded-none sm:font-medium sm:not-italic"
       >
-        CONTINUE <ArrowRight className="h-4 w-4" />
+        CONTINUE{' '}
+        <Image
+          src={buttonArrow}
+          alt="Arrow"
+          width={32}
+          height={32}
+          className="h-7 w-7 object-contain"
+        />
       </button>
     </div>
   );
