@@ -1,9 +1,9 @@
 'use client';
 
+import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicActionButton';
 import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import Link from 'next/link';
 
 // Assets
 import confession1 from '@/assets/home/confession1.png';
@@ -94,12 +94,14 @@ const LatestConfessions = () => {
 
       {/* SEE ALL Button */}
       <motion.div variants={FADE_IN_UP_ITEM} className="mt-10 flex justify-center">
-        <Link
-          href="/confessions"
-          className="font-edo flex items-center justify-center rounded-sm bg-[#D22D4C] px-8 py-3.5 text-base font-bold tracking-widest text-white transition-all hover:bg-[#b5243f]"
-        >
-          SEE ALL —&gt;
-        </Link>
+        <div className="w-fit">
+          <DynamicActionButton
+            text="SEE ALL"
+            href="/confessions"
+            bgColor="#D22D4C"
+            textColor="white"
+          />
+        </div>
       </motion.div>
     </motion.section>
   );

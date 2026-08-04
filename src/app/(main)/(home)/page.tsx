@@ -6,6 +6,7 @@ import LatestConfessions from './_components/LatestConfessions/LatestConfessions
 import LiberationSurvey from './_components/LiberationSurvey/LiberationSurvey';
 import ResonanceGrid from './_components/ResonanceGrid/ResonanceGrid';
 import WhyWeExist from './_components/WhyWeExist/WhyWeExist';
+import YouBelongHere from './_components/YouBelongHere/YouBelongHere';
 
 const Homepage = () => {
   return (
@@ -23,6 +24,10 @@ const Homepage = () => {
 
         <motion.div variants={FADE_IN_UP_ITEM}>
           <ResonanceGrid />
+        </motion.div>
+
+        <motion.div variants={FADE_IN_UP_ITEM}>
+          <YouBelongHere />
         </motion.div>
 
         <motion.div variants={FADE_IN_UP_ITEM}>
