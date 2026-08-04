@@ -43,12 +43,7 @@ const stats = [
 
 const LiberationSurvey = () => {
   return (
-    <motion.section
-      initial="hidden"
-      animate="visible"
-      variants={FADE_IN_UP_CONTAINER}
-      className="w-full py-12"
-    >
+    <motion.section initial="hidden" animate="visible" variants={FADE_IN_UP_CONTAINER}>
       {/* Title */}
       <motion.div variants={FADE_IN_UP_ITEM} className="flex items-center justify-center gap-3.5">
         <h2 className="font-edo text-center text-[2rem] font-black uppercase sm:text-[2.4rem] lg:text-[2.8rem]">

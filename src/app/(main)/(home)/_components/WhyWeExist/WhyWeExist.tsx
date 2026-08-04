@@ -9,6 +9,7 @@ import iconCocktail from '@/assets/home/icon-cocktail.png';
 import iconFlame from '@/assets/home/icon-flame.png';
 import iconLips from '@/assets/home/icon-lips.png';
 import womanPhoto from '@/assets/home/image 117.png';
+import pinkUnderline from '@/assets/home/pink-underline.png';
 import iconBird from '@/assets/home/Vector (1).png';
 
 const cards = [
@@ -40,19 +41,18 @@ const cards = [
 
 const WhyWeExist = () => {
   return (
-    <motion.section
-      initial="hidden"
-      animate="visible"
-      variants={FADE_IN_UP_CONTAINER}
-      className="w-full py-12"
-    >
+    <motion.section initial="hidden" animate="visible" variants={FADE_IN_UP_CONTAINER}>
       {/* Title */}
       <motion.div variants={FADE_IN_UP_ITEM} className="mb-10 flex flex-col items-center">
-        <h2 className="font-edo text-center text-[2rem] font-black uppercase sm:text-[2.4rem] lg:text-[2.8rem]">
-          Why We Exist
-        </h2>
-        {/* Pink underline decoration */}
-        <div className="mt-2 h-0.75 w-30 rounded-full bg-[#E81A66]" />
+        <div className="relative">
+          <h2 className="font-edo text-center text-[2rem] font-black text-[#1a1a1a] uppercase sm:text-[2.4rem] lg:text-[2.8rem]">
+            Why We Exist
+          </h2>
+          {/* Pink underline decoration image */}
+          <div className="relative mt-1 h-1.5 w-full">
+            <Image src={pinkUnderline} alt="underline" fill className="object-cover" />
+          </div>
+        </div>
       </motion.div>
 
       {/* Content Row: Photo + Cards */}
