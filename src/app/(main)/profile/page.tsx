@@ -127,7 +127,7 @@ export default function ProfilePage() {
   }
 
   const personalDetails = [
-    { label: 'AGE', value: profileData?.age ? profileData.age.toString() : '0' },
+    { label: 'AGE', value: profileData?.age ? profileData.age.toString() : 'N A' },
     { label: 'COUNTRY', value: profileData?.country || 'N A' },
     { label: 'CITY', value: profileData?.city || 'N A' },
     { label: 'HEIGHT', value: profileData?.height || 'N A' },
@@ -157,7 +157,7 @@ export default function ProfilePage() {
         initial="hidden"
         animate="visible"
         variants={FADE_IN_UP_CONTAINER}
-        className="mx-auto flex max-w-4xl flex-col items-center px-4"
+        className="mx-auto flex w-full max-w-4xl flex-col items-center px-4"
       >
         {/* Page Title */}
         <motion.h1
@@ -167,8 +167,8 @@ export default function ProfilePage() {
           TRANSFORM TO LIBERATION
         </motion.h1>
 
-        {/* SECTION 1: HERO / BRUSH STATS */}
-        <motion.div variants={FADE_IN_UP_ITEM} className="w-full">
+        {/* SECTION 1: HERO / BRUSH STATS (INCREASED WIDTH) */}
+        <motion.div variants={FADE_IN_UP_ITEM} className="w-full max-w-4xl">
           <ProfileHero
             trueName={profileData?.true_name}
             lifePhase={profileData?.life_phase}
@@ -179,17 +179,17 @@ export default function ProfilePage() {
         </motion.div>
 
         {/* SECTION 2: DEMOGRAPHICS GRID */}
-        <motion.div variants={FADE_IN_UP_ITEM} className="w-full">
+        <motion.div variants={FADE_IN_UP_ITEM} className="w-full max-w-2xl">
           <ProfileDemographics personalDetails={personalDetails} />
         </motion.div>
 
         {/* SECTION 3: RADAR CHART */}
-        <motion.div variants={FADE_IN_UP_ITEM} className="w-full">
+        <motion.div variants={FADE_IN_UP_ITEM} className="w-full max-w-2xl">
           <ProfileRadarChart data={chartData} />
         </motion.div>
 
         {/* ACTIONS: BUTTONS */}
-        <motion.div variants={FADE_IN_UP_ITEM} className="flex w-full justify-center">
+        <motion.div variants={FADE_IN_UP_ITEM} className="w-full max-w-2xl">
           <ProfileActions
             onUpdateFocus={() => router.push('/register/stepper')}
             onLogout={handleLogout}

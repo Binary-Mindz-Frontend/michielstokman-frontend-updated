@@ -50,7 +50,7 @@ export default function ProfileRadarChart({ data }: ProfileRadarChartProps) {
 
   return (
     <div className="mb-10 w-full rounded-2xl bg-[#F7F3EC] p-8 shadow-sm">
-      <h3 className="font-playpen mb-6 text-center text-lg font-bold tracking-widest text-[#E49942] uppercase">
+      <h3 className="font-playpen mb-6 text-center text-lg font-medium tracking-widest text-[#E49942] uppercase">
         YOUR GROWTH FOCUS
       </h3>
 
