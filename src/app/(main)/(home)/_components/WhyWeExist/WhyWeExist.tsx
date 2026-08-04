@@ -58,40 +58,42 @@ const WhyWeExist = () => {
       {/* Content Row: Photo + Cards */}
       <motion.div
         variants={FADE_IN_UP_ITEM}
-        className="mx-auto flex w-full flex-col items-start gap-6 md:flex-row md:items-end md:gap-6"
+        className="mx-auto flex w-full flex-col items-start gap-6 md:flex-row md:items-start md:gap-4 lg:gap-3 xl:items-end"
       >
-        {/* Left: Woman Photo */}
-        <div className="relative h-70 w-full shrink-0 overflow-hidden rounded-xl md:h-65 md:w-65">
+        <div className="relative h-70 w-full shrink-0 overflow-hidden rounded-xl md:h-65 md:w-55 lg:w-56 xl:h-65 xl:w-65">
           <Image
             src={womanPhoto}
             alt="Woman smiling — Why We Exist"
             fill
-            className="object-cover object-top"
+            className="object-contain object-center"
             priority
           />
         </div>
 
         {/* Right: 4 Cards */}
-        <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-3 xl:gap-4">
           {cards.map((card) => (
-            <div key={card?.number} className="flex flex-col gap-3 rounded-sm bg-[#F8F4ED] p-5">
+            <div
+              key={card?.number}
+              className="flex flex-col gap-3 rounded-sm bg-[#F8F4ED] p-4 lg:p-3.5 xl:p-5"
+            >
               {/* Number + Icon Row */}
               <div className="flex items-center justify-between">
                 <span className="font-sans text-base font-semibold text-[#301C05]">
                   {card?.number}
                 </span>
-                <div className="relative h-9 w-9 shrink-0">
+                <div className="relative h-8 w-8 shrink-0 lg:h-8 lg:w-8 xl:h-9 xl:w-9">
                   <Image src={card?.icon} alt={card?.title} fill className="object-contain" />
                 </div>
               </div>
 
               {/* Title */}
-              <h3 className="font-edo text-[1rem] leading-tight font-semibold uppercase lg:text-[1.2rem]">
+              <h3 className="font-edo text-[1rem] leading-tight font-semibold uppercase lg:text-[0.92rem] xl:text-[1.2rem]">
                 {card?.title}
               </h3>
 
               {/* Description */}
-              <p className="font-sans text-[12px] leading-relaxed whitespace-pre-line sm:text-sm">
+              <p className="font-sans text-[12px] leading-relaxed whitespace-pre-line sm:text-sm lg:text-[11px] xl:text-sm">
                 {card?.desc}
               </p>
             </div>

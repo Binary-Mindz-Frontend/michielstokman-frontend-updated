@@ -16,69 +16,77 @@ import pinkUnderline from '@/assets/home/pink-underline.png';
 
 const YouBelongHere = () => {
   return (
-    <motion.section initial="hidden" animate="visible" variants={FADE_IN_UP_CONTAINER}>
-      <div className="mx-auto flex w-full flex-col items-center justify-between gap-6 lg:flex-row lg:items-stretch">
+    <motion.section
+      initial="hidden"
+      animate="visible"
+      variants={FADE_IN_UP_CONTAINER}
+      className="w-full py-6 sm:py-8 lg:py-10"
+    >
+      {/* Container: 1-col mobile, 2x2 Grid on tablet & laptop (768px - 1279px), 4-col flex on large screens (1280px+) */}
+      <div className="mx-auto flex w-full flex-col items-center justify-between gap-6 md:grid md:grid-cols-2 md:gap-6 lg:gap-8 xl:flex xl:flex-row xl:items-stretch xl:gap-6">
         {/* ===== Column 1: Left (Title, Stats & CTA) ===== */}
         <motion.div
           variants={FADE_IN_UP_ITEM}
-          className="flex w-full flex-col justify-between gap-6 lg:w-[32%]"
+          className="flex w-full flex-col justify-between gap-5 md:col-span-1 xl:w-[31%]"
         >
           {/* Header with underline and pink heart */}
           <div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5 sm:gap-3">
               <div className="relative">
-                <h2 className="font-edo text-[2.2rem] font-black tracking-wide uppercase sm:text-[2.5rem]">
+                <h2 className="font-edo text-2xl font-black tracking-wide uppercase sm:text-[2.2rem] lg:text-[2.4rem] xl:text-[2.5rem]">
                   You Belong Here.
                 </h2>
                 <div className="relative mt-1 h-1.5 w-full">
                   <Image src={pinkUnderline} alt="underline" fill className="object-cover" />
                 </div>
               </div>
-              <div className="relative h-10 w-10 shrink-0 -translate-y-2">
+              <div className="relative h-7 w-7 shrink-0 -translate-y-2 sm:h-9 sm:w-9 lg:h-9 lg:w-9 xl:h-10 xl:w-10">
                 <Image src={pinkHeartDrawn} alt="Heart" fill className="object-contain" />
               </div>
             </div>
 
-            <p className="font-playpen mt-4 text-center text-lg font-bold text-[#1A1A1A]">
+            <p className="font-playpen mt-3 text-center text-base font-bold text-[#1A1A1A] sm:text-lg">
               It&apos;s Free
             </p>
           </div>
 
           {/* Stats Row */}
-          <div className="grid grid-cols-3 gap-2 text-center">
+          <div className="grid grid-cols-3 gap-1 text-center sm:gap-2">
             {/* Stat 1 */}
             <div className="flex flex-col items-center">
-              <div className="relative h-12 w-12 shrink-0">
+              <div className="relative h-9 w-9 shrink-0 sm:h-11 sm:w-11 xl:h-12 xl:w-12">
                 <Image src={iconPerson} alt="Person icon" fill className="object-contain" />
               </div>
-              <span className="mt-2 font-sans text-base font-extrabold text-[#1A1A1A] sm:text-lg">
+              <span className="mt-1.5 font-sans text-sm font-extrabold text-[#1A1A1A] sm:text-base xl:text-lg">
                 272.00+
               </span>
-              <span className="font-playpen text-xs font-semibold text-[#555]">Memebers</span>
+              <span className="font-playpen text-[11px] font-semibold text-[#555] sm:text-xs">
+                Memebers
+              </span>
             </div>
 
             {/* Stat 2 */}
             <div className="flex flex-col items-center">
-              <div className="relative h-12 w-12 shrink-0">
+              <div className="relative h-9 w-9 shrink-0 sm:h-11 sm:w-11 xl:h-12 xl:w-12">
                 <Image src={iconGlobe} alt="Globe icon" fill className="object-contain" />
               </div>
-              <span className="mt-2 font-sans text-base font-extrabold text-[#1A1A1A] sm:text-lg">
+              <span className="mt-1.5 font-sans text-sm font-extrabold text-[#1A1A1A] sm:text-base xl:text-lg">
                 42
               </span>
-              <span className="font-playpen text-xs font-semibold text-[#555]">
+              <span className="font-playpen text-[11px] font-semibold text-[#555] sm:text-xs">
                 Countries Worldwide
               </span>
             </div>
 
             {/* Stat 3 */}
             <div className="flex flex-col items-center">
-              <div className="relative h-12 w-12 shrink-0">
+              <div className="relative h-9 w-9 shrink-0 sm:h-11 sm:w-11 xl:h-12 xl:w-12">
                 <Image src={iconButterfly} alt="Butterfly icon" fill className="object-contain" />
               </div>
-              <span className="mt-2 font-sans text-base font-extrabold text-[#1A1A1A] sm:text-lg">
+              <span className="mt-1.5 font-sans text-sm font-extrabold text-[#1A1A1A] sm:text-base xl:text-lg">
                 Thousands
               </span>
-              <span className="font-playpen text-xs font-semibold text-[#555]">
+              <span className="font-playpen text-[11px] font-semibold text-[#555] sm:text-xs">
                 Of Stories Shared
               </span>
             </div>
@@ -96,7 +104,7 @@ const YouBelongHere = () => {
         {/* ===== Column 2: Woman Photo ===== */}
         <motion.div
           variants={FADE_IN_UP_ITEM}
-          className="relative h-120 w-full shrink-0 overflow-hidden rounded-xl sm:h-130 lg:h-100 lg:w-[22%]"
+          className="relative h-[320px] w-full shrink-0 overflow-hidden rounded-xl sm:h-[380px] md:col-span-1 lg:h-[420px] xl:h-[480px] xl:w-[22%]"
         >
           <Image
             src={belongWoman}
@@ -110,17 +118,17 @@ const YouBelongHere = () => {
         {/* ===== Column 3: Quote Text ===== */}
         <motion.div
           variants={FADE_IN_UP_ITEM}
-          className="flex w-full flex-col justify-center gap-6 px-2 lg:w-[23%]"
+          className="flex w-full flex-col justify-center gap-4 px-1 sm:gap-5 md:col-span-1 xl:w-[23%]"
         >
-          <p className="font-playpen text-lg font-bold text-[#1A1A1A]">
+          <p className="font-playpen text-base font-bold text-[#1A1A1A] sm:text-lg lg:text-xl">
             The Truth Doesn&apos;t Set You Free.
           </p>
 
-          <h3 className="font-edo text-[2rem] leading-tight font-black text-[#E81A66] uppercase sm:text-[2.4rem]">
+          <h3 className="font-edo text-2xl leading-tight font-black text-[#E81A66] uppercase sm:text-[2.2rem] lg:text-[2.4rem]">
             First It Messes Everything Up.
           </h3>
 
-          <p className="font-playpen text-base leading-relaxed font-bold text-[#1A1A1A]">
+          <p className="font-playpen text-sm leading-relaxed font-bold text-[#1A1A1A] sm:text-base lg:text-lg">
             A Place For People Who Want To Feel More Alive.
           </p>
         </motion.div>
@@ -128,7 +136,7 @@ const YouBelongHere = () => {
         {/* ===== Column 4: Man Photo ===== */}
         <motion.div
           variants={FADE_IN_UP_ITEM}
-          className="relative h-120 w-full shrink-0 overflow-hidden rounded-xl sm:h-130 lg:h-100 lg:w-[22%]"
+          className="relative h-[320px] w-full shrink-0 overflow-hidden rounded-xl sm:h-[380px] md:col-span-1 lg:h-[420px] xl:h-[480px] xl:w-[22%]"
         >
           <Image
             src={belongMan}

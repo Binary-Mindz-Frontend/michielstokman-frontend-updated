@@ -44,51 +44,58 @@ const LatestConfessions = () => {
       {/* Title with green wave decorations */}
       <motion.div
         variants={FADE_IN_UP_ITEM}
-        className="flex items-center justify-center gap-4 sm:gap-6"
+        className="flex items-center justify-center gap-2 sm:gap-4 lg:gap-6"
       >
-        <div className="relative h-6 w-16 shrink-0 sm:h-8 sm:w-24">
+        <div className="relative h-4 w-12 shrink-0 sm:h-6 sm:w-20 lg:h-7 lg:w-22 xl:h-8 xl:w-24">
           <Image src={greenWaves} alt="Green wave decoration" fill className="object-contain" />
         </div>
 
-        <h2 className="font-edo text-center text-[2rem] font-black uppercase sm:text-[2.4rem] lg:text-[2.8rem]">
+        <h2 className="font-edo text-center text-xl font-black uppercase sm:text-3xl lg:text-3xl xl:text-[2.8rem]">
           Latest Confessions
         </h2>
 
-        <div className="relative h-6 w-16 shrink-0 sm:h-8 sm:w-24">
+        <div className="relative h-4 w-12 shrink-0 sm:h-6 sm:w-20 lg:h-7 lg:w-22 xl:h-8 xl:w-24">
           <Image src={greenWaves} alt="Green wave decoration" fill className="object-contain" />
         </div>
       </motion.div>
 
-      {/* Cards Grid */}
+      {/* Cards Grid: 1 col mobile, 2 cols tablet (640-1023px), 3 cols laptop/desktop (1024px+) */}
       <motion.div
         variants={FADE_IN_UP_ITEM}
-        className="mx-auto mt-10 grid w-full grid-cols-1 gap-6 md:grid-cols-3"
+        className="mx-auto mt-6 grid w-full grid-cols-1 gap-4 sm:mt-8 sm:grid-cols-2 lg:mt-10 lg:grid-cols-3 lg:gap-4 xl:gap-6"
       >
         {confessions.map((item, index) => (
           <div
             key={index}
-            className={`relative flex min-h-55 w-full overflow-hidden rounded-md ${item?.bg} p-6`}
+            className={`relative flex min-h-[180px] w-full overflow-hidden rounded-xl sm:min-h-[195px] lg:min-h-[200px] xl:min-h-[220px] ${item?.bg} p-4 sm:p-5 lg:p-4.5 xl:p-6`}
           >
             {/* Left Content */}
-            <div className="z-10 flex w-[60%] flex-col justify-between pr-2">
-              <p className="font-sans text-lg leading-snug font-black sm:text-2xl">{item?.text}</p>
+            <div className="z-10 flex w-[60%] flex-col justify-between pr-2 lg:w-[62%]">
+              <p className="font-sans text-base leading-snug font-black text-[#1A1A1A] sm:text-lg lg:text-base xl:text-xl">
+                {item?.text}
+              </p>
 
               {/* Bottom Icon */}
-              <div className="relative h-10 w-10 shrink-0">
+              <div className="relative mt-3 h-7 w-7 shrink-0 sm:h-8 sm:w-8 lg:h-8 lg:w-8 xl:h-9 xl:w-9">
                 <Image src={item?.icon} alt={item?.iconAlt} fill className="object-contain" />
               </div>
             </div>
 
             {/* Right Photo */}
-            <div className="relative my-auto h-50 w-[40%] shrink-0 overflow-hidden">
-              <Image src={item?.image} alt="Confession photo" fill className="object-contain" />
+            <div className="relative my-auto h-36 w-[40%] shrink-0 overflow-hidden sm:h-44 lg:h-44 lg:w-[38%] xl:h-50">
+              <Image
+                src={item?.image}
+                alt="Confession photo"
+                fill
+                className="object-right-center object-contain"
+              />
             </div>
           </div>
         ))}
       </motion.div>
 
       {/* SEE ALL Button */}
-      <motion.div variants={FADE_IN_UP_ITEM} className="mt-10 flex justify-center">
+      <motion.div variants={FADE_IN_UP_ITEM} className="mt-8 flex justify-center sm:mt-8">
         <div className="w-fit">
           <DynamicActionButton
             text="SEE ALL"

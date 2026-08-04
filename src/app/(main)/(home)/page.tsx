@@ -16,7 +16,7 @@ const Homepage = () => {
         initial="hidden"
         animate="visible"
         variants={FADE_IN_UP_CONTAINER}
-        className="relative z-10 mx-auto max-w-400 space-y-10 lg:space-y-25"
+        className="relative z-10 mx-auto max-w-400 space-y-10 px-4 lg:space-y-25"
       >
         <motion.div variants={FADE_IN_UP_ITEM}>
           <HeroContent />

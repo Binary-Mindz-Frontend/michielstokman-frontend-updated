@@ -45,11 +45,14 @@ const LiberationSurvey = () => {
   return (
     <motion.section initial="hidden" animate="visible" variants={FADE_IN_UP_CONTAINER}>
       {/* Title */}
-      <motion.div variants={FADE_IN_UP_ITEM} className="flex items-center justify-center gap-3.5">
-        <h2 className="font-edo text-center text-[2rem] font-black uppercase sm:text-[2.4rem] lg:text-[2.8rem]">
+      <motion.div
+        variants={FADE_IN_UP_ITEM}
+        className="flex items-center justify-center gap-2 sm:gap-3.5"
+      >
+        <h2 className="font-edo text-center text-xl font-black uppercase sm:text-3xl lg:text-3xl xl:text-[2.8rem]">
           Liberation Survey 2026
         </h2>
-        <div className="relative h-10 w-10 shrink-0">
+        <div className="relative h-7 w-7 shrink-0 sm:h-9 sm:w-9 lg:h-10 lg:w-10">
           <Image src={heartPinkDeco} alt="heart" fill className="object-contain" />
         </div>
       </motion.div>
@@ -57,35 +60,40 @@ const LiberationSurvey = () => {
       {/* "The Juicy Research" brush subtitle */}
       <motion.div
         variants={FADE_IN_UP_ITEM}
-        className="relative mx-auto mt-4 flex h-15 w-full max-w-100 items-center justify-center"
+        className="relative mx-auto mt-3 flex h-12 w-full max-w-[280px] items-center justify-center sm:mt-4 sm:h-14 sm:max-w-[340px] lg:h-15 lg:max-w-[380px]"
       >
         <div className="absolute inset-0 h-full w-full">
           <Image src={brushBg} alt="Brush background" fill className="object-fill" />
         </div>
-        <p className="font-playpen relative z-10 text-xl font-semibold text-white">
+        <p className="font-playpen relative z-10 text-base font-semibold text-white sm:text-lg lg:text-xl">
           The <span className="text-[#F83871]">Juicy</span> Research —
         </p>
       </motion.div>
 
-      {/* Stats Row */}
+      {/* Stats Row: Fine-tuned for 1024px laptops & large desktop screens */}
       <motion.div
         variants={FADE_IN_UP_ITEM}
-        className="mx-auto mt-10 flex w-full flex-wrap items-start justify-center gap-8 rounded-xl bg-[#F9F4EE] px-8 py-10 sm:flex-nowrap sm:gap-4 sm:px-12"
+        className="mx-auto mt-6 grid w-full grid-cols-2 gap-6 rounded-2xl bg-[#F9F4EE] px-4 py-6 sm:mt-8 sm:grid-cols-3 sm:gap-6 sm:px-8 sm:py-8 lg:mt-10 lg:flex lg:flex-nowrap lg:items-start lg:justify-between lg:gap-2 lg:px-6 lg:py-8 xl:gap-4 xl:px-10 xl:py-10"
       >
         {stats.map((stat, index) => (
-          <div key={index} className="flex min-w-30 flex-1 flex-col items-center gap-2 text-center">
+          <div
+            key={index}
+            className={`flex flex-col items-center text-center ${
+              index === 4 ? 'col-span-2 sm:col-span-1' : ''
+            }`}
+          >
             {/* Icon */}
-            <div className="relative h-14 w-14">
+            <div className="relative h-10 w-10 shrink-0 sm:h-12 sm:w-12 lg:h-11 lg:w-11 xl:h-14 xl:w-14">
               <Image src={stat?.icon} alt={stat?.label} fill className="object-contain" />
             </div>
 
             {/* Percent */}
-            <span className="font-sans text-[2rem] font-black lg:text-[2.4rem]">
+            <span className="mt-2 font-sans text-2xl font-black text-[#1A1A1A] sm:text-3xl lg:text-[1.9rem] xl:text-[2.4rem]">
               {stat?.percent}
             </span>
 
             {/* Label */}
-            <p className="max-w-50 text-center font-sans text-sm leading-snug text-[#272626] capitalize sm:text-base">
+            <p className="mt-1 max-w-[180px] text-center font-sans text-xs leading-snug font-semibold text-[#272626] capitalize sm:text-sm lg:max-w-[145px] lg:text-xs xl:max-w-[180px] xl:text-base">
               {stat?.label}
             </p>
           </div>
