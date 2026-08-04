@@ -19,7 +19,7 @@ const HeroContent = () => {
       initial="hidden"
       animate="visible"
       variants={FADE_IN_UP_CONTAINER}
-      className="mx-auto flex w-full flex-col items-center gap-8 px-4 py-4 md:flex-row md:items-center md:gap-8 lg:gap-12 xl:gap-20"
+      className="mx-auto flex w-full flex-col items-center gap-8 md:flex-row md:items-center md:gap-8 lg:gap-12 xl:gap-20"
     >
       {/* ===== LEFT COLUMN: Text ===== */}
       <motion.div variants={FADE_IN_UP_ITEM} className="flex w-full flex-col items-start md:w-1/2">
@@ -84,7 +84,7 @@ const HeroContent = () => {
         </div>
 
         {/* Main Hero Collage Image */}
-        <div className="relative h-[320px] w-full max-w-[340px] shrink-0 sm:h-[450px] sm:max-w-[500px] md:h-[550px] md:max-w-[600px] lg:h-[620px] lg:max-w-[680px] xl:h-[700px] xl:max-w-[750px]">
+        <div className="relative h-80 w-full max-w-85 shrink-0 sm:h-112.5 sm:max-w-125 md:h-137.5 md:max-w-150 lg:h-155 lg:max-w-170 xl:h-175 xl:max-w-187.5">
           <Image
             src={heroImage}
             alt="Transform to Liberation - Real Stories, Real People"

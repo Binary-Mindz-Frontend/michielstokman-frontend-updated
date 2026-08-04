@@ -60,12 +60,7 @@ const features: FeatureItem[] = [
 
 function ResonanceGrid() {
   return (
-    <motion.section
-      initial="hidden"
-      animate="visible"
-      variants={FADE_IN_UP_CONTAINER}
-      className="w-full py-6 sm:py-8 lg:py-10"
-    >
+    <motion.section initial="hidden" animate="visible" variants={FADE_IN_UP_CONTAINER}>
       <motion.div
         variants={FADE_IN_UP_ITEM}
         className="mx-auto grid w-full grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"

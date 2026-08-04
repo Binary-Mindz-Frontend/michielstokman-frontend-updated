@@ -60,7 +60,7 @@ const LiberationSurvey = () => {
       {/* "The Juicy Research" brush subtitle */}
       <motion.div
         variants={FADE_IN_UP_ITEM}
-        className="relative mx-auto mt-3 flex h-12 w-full max-w-[280px] items-center justify-center sm:mt-4 sm:h-14 sm:max-w-[340px] lg:h-15 lg:max-w-[380px]"
+        className="relative mx-auto mt-3 flex h-12 w-full max-w-70 items-center justify-center sm:mt-4 sm:h-14 sm:max-w-85 lg:h-15 lg:max-w-95"
       >
         <div className="absolute inset-0 h-full w-full">
           <Image src={brushBg} alt="Brush background" fill className="object-fill" />
@@ -93,7 +93,7 @@ const LiberationSurvey = () => {
             </span>
 
             {/* Label */}
-            <p className="mt-1 max-w-[180px] text-center font-sans text-xs leading-snug font-semibold text-[#272626] capitalize sm:text-sm lg:max-w-[145px] lg:text-xs xl:max-w-[180px] xl:text-base">
+            <p className="mt-1 max-w-45 text-center font-sans text-xs leading-snug font-semibold text-[#272626] capitalize sm:text-sm lg:max-w-36.25 lg:text-xs xl:max-w-45 xl:text-base">
               {stat?.label}
             </p>
           </div>
