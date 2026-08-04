@@ -1,22 +1,25 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import DynamicSectionHeader from '@/components/main/DynamicSectionHeader/DynamicSectionHeader';
-import GrowthSlider from '@/components/main/GrowthSlider/GrowthSlider';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+import { toast } from 'sonner';
+
 import ProfileSkeleton from '@/components/main/Skeletons/ProfileSkeleton';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { useLogout } from '@/hooks/useLogout';
+import { apiClient } from '@/redux/apiClient/apiClient';
+import { logout as authLogout, useCurrentUser } from '@/redux/features/auth/authSlice';
 import { useGetProfileQuery } from '@/redux/features/userProfile/userProfile.api';
-import { useCurrentUser, logout as authLogout } from '@/redux/features/auth/authSlice';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { logoutUser } from '@/services/auth/auth.service';
-import { apiClient } from '@/redux/apiClient/apiClient';
 import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
-import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
+
+import ProfileHero from './_components/ProfileHero';
+import ProfileDemographics from './_components/ProfileDemographics';
+import ProfileRadarChart from './_components/ProfileRadarChart';
+import ProfileActions from './_components/ProfileActions';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -30,17 +33,6 @@ export default function ProfilePage() {
   const isGuest = user?.is_guest;
 
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [growthFocusValues, setGrowthFocusValues] = useState<Record<string, number>>({
-    'Desire & Relationship': 0,
-    'Life & Purpose': 0,
-    'Career & Money': 0,
-    'Show Your True Self': 0,
-    'Sexuality & Life Energy': 0,
-    'Fear & Freedom': 0,
-    'Health & Body': 0,
-    Enlightenment: 0,
-  });
-
   const [loadingTimeout, setLoadingTimeout] = useState(false);
 
   // Monitor loading timeout (10 seconds fallback) to prevent infinite loading state
@@ -67,22 +59,6 @@ export default function ProfilePage() {
       }
     }
   }, [isError, error, router, logout, isGuest, isLoggingOut]);
-
-  useEffect(() => {
-    if (profileData) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setGrowthFocusValues({
-        'Desire & Relationship': profileData?.slider_desire_relationship || 0,
-        'Life & Purpose': profileData?.slider_life_purpose || 0,
-        'Career & Money': profileData?.slider_career_money || 0,
-        'Show Your True Self': profileData?.slider_true_self || 0,
-        'Sexuality & Life Energy': profileData?.slider_sexuality_life_energy || 0,
-        'Fear & Freedom': profileData?.slider_fear_freedom || 0,
-        'Health & Body': profileData?.slider_health_body || 0,
-        Enlightenment: profileData?.slider_enlightenment || 0,
-      });
-    }
-  }, [profileData]);
 
   const handleLogout = () => {
     logout();
@@ -125,7 +101,6 @@ export default function ProfilePage() {
 
   if (isLoading && !loadingTimeout) return <ProfileSkeleton />;
 
-  // Display proper fallback screen when loading fails, times out, or when unauthorized
   if (loadingTimeout || (isError && !profileData)) {
     return (
       <div className="mx-auto max-w-md space-y-6 px-4 py-20 text-center">
@@ -144,7 +119,7 @@ export default function ProfilePage() {
             className="btn-styles border-primary/20 text-dark-primary w-full bg-transparent hover:bg-[#F5F1EA]"
             onClick={handleLogout}
           >
-            log out
+            Log Out
           </Button>
         </div>
       </div>
@@ -152,110 +127,75 @@ export default function ProfilePage() {
   }
 
   const personalDetails = [
-    { label: 'Age', value: profileData?.age?.toString() },
-    { label: 'Country', value: profileData?.country },
-    { label: 'City', value: profileData?.city },
-    { label: 'Height', value: profileData?.height },
-    { label: 'Education', value: profileData?.education },
-    { label: 'Annual Income', value: profileData?.annual_income },
-    { label: 'Gender', value: profileData?.gender },
-    { label: 'Sexual Orientation', value: profileData?.sexual_orientation },
+    { label: 'AGE', value: profileData?.age ? profileData.age.toString() : '0' },
+    { label: 'COUNTRY', value: profileData?.country || 'N A' },
+    { label: 'CITY', value: profileData?.city || 'N A' },
+    { label: 'HEIGHT', value: profileData?.height || 'N A' },
+    { label: 'GENDER', value: profileData?.gender || 'N A' },
+    { label: 'SEXUAL ORIENTATION', value: profileData?.sexual_orientation || 'N A' },
+    { label: 'EDUCATION', value: profileData?.education || 'N A' },
+    { label: 'ANNUAL INCOME', value: profileData?.annual_income || 'N A' },
+  ];
+
+  const chartData = [
+    { subject: 'Letting go', A: profileData?.slider_career_money || 8, B: 11 },
+    { subject: 'Forgiveness', A: profileData?.slider_true_self || 9, B: 13 },
+    { subject: 'Fear & Freedom', A: profileData?.slider_fear_freedom || 12, B: 10 },
+    { subject: 'Self acceptance', A: profileData?.slider_health_body || 11, B: 9 },
+    { subject: 'Inner peace', A: profileData?.slider_enlightenment || 14, B: 8.5 },
+    {
+      subject: 'Sexual & Relations Vitality',
+      A: profileData?.slider_desire_relationship || 10,
+      B: 12,
+    },
+    { subject: 'Presence', A: profileData?.slider_life_purpose || 8.5, B: 10 },
   ];
 
   return (
-    <motion.div
-      initial="hidden"
-      animate="visible"
-      variants={FADE_IN_UP_CONTAINER}
-      className="mx-auto max-w-3xl px-4 py-12"
-    >
-      {/* Header Section */}
-      <motion.div variants={FADE_IN_UP_ITEM}>
-        <DynamicSectionHeader
-          title={profileData?.true_name || 'User'}
-          description={profileData?.life_phase || 'Discovering'}
-        />
-      </motion.div>
-
-      <motion.div variants={FADE_IN_UP_ITEM} className="space-y-4">
-        {/* Daily Credits Card */}
-        <div className="border-primary/20 rounded-md border p-6">
-          <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-dark-primary text-sm font-semibold tracking-wider uppercase">
-              Daily Credits
-            </h3>
-            <span className="text-dark-primary text-lg font-semibold">
-              {`${profileData?.daily_credits}/3 Remaining`}
-            </span>
-          </div>
-          <Progress
-            value={(profileData?.daily_credits / 3) * 100}
-            className="[&>div]:bg-primary bg-primary/20 h-2"
-          />
-          <p className="text-secondary mt-3 text-sm">
-            1 credit = 1 full story or meditation. Resets daily.
-          </p>
-        </div>
-
-        {/* Stats Section */}
-        <div className="grid grid-cols-2 gap-6">
-          <div className="border-primary/20 rounded-md border p-6 text-center">
-            <h4 className="text-dark-primary font-serif text-3xl font-bold">
-              {profileData?.reflections_count || 0}
-            </h4>
-            <p className="text-secondary mt-1 text-[12px]">Reflections</p>
-          </div>
-          <div className="border-primary/20 rounded-md border p-6 text-center">
-            <h4 className="text-dark-primary font-serif text-3xl font-bold">
-              {profileData?.avg_resonance || 0}
-            </h4>
-            <p className="text-secondary mt-1 text-[12px]">Avg Resonance</p>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Personal Details Grid */}
-      <motion.div variants={FADE_IN_UP_ITEM} className="grid grid-cols-2 gap-x-12 gap-y-8 pt-6">
-        {personalDetails.map((detail, idx) => (
-          <DetailItem key={idx} label={detail?.label} value={detail?.value || 'N/A'} />
-        ))}
-      </motion.div>
-
-      {/* Growth Focus Section */}
-      <motion.div variants={FADE_IN_UP_ITEM} className="space-y-6 pt-10">
-        <h2 className="text-dark-primary border-muted/20 border-b pb-4 font-serif text-xl font-bold">
-          Your Growth Focus
-        </h2>
-
-        <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2">
-          {Object.entries(growthFocusValues).map(([key, val]) => (
-            <GrowthSlider key={key} label={key} value={val} />
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Action Buttons */}
-      <motion.div variants={FADE_IN_UP_ITEM} className="space-y-4 pt-12">
-        <Button className="btn-styles" onClick={() => router.push('/register/stepper')}>
-          Update Preferences
-        </Button>
-        <Button
-          variant="outline"
-          className="btn-styles text-error border-error hover:bg-error/10 hover:text-error/90"
-          onClick={handleLogout}
+    <main className="bg-bg-primary min-h-screen py-10 font-sans">
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={FADE_IN_UP_CONTAINER}
+        className="mx-auto flex max-w-4xl flex-col items-center px-4"
+      >
+        {/* Page Title */}
+        <motion.h1
+          variants={FADE_IN_UP_ITEM}
+          className="font-edo mb-10 text-center text-3xl font-bold tracking-wider text-[#D98755] md:text-4xl"
         >
-          Logout
-        </Button>
-      </motion.div>
-    </motion.div>
-  );
-}
+          TRANSFORM TO LIBERATION
+        </motion.h1>
 
-function DetailItem({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="space-y-1">
-      <p className="text-primary text-sm font-medium">{label}</p>
-      <p className="text-dark-primary font-serif text-xl leading-tight font-semibold">{value}</p>
-    </div>
+        {/* SECTION 1: HERO / BRUSH STATS */}
+        <motion.div variants={FADE_IN_UP_ITEM} className="w-full">
+          <ProfileHero
+            trueName={profileData?.true_name}
+            lifePhase={profileData?.life_phase}
+            dailyCredits={profileData?.daily_credits}
+            reflectionsCount={profileData?.reflections_count}
+            avgResonance={profileData?.avg_resonance}
+          />
+        </motion.div>
+
+        {/* SECTION 2: DEMOGRAPHICS GRID */}
+        <motion.div variants={FADE_IN_UP_ITEM} className="w-full">
+          <ProfileDemographics personalDetails={personalDetails} />
+        </motion.div>
+
+        {/* SECTION 3: RADAR CHART */}
+        <motion.div variants={FADE_IN_UP_ITEM} className="w-full">
+          <ProfileRadarChart data={chartData} />
+        </motion.div>
+
+        {/* ACTIONS: BUTTONS */}
+        <motion.div variants={FADE_IN_UP_ITEM} className="flex w-full justify-center">
+          <ProfileActions
+            onUpdateFocus={() => router.push('/register/stepper')}
+            onLogout={handleLogout}
+          />
+        </motion.div>
+      </motion.div>
+    </main>
   );
 }
