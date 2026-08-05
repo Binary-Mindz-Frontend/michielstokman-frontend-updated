@@ -50,7 +50,7 @@ const LatestConfessions = () => {
           <Image src={greenWaves} alt="Green wave decoration" fill className="object-contain" />
         </div>
 
-        <h2 className="font-edo text-center text-xl font-black uppercase sm:text-3xl lg:text-3xl xl:text-[2.8rem]">
+        <h2 className="font-edo text-center text-xl font-medium uppercase sm:text-3xl lg:text-3xl xl:text-[2.8rem]">
           Latest Confessions
         </h2>
 
@@ -71,7 +71,7 @@ const LatestConfessions = () => {
           >
             {/* Left Content */}
             <div className="z-10 flex w-[60%] flex-col justify-between pr-2 lg:w-[62%]">
-              <p className="font-sans text-base leading-snug font-black text-[#1A1A1A] sm:text-lg lg:text-base xl:text-xl">
+              <p className="font-sans text-base leading-snug font-semibold text-[#1A1A1A] sm:text-lg lg:text-base xl:text-xl">
                 {item?.text}
               </p>
 

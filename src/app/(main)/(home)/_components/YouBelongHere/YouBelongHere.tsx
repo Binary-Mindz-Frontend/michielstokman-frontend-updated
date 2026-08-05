@@ -33,7 +33,7 @@ const YouBelongHere = () => {
           <div>
             <div className="flex items-center gap-2.5 sm:gap-3">
               <div className="relative">
-                <h2 className="font-edo text-2xl font-black tracking-wide uppercase sm:text-[2.2rem] lg:text-[2.4rem] xl:text-[2.5rem]">
+                <h2 className="font-edo text-2xl font-medium tracking-wide uppercase sm:text-[2.2rem] lg:text-[2.4rem] xl:text-[2.5rem]">
                   You Belong Here.
                 </h2>
                 <div className="relative mt-1 h-1.5 w-full">
@@ -45,7 +45,7 @@ const YouBelongHere = () => {
               </div>
             </div>
 
-            <p className="font-playpen mt-3 text-center text-base font-bold text-[#1A1A1A] sm:text-lg">
+            <p className="mt-3 text-center font-sans text-base font-semibold text-[#1A1A1A] sm:text-lg">
               It&apos;s Free
             </p>
           </div>
@@ -60,7 +60,7 @@ const YouBelongHere = () => {
               <span className="mt-1.5 font-sans text-sm font-extrabold text-[#1A1A1A] sm:text-base xl:text-lg">
                 272.00+
               </span>
-              <span className="font-playpen text-[11px] font-semibold text-[#555] sm:text-xs">
+              <span className="font-sans text-[11px] font-semibold text-[#555] sm:text-xs">
                 Memebers
               </span>
             </div>
@@ -73,7 +73,7 @@ const YouBelongHere = () => {
               <span className="mt-1.5 font-sans text-sm font-extrabold text-[#1A1A1A] sm:text-base xl:text-lg">
                 42
               </span>
-              <span className="font-playpen text-[11px] font-semibold text-[#555] sm:text-xs">
+              <span className="font-sans text-[11px] font-semibold text-[#555] sm:text-xs">
                 Countries Worldwide
               </span>
             </div>
@@ -86,7 +86,7 @@ const YouBelongHere = () => {
               <span className="mt-1.5 font-sans text-sm font-extrabold text-[#1A1A1A] sm:text-base xl:text-lg">
                 Thousands
               </span>
-              <span className="font-playpen text-[11px] font-semibold text-[#555] sm:text-xs">
+              <span className="font-sans text-[11px] font-semibold text-[#555] sm:text-xs">
                 Of Stories Shared
               </span>
             </div>
@@ -118,17 +118,17 @@ const YouBelongHere = () => {
         {/* ===== Column 3: Quote Text ===== */}
         <motion.div
           variants={FADE_IN_UP_ITEM}
-          className="flex w-full flex-col justify-center gap-4 px-1 sm:gap-5 md:col-span-1 xl:w-[23%]"
+          className="flex w-full flex-col justify-around gap-4 px-1 sm:gap-5 md:col-span-1 xl:w-[23%]"
         >
-          <p className="font-playpen text-base font-bold text-[#1A1A1A] sm:text-lg lg:text-xl">
+          <p className="font-sans text-base font-medium text-[#1A1A1A] sm:text-lg lg:text-xl">
             The Truth Doesn&apos;t Set You Free.
           </p>
 
-          <h3 className="font-edo text-2xl leading-tight font-black text-[#E81A66] uppercase sm:text-[2.2rem] lg:text-[2.4rem]">
-            First It Messes Everything Up.
+          <h3 className="font-edo text-2xl leading-relaxed font-medium text-[#E81A66] uppercase sm:text-[2.2rem] lg:text-[2.4rem]">
+            First It <br /> Messes <br /> Everything Up.
           </h3>
 
-          <p className="font-playpen text-sm leading-relaxed font-bold text-[#1A1A1A] sm:text-base lg:text-lg">
+          <p className="font-sans text-sm leading-relaxed font-medium text-[#1A1A1A] sm:text-base lg:text-lg">
             A Place For People Who Want To Feel More Alive.
           </p>
         </motion.div>

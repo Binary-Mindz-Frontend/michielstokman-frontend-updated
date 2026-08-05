@@ -20,7 +20,7 @@ export default function ConfessionsHero() {
       {/* ===== LEFT COLUMN: Text & Subtitle ===== */}
       <motion.div variants={FADE_IN_UP_ITEM} className="flex w-full flex-col items-start md:w-1/2">
         {/* Title */}
-        <div className="font-edo relative leading-none font-black uppercase">
+        <div className="font-edo relative leading-none font-medium uppercase">
           <h1 className="-rotate-3 transform text-[42px] tracking-wider text-[#D22D4C] sm:text-[60px] md:text-[72px] lg:text-[85px] xl:text-[100px]">
             CONFESSIONS
           </h1>
@@ -38,7 +38,7 @@ export default function ConfessionsHero() {
             <Image src={brushTextBg} alt="Brush background" fill className="object-fill" />
           </div>
 
-          <p className="relative z-10 px-4 py-2 text-center font-sans text-xs font-semibold tracking-wide text-white uppercase sm:px-6 sm:text-[14px]">
+          <p className="relative z-10 px-4 py-2 text-center font-sans text-xs font-medium tracking-wide text-white uppercase sm:px-6 sm:text-[14px]">
             A SPACE TO SAY WHAT <br /> YOU&apos;VE <span className="text-[#E81A66]">NEVER </span>
             DARED TO SAY.
           </p>

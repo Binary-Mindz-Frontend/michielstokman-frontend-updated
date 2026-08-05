@@ -45,7 +45,7 @@ const WhyWeExist = () => {
       {/* Title */}
       <motion.div variants={FADE_IN_UP_ITEM} className="mb-10 flex flex-col items-center">
         <div className="relative">
-          <h2 className="font-edo text-center text-[2rem] font-black text-[#1a1a1a] uppercase sm:text-[2.4rem] lg:text-[2.8rem]">
+          <h2 className="font-edo text-center text-[2rem] font-medium text-[#1a1a1a] uppercase sm:text-[2.4rem] lg:text-[2.8rem]">
             Why We Exist
           </h2>
           {/* Pink underline decoration image */}
@@ -88,12 +88,12 @@ const WhyWeExist = () => {
               </div>
 
               {/* Title */}
-              <h3 className="font-edo text-[1rem] leading-tight font-semibold uppercase lg:text-[0.92rem] xl:text-[1.2rem]">
+              <h3 className="font-edo text-[1rem] leading-tight font-medium uppercase lg:text-[0.92rem] xl:text-[1.2rem]">
                 {card?.title}
               </h3>
 
               {/* Description */}
-              <p className="font-sans text-[12px] leading-relaxed whitespace-pre-line sm:text-sm lg:text-[11px] xl:text-sm">
+              <p className="font-sans text-[12px] leading-relaxed font-semibold whitespace-pre-line sm:text-sm lg:text-[11px] xl:text-sm">
                 {card?.desc}
               </p>
             </div>

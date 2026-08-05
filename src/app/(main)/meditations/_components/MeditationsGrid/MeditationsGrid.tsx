@@ -61,7 +61,7 @@ export default function MeditationsGrid() {
         {visibleMeditations.length > 0 ? (
           visibleMeditations.map((item) => <MeditationsCard key={item.id} item={item} />)
         ) : (
-          <div className="col-span-full py-12 text-center font-sans text-sm font-semibold text-[#777]">
+          <div className="col-span-full py-12 text-center font-sans text-sm font-medium text-[#777]">
             No meditations found.
           </div>
         )}
