@@ -24,11 +24,11 @@ const HeroContent = () => {
       {/* ===== LEFT COLUMN: Text ===== */}
       <motion.div variants={FADE_IN_UP_ITEM} className="flex w-full flex-col items-start md:w-1/2">
         {/* Title */}
-        <div className="font-edo flex flex-col items-start leading-none font-medium uppercase">
+        <div className="font-edo flex flex-col items-start gap-0.5 leading-none font-medium uppercase">
           <span className="-rotate-3 transform text-[42px] tracking-wider text-[#486221] sm:text-[60px] md:text-[72px] lg:text-[85px] xl:text-[100px]">
             Transform
           </span>
-          <span className="mt-1 -rotate-3 transform text-[42px] tracking-wide text-[#E81A66] sm:mt-2 sm:text-[60px] md:text-[72px] lg:text-[85px] xl:text-[100px]">
+          <span className="-rotate-3 transform text-[42px] tracking-wide text-[#E81A66] sm:mt-2 sm:text-[60px] md:text-[72px] lg:text-[85px] xl:text-[100px]">
             To
           </span>
           <span className="-rotate-3 transform text-[42px] tracking-normal text-[#F3A134] sm:text-[60px] md:text-[72px] lg:text-[85px] xl:text-[100px]">
