@@ -5,8 +5,8 @@ import { motion } from 'framer-motion';
 
 const FooterNoteSection = () => {
   return (
-    <motion.div variants={FADE_IN_UP_ITEM} className="border-t border-gray-200/60 pt-6">
-      <p className="text-primary/90 text-center font-serif text-base leading-relaxed font-medium tracking-wide md:text-left md:text-lg">
+    <motion.div variants={FADE_IN_UP_ITEM} className="w-full text-center">
+      <p className="font-playpen text-center text-base leading-relaxed font-bold text-[#D22D4C] sm:text-lg md:text-xl">
         Safe enough to be honest. Free enough to be whole. Kind enough to keep each other here.
       </p>
     </motion.div>
