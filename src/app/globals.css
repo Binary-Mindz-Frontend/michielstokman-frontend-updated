@@ -221,3 +221,66 @@
 .custom-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* Sleek & Compact Brand Toast Styling */
+[data-sonner-toaster] [data-sonner-toast] {
+  background-color: #faf7f2 !important;
+  border: 1px solid #ebe4d5 !important;
+  color: #1a1a1a !important;
+  font-family: var(--font-playpen), 'Playpen Sans', cursive, sans-serif !important;
+  border-radius: 8px !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08) !important;
+  padding: 10px 14px !important;
+  min-height: auto !important;
+}
+
+[data-sonner-toaster] [data-sonner-toast] [data-title] {
+  font-family: var(--font-playpen), 'Playpen Sans', cursive, sans-serif !important;
+  font-size: 0.875rem !important;
+  font-weight: 700 !important;
+  color: #1a1a1a !important;
+  margin-bottom: 2px !important;
+  line-height: 1.3 !important;
+}
+
+[data-sonner-toaster] [data-sonner-toast] [data-description] {
+  font-family: var(--font-playpen), 'Playpen Sans', cursive, sans-serif !important;
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+  color: #666666 !important;
+  line-height: 1.35 !important;
+}
+
+/* Success Toast - Green Theme */
+[data-sonner-toaster] [data-sonner-toast][data-type='success'] {
+  background-color: #faf9f5 !important;
+  border-left: 4px solid #486221 !important;
+}
+[data-sonner-toaster] [data-sonner-toast][data-type='success'] [data-title] {
+  color: #3b501b !important;
+}
+
+/* Error Toast - Red/Pink Theme */
+[data-sonner-toaster] [data-sonner-toast][data-type='error'] {
+  background-color: #faf5f6 !important;
+  border-left: 4px solid #d22d4c !important;
+}
+[data-sonner-toaster] [data-sonner-toast][data-type='error'] [data-title] {
+  color: #d22d4c !important;
+}
+
+/* Warning & Info Toast - Orange/Purple Theme */
+[data-sonner-toaster] [data-sonner-toast][data-type='warning'],
+[data-sonner-toaster] [data-sonner-toast][data-type='info'] {
+  background-color: #faf8f5 !important;
+  border-left: 4px solid #f3a134 !important;
+}
+[data-sonner-toaster] [data-sonner-toast][data-type='warning'] [data-title],
+[data-sonner-toaster] [data-sonner-toast][data-type='info'] [data-title] {
+  color: #d98a21 !important;
+}
+
+/* Toast Close Button Hidden */
+[data-sonner-toaster] [data-close-button] {
+  display: none !important;
+}
