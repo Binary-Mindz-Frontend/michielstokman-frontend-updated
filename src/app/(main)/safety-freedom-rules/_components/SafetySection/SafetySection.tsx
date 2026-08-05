@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 
 // Assets from src/assets/safety/safety-section
-import safetyLine from '@/assets/safety/safety-section/safety-line.png';
+import safetyLine from '@/assets/safety/share/title-underline.png';
 import safetySectionIcon from '@/assets/safety/safety-section/safety-section-icon.svg';
 import safetySectionImg from '@/assets/safety/safety-section/safety-section-image.png';
 
@@ -35,7 +35,7 @@ const SafetySection = () => {
 
             {/* The thin pink underline under '01' */}
             <div
-              className="absolute -right-4 -bottom-1 -left-2 h-[2px] bg-[#E81A66]"
+              className="absolute -right-4 -bottom-1 -left-2 h-0.5 bg-[#E81A66]"
               style={{ transform: 'rotate(-19.389deg)' }}
             />
           </div>
@@ -80,7 +80,7 @@ const SafetySection = () => {
 
       {/* --- RIGHT IMAGE COLUMN --- */}
       <div className="flex w-full items-center justify-center md:w-1/2">
-        <div className="relative w-full max-w-[440px] sm:max-w-[480px] md:max-w-[540px]">
+        <div className="relative w-full max-w-110 sm:max-w-120 md:max-w-135">
           <Image
             src={safetySectionImg}
             alt="Safety Section Woman Reflecting"

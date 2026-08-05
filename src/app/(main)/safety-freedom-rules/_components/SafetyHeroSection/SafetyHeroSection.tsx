@@ -41,7 +41,7 @@ const SafetyHeroSection = () => {
         </div>
 
         {/* Brush Text Container */}
-        <div className="relative mt-8 flex min-h-[100px] w-full max-w-[420px] -rotate-1 transform items-center justify-center px-4 py-6 sm:mt-10 sm:px-6">
+        <div className="relative mt-8 flex min-h-25 w-full max-w-105 -rotate-1 transform items-center justify-center px-4 py-6 sm:mt-10 sm:px-6">
           {/* Brush Image Background */}
           <div className="absolute inset-0 h-full w-full">
             <Image
@@ -77,7 +77,7 @@ const SafetyHeroSection = () => {
       {/* --- RIGHT IMAGE COLUMN --- */}
       <div className="relative flex w-full justify-center md:w-1/2 md:pr-6">
         {/* Hero Image Container */}
-        <div className="relative aspect-[4/5] w-full max-w-[360px] sm:max-w-[420px]">
+        <div className="relative aspect-4/5 w-full max-w-90 sm:max-w-105">
           <Image
             src={safetyHeroImg}
             alt="Safety Hero Reflecting Woman"
