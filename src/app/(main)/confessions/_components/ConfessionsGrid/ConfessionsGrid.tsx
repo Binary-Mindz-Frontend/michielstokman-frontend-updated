@@ -1,104 +1,47 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicActionButton';
+import { useGetDiscoveryFeedQuery } from '@/redux/features/discoveryFeed/discoveryFeed.api';
 import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
 import { motion } from 'framer-motion';
 import ConfessionsCard, { ConfessionItem } from './_components/ConfessionsCard/ConfessionsCard';
 
-// Assets
-import {
-  default as card1,
-  default as card2,
-  default as card3,
-  default as card4,
-  default as card5,
-  default as card6,
-} from '@/assets/confessions/confession-card-1.png';
-
-const confessionsData: ConfessionItem[] = [
-  {
-    id: 1,
-    category: 'STORY',
-    title: 'CONTACT WITH THE TREES',
-    description: 'The First Time I Really Felt A Tree Was When I Was Ten...................',
-    image: card1,
-    rating: '4.8',
-    listenedCount: 277,
-    isExplicit: true,
-  },
-  {
-    id: 2,
-    category: 'STORY',
-    title: 'CONTACT WITH THE TREES',
-    description: 'The First Time I Really Felt A Tree Was When I Was Ten...................',
-    image: card2,
-    rating: '4.8',
-    listenedCount: 277,
-    isExplicit: true,
-  },
-  {
-    id: 3,
-    category: 'STORY',
-    title: 'CONTACT WITH THE TREES',
-    description: 'The First Time I Really Felt A Tree Was When I Was Ten...................',
-    image: card3,
-    rating: '4.8',
-    listenedCount: 277,
-    isExplicit: true,
-  },
-  {
-    id: 4,
-    category: 'STORY',
-    title: 'CONTACT WITH THE TREES',
-    description: 'The First Time I Really Felt A Tree Was When I Was Ten...................',
-    image: card4,
-    rating: '4.8',
-    listenedCount: 277,
-    isExplicit: true,
-  },
-  {
-    id: 5,
-    category: 'STORY',
-    title: 'CONTACT WITH THE TREES',
-    description: 'The First Time I Really Felt A Tree Was When I Was Ten...................',
-    image: card5,
-    rating: '4.8',
-    listenedCount: 277,
-    isExplicit: true,
-  },
-  {
-    id: 6,
-    category: 'STORY',
-    title: 'CONTACT WITH THE TREES',
-    description: 'The First Time I Really Felt A Tree Was When I Was Ten...................',
-    image: card6,
-    rating: '4.8',
-    listenedCount: 277,
-    isExplicit: true,
-  },
-  {
-    id: 7,
-    category: 'STORY',
-    title: 'CONTACT WITH THE TREES',
-    description: 'The First Time I Really Felt A Tree Was When I Was Ten...................',
-    image: card6,
-    rating: '4.8',
-    listenedCount: 277,
-    isExplicit: true,
-  },
-  {
-    id: 8,
-    category: 'STORY',
-    title: 'CONTACT WITH THE TREES',
-    description: 'The First Time I Really Felt A Tree Was When I Was Ten...................',
-    image: card6,
-    rating: '4.8',
-    listenedCount: 277,
-    isExplicit: true,
-  },
-];
+// Fallback Asset
+import fallbackCardImage from '@/assets/confessions/confession-card-1.png';
 
 export default function ConfessionsGrid() {
+  const { data: feedResponse, isLoading } = useGetDiscoveryFeedQuery(['confession']);
+
+  const rawItems = feedResponse?.data?.items || [];
+
+  // Filter for confessions (story_type === 'confession')
+  const confessionItems = rawItems.filter(
+    (item: any) =>
+      item.story_type === 'confession' ||
+      item.card_type === 'confession' ||
+      (item.card_type === 'story' && item.story_type === 'confession'),
+  );
+
+  const confessionsData: ConfessionItem[] = confessionItems.map((item: any) => ({
+    id: item.id,
+    category: 'STORY',
+    title: item.title,
+    description: item.description,
+    image: item.cover_image_url || fallbackCardImage,
+    rating: item.rating ? item.rating.toString() : '4.8',
+    listenedCount: item.listened_count ?? 0,
+    isExplicit: item.is_explicit ?? false,
+  }));
+
+  if (isLoading) {
+    return (
+      <div className="py-16 text-center font-sans text-sm font-semibold text-[#777]">
+        Loading Confessions...
+      </div>
+    );
+  }
+
   return (
     <motion.section initial="hidden" animate="visible" variants={FADE_IN_UP_CONTAINER}>
       {/* 3 Column Grid */}
@@ -106,17 +49,23 @@ export default function ConfessionsGrid() {
         variants={FADE_IN_UP_ITEM}
         className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
       >
-        {confessionsData.map((item) => (
-          <ConfessionsCard key={item.id} item={item} />
-        ))}
+        {confessionsData.length > 0 ? (
+          confessionsData.map((item) => <ConfessionsCard key={item.id} item={item} />)
+        ) : (
+          <div className="col-span-full py-12 text-center font-sans text-sm font-semibold text-[#777]">
+            No confessions found.
+          </div>
+        )}
       </motion.div>
 
       {/* Load More Button */}
-      <motion.div variants={FADE_IN_UP_ITEM} className="mt-8 flex w-full justify-center md:mt-10">
-        <div>
-          <DynamicActionButton text="LOAD MORE" bgColor="#D22D4C" textColor="white" />
-        </div>
-      </motion.div>
+      {confessionsData.length > 0 && (
+        <motion.div variants={FADE_IN_UP_ITEM} className="mt-8 flex w-full justify-center md:mt-10">
+          <div>
+            <DynamicActionButton text="LOAD MORE" bgColor="#D22D4C" textColor="white" />
+          </div>
+        </motion.div>
+      )}
     </motion.section>
   );
 }
