@@ -4,6 +4,7 @@ import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils'
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import AboutHeroSection from './_components/AboutHeroSection/AboutHeroSection';
+import SovereignTruthSection from './_components/SovereignTruthSection/SovereignTruthSection';
 
 function WhyTransformToLiberationPage() {
   return (
@@ -17,26 +18,11 @@ function WhyTransformToLiberationPage() {
         {/* ================= HERO SECTION ================= */}
         <AboutHeroSection />
 
+        {/* ================= SECTION 1: SOVEREIGN TRUTH ================= */}
+        <SovereignTruthSection />
+
         {/* ================= CONTENT SECTIONS ================= */}
         <div className="mx-auto max-w-3xl space-y-12 text-left">
-          {/* --- Section 1: The Sovereign Truth --- */}
-          <motion.div variants={FADE_IN_UP_ITEM} className="space-y-4">
-            <h2 className="text-primary font-serif text-xl font-medium md:text-2xl">
-              The Sovereign Truth: Why Transform to Liberation?
-            </h2>
-            <div className="text-secondary space-y-4 font-sans leading-relaxed">
-              <p>
-                The world we have built is a world of the surface. We live at the narrow edge, where
-                the waves of reaction constantly crash against the rocks. We define ourselves by
-                opposition: right or wrong, success or failure, us versus them.
-              </p>
-              <p>
-                For many of us—especially those who have achieved much and given more—there comes a
-                moment of silent realization: This friction is not all there is.
-              </p>
-            </div>
-          </motion.div>
-
           {/* --- Interactive Play Button --- */}
           {/* <motion.div variants={FADE_IN_UP_ITEM}>
           <button
