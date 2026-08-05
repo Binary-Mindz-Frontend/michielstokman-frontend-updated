@@ -37,11 +37,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="apple-mobile-web-app-title" content="TTL" />
       </head>
-      <body className="max-w-screen overflow-x-hidden antialiased">
+      <body className="max-w-screen overflow-x-hidden antialiased" suppressHydrationWarning>
         <Providers>
           {children}
           {/* Brand Toaster without close button */}
