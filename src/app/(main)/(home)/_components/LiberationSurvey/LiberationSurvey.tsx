@@ -49,7 +49,7 @@ const LiberationSurvey = () => {
         variants={FADE_IN_UP_ITEM}
         className="flex items-center justify-center gap-2 sm:gap-3.5"
       >
-        <h2 className="font-edo text-center text-xl font-black uppercase sm:text-3xl lg:text-3xl xl:text-[2.8rem]">
+        <h2 className="font-edo text-center text-xl font-medium uppercase sm:text-3xl lg:text-3xl xl:text-[2.8rem]">
           Liberation Survey 2026
         </h2>
         <div className="relative h-7 w-7 shrink-0 sm:h-9 sm:w-9 lg:h-10 lg:w-10">
@@ -65,7 +65,7 @@ const LiberationSurvey = () => {
         <div className="absolute inset-0 h-full w-full">
           <Image src={brushBg} alt="Brush background" fill className="object-fill" />
         </div>
-        <p className="font-playpen relative z-10 text-base font-semibold text-white sm:text-lg lg:text-xl">
+        <p className="relative z-10 font-sans text-base font-medium text-white sm:text-lg lg:text-xl">
           The <span className="text-[#F83871]">Juicy</span> Research —
         </p>
       </motion.div>
@@ -88,12 +88,12 @@ const LiberationSurvey = () => {
             </div>
 
             {/* Percent */}
-            <span className="mt-2 font-sans text-2xl font-black text-[#1A1A1A] sm:text-3xl lg:text-[1.9rem] xl:text-[2.4rem]">
+            <span className="mt-2 font-sans text-2xl font-semibold text-[#1A1A1A] sm:text-3xl lg:text-[1.9rem] xl:text-[2.4rem]">
               {stat?.percent}
             </span>
 
             {/* Label */}
-            <p className="mt-1 max-w-45 text-center font-sans text-xs leading-snug font-semibold text-[#272626] capitalize sm:text-sm lg:max-w-36.25 lg:text-xs xl:max-w-45 xl:text-base">
+            <p className="mt-1 max-w-45 text-center font-sans text-xs leading-snug font-medium text-[#272626] capitalize sm:text-sm lg:max-w-36.25 lg:text-xs xl:max-w-45 xl:text-base">
               {stat?.label}
             </p>
           </div>

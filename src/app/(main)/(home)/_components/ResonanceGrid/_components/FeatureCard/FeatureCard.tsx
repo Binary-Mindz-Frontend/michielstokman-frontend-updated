@@ -34,13 +34,13 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ item }) => {
 
         {/* Title */}
         <h3
-          className={`font-edo mt-0.5 text-2xl leading-tight font-black tracking-wide uppercase sm:text-[1.9rem] lg:text-[2.2rem] ${item.titleColor}`}
+          className={`font-edo mt-0.5 text-2xl leading-tight font-medium tracking-wide uppercase sm:text-[1.9rem] lg:text-[2.2rem] ${item.titleColor}`}
         >
           {item.title}
         </h3>
 
         {/* Description */}
-        <p className="mt-3 font-sans text-xs leading-relaxed font-semibold text-black sm:mt-4 sm:text-sm">
+        <p className="mt-3 font-sans text-xs leading-relaxed font-medium text-black sm:mt-4 sm:text-sm">
           {item.description}
         </p>
 

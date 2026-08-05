@@ -24,7 +24,7 @@ const HeroContent = () => {
       {/* ===== LEFT COLUMN: Text ===== */}
       <motion.div variants={FADE_IN_UP_ITEM} className="flex w-full flex-col items-start md:w-1/2">
         {/* Title */}
-        <div className="font-edo flex flex-col items-start leading-none font-black uppercase">
+        <div className="font-edo flex flex-col items-start leading-none font-medium uppercase">
           <span className="-rotate-3 transform text-[42px] tracking-wider text-[#486221] sm:text-[60px] md:text-[72px] lg:text-[85px] xl:text-[100px]">
             Transform
           </span>
@@ -42,7 +42,7 @@ const HeroContent = () => {
           <div className="absolute inset-0 h-full w-full">
             <Image src={brushTextBg} alt="Brush background" fill className="object-fill" />
           </div>
-          <p className="relative z-10 px-4 py-2 text-center font-sans text-xs font-semibold tracking-wide text-white uppercase sm:px-6 sm:text-[14px]">
+          <p className="relative z-10 px-4 py-2 text-center font-sans text-xs font-medium tracking-wide text-white uppercase sm:px-6 sm:text-[14px]">
             A space to <span className="text-[#E81A66]">be real,</span>
             <br />
             to feel deep, to <span className="text-[#F3A134]">transform.</span>
@@ -56,7 +56,7 @@ const HeroContent = () => {
             href="/confessions"
             className="relative z-10 flex h-full w-full items-center justify-center gap-2"
           >
-            <span className="font-edo text-[12px] font-black tracking-widest text-[#3a2200] uppercase sm:text-[14px]">
+            <span className="font-edo text-[12px] font-semibold tracking-widest text-[#3a2200] uppercase sm:text-[14px]">
               Read Confessions →
             </span>
           </Link>
