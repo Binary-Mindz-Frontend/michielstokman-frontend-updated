@@ -5,12 +5,14 @@ import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicAc
 import { useGetDiscoveryFeedQuery } from '@/redux/features/discoveryFeed/discoveryFeed.api';
 import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
 import { motion } from 'framer-motion';
+import { useState } from 'react';
 import LiberationsCard, { LiberationItem } from './_components/LiberationsCard/LiberationsCard';
 
 // Fallback Asset
 import fallbackCardImage from '@/assets/confessions/confession-card-1.png';
 
 export default function LiberationsGrid() {
+  const [visibleCount, setVisibleCount] = useState(8);
   const { data: feedResponse, isLoading } = useGetDiscoveryFeedQuery([]);
 
   const rawItems = feedResponse?.data?.items || [];
@@ -39,6 +41,13 @@ export default function LiberationsGrid() {
     isExplicit: item.is_explicit ?? false,
   }));
 
+  const visibleLiberations = liberationsData.slice(0, visibleCount);
+  const hasMore = liberationsData.length > visibleCount;
+
+  const handleLoadMore = () => {
+    setVisibleCount((prev) => prev + 8);
+  };
+
   if (isLoading) {
     return (
       <div className="py-16 text-center font-sans text-sm font-semibold text-[#777]">
@@ -54,8 +63,8 @@ export default function LiberationsGrid() {
         variants={FADE_IN_UP_ITEM}
         className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
       >
-        {liberationsData.length > 0 ? (
-          liberationsData.map((item) => <LiberationsCard key={item.id} item={item} />)
+        {visibleLiberations.length > 0 ? (
+          visibleLiberations.map((item) => <LiberationsCard key={item.id} item={item} />)
         ) : (
           <div className="col-span-full py-12 text-center font-sans text-sm font-semibold text-[#777]">
             No liberations found.
@@ -63,11 +72,16 @@ export default function LiberationsGrid() {
         )}
       </motion.div>
 
-      {/* Load More Button */}
-      {liberationsData.length > 0 && (
+      {/* Load More Button (Only visible if there are more than visibleCount items) */}
+      {hasMore && (
         <motion.div variants={FADE_IN_UP_ITEM} className="mt-8 flex w-full justify-center md:mt-10">
           <div>
-            <DynamicActionButton text="LOAD MORE" bgColor="#4A229D" textColor="white" />
+            <DynamicActionButton
+              text="LOAD MORE"
+              onClick={handleLoadMore}
+              bgColor="#4A229D"
+              textColor="white"
+            />
           </div>
         </motion.div>
       )}

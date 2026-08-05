@@ -5,12 +5,14 @@ import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicAc
 import { useGetDiscoveryFeedQuery } from '@/redux/features/discoveryFeed/discoveryFeed.api';
 import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
 import { motion } from 'framer-motion';
+import { useState } from 'react';
 import ConfessionsCard, { ConfessionItem } from './_components/ConfessionsCard/ConfessionsCard';
 
 // Fallback Asset
 import fallbackCardImage from '@/assets/confessions/confession-card-1.png';
 
 export default function ConfessionsGrid() {
+  const [visibleCount, setVisibleCount] = useState(8);
   const { data: feedResponse, isLoading } = useGetDiscoveryFeedQuery(['confession']);
 
   const rawItems = feedResponse?.data?.items || [];
@@ -34,6 +36,13 @@ export default function ConfessionsGrid() {
     isExplicit: item.is_explicit ?? false,
   }));
 
+  const visibleConfessions = confessionsData.slice(0, visibleCount);
+  const hasMore = confessionsData.length > visibleCount;
+
+  const handleLoadMore = () => {
+    setVisibleCount((prev) => prev + 8);
+  };
+
   if (isLoading) {
     return (
       <div className="py-16 text-center font-sans text-sm font-semibold text-[#777]">
@@ -49,8 +58,8 @@ export default function ConfessionsGrid() {
         variants={FADE_IN_UP_ITEM}
         className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
       >
-        {confessionsData.length > 0 ? (
-          confessionsData.map((item) => <ConfessionsCard key={item.id} item={item} />)
+        {visibleConfessions.length > 0 ? (
+          visibleConfessions.map((item) => <ConfessionsCard key={item.id} item={item} />)
         ) : (
           <div className="col-span-full py-12 text-center font-sans text-sm font-semibold text-[#777]">
             No confessions found.
@@ -58,11 +67,16 @@ export default function ConfessionsGrid() {
         )}
       </motion.div>
 
-      {/* Load More Button */}
-      {confessionsData.length > 0 && (
+      {/* Load More Button (Only visible if there are more than visibleCount items) */}
+      {hasMore && (
         <motion.div variants={FADE_IN_UP_ITEM} className="mt-8 flex w-full justify-center md:mt-10">
           <div>
-            <DynamicActionButton text="LOAD MORE" bgColor="#D22D4C" textColor="white" />
+            <DynamicActionButton
+              text="LOAD MORE"
+              onClick={handleLoadMore}
+              bgColor="#D22D4C"
+              textColor="white"
+            />
           </div>
         </motion.div>
       )}
