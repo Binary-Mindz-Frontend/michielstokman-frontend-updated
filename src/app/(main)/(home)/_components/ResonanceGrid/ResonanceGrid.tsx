@@ -49,7 +49,7 @@ const features: FeatureItem[] = [
     description:
       'Transformative Liberation Courses. Break Old Patterns. Reclaim Your Freedom. Become Who You Truly Are.',
     image: featureLiberation,
-    link: '/liberation',
+    link: '/liberations',
     btnText: 'BEGIN LIBERATIONS',
     bgColor: '#54318C',
     textColor: 'white',
