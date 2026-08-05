@@ -13,12 +13,12 @@ const RulesSection = () => {
   return (
     <motion.div
       variants={FADE_IN_UP_ITEM}
-      className="flex w-full flex-col items-center justify-between gap-10 md:flex-row md:items-start md:gap-12 lg:gap-16"
+      className="flex w-full flex-col items-center justify-between gap-10 md:flex-row md:items-center md:gap-12 lg:gap-16"
     >
       {/* --- LEFT CONTENT COLUMN --- */}
       <div className="flex w-full flex-col items-start text-left md:w-1/2">
         {/* Heading Unit */}
-        <div className="flex items-center gap-3 md:gap-4">
+        <div className="flex w-full items-center justify-center gap-3 md:w-auto md:justify-start md:gap-4">
           {/* 1. Sun/Eye Icon */}
           <div className="relative h-10 w-10 shrink-0 md:h-12 md:w-12">
             <Image src={rulesSectionIcon} alt="Rules Icon" fill className="object-contain" />
