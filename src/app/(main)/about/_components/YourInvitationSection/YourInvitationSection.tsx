@@ -65,20 +65,20 @@ const YourInvitationSection = () => {
         </div>
 
         {/* RIGHT COLUMN: Callout Stack & Dynamic Action Button */}
-        <div className="flex w-full flex-col items-start text-left lg:w-1/2 lg:pl-6">
+        <div className="flex w-full flex-col items-center text-center lg:w-1/2 lg:items-start lg:pl-6 lg:text-left">
           <p className="font-sans text-sm font-normal text-[#4A4A4A] sm:text-base md:text-lg">
             You have adapted long enough.
           </p>
 
           {/* Callout Headline Stack */}
-          <div className="font-edo mt-3 flex flex-col leading-none font-normal uppercase not-italic">
+          <div className="font-edo mt-3 flex flex-col items-center leading-none font-normal uppercase not-italic lg:items-start">
             <span className="text-3xl tracking-wider text-[#1A1A1A] sm:text-4xl md:text-5xl lg:text-6xl">
               ARE YOU READY
             </span>
             <span className="mt-2 text-3xl tracking-wider text-[#1A1A1A] sm:mt-3 sm:text-4xl md:text-5xl lg:text-6xl">
               TO COME HOME
             </span>
-            <div className="mt-2 flex items-center gap-3 sm:mt-3">
+            <div className="mt-2 flex items-center justify-center gap-3 sm:mt-3 lg:justify-start">
               <span className="text-3xl tracking-wider text-[#1A1A1A] sm:text-4xl md:text-5xl lg:text-6xl">
                 TO
               </span>
