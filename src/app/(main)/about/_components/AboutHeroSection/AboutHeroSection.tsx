@@ -12,40 +12,48 @@ const AboutHeroSection = () => {
   return (
     <motion.div
       variants={FADE_IN_UP_ITEM}
-      className="relative flex w-full flex-col items-center justify-between gap-10 md:flex-row md:items-center md:gap-12 lg:gap-16"
+      className="relative flex w-full flex-col items-center justify-between gap-8 md:flex-row md:items-center md:gap-12 lg:gap-16"
     >
-      {/* --- LEFT CONTENT COLUMN --- */}
-      <div className="flex w-full flex-col items-center text-center md:w-1/2 md:items-start md:text-left">
-        {/* Title Header with Floating Quote Text */}
-        <div className="relative flex w-full flex-col items-center md:items-start">
-          {/* Main Title Stack */}
-          <div className="font-edo flex flex-col items-center leading-none font-black uppercase md:items-start">
-            <span className="-rotate-2 transform text-3xl tracking-wider text-[#486221] min-[380px]:text-4xl sm:text-5xl md:text-5xl lg:text-6xl xl:text-7xl">
-              WHY
-            </span>
-            <span className="mt-2 -rotate-2 transform text-3xl tracking-wider whitespace-nowrap text-[#E81A66] min-[380px]:text-4xl sm:mt-3 sm:text-5xl md:text-5xl lg:text-6xl xl:text-7xl">
-              TRANSFORM TO
-            </span>
-            <div className="relative mt-2 inline-block sm:mt-3">
-              <span className="-rotate-2 transform text-3xl tracking-wider whitespace-nowrap text-[#F3A134] min-[380px]:text-4xl sm:text-5xl md:text-5xl lg:text-6xl xl:text-7xl">
-                LIBERATION
-              </span>
+      {/* ================= MOBILE LAYOUT (< md) ================= */}
+      <div className="flex w-full flex-col items-center text-center md:hidden">
+        {/* Mobile Title Stack */}
+        <div className="font-edo flex flex-col items-center leading-none font-black uppercase">
+          {/* Line 1: WHY TRANSFORM */}
+          <div className="-rotate-2 transform text-3xl font-black tracking-wider min-[400px]:text-4xl sm:text-4xl">
+            <span className="text-[#486221]">WHY </span>
+            <span className="text-[#E81A66]">TRANSFORM</span>
+          </div>
 
-              {/* Floating Quote Text ("Say what's real." ❤️) - Absolute Placement */}
-              <div className="font-playpen absolute -right-8 -bottom-8 z-10 shrink-0 -rotate-6 transform text-center text-[10px] leading-tight font-bold text-[#1A1A1A] min-[380px]:-right-10 min-[380px]:-bottom-9 min-[380px]:text-xs sm:-right-16 sm:-bottom-11 sm:text-sm md:-right-20 md:-bottom-12 md:text-sm lg:-right-24 lg:-bottom-14 lg:text-base">
-                <p className="whitespace-nowrap">&quot;Say</p>
-                <p className="whitespace-nowrap">what&apos;s real.&quot;</p>
-                <p className="mt-0.5 text-[10px] min-[380px]:text-xs sm:text-sm md:text-sm lg:text-base">
-                  ❤️
-                </p>
-              </div>
+          {/* Line 2: TO LIBERATION */}
+          <div className="relative mt-2 -rotate-2 transform text-3xl font-black tracking-wider min-[400px]:text-4xl sm:text-4xl">
+            <span className="text-[#E81A66]">TO </span>
+            <span className="text-[#F3A134]">LIBERATION</span>
+          </div>
+
+          {/* Line 3: Floating Quote Text ("Say what's real." ❤️) */}
+          <div className="font-playpen mt-2 flex w-full flex-col items-end pr-4 text-right">
+            <div className="-rotate-6 transform text-xs leading-tight font-bold text-[#1A1A1A] italic sm:text-sm">
+              <p>&quot;Say</p>
+              <p>what&apos;s real.&quot;</p>
+              <p className="mt-0.5 text-sm not-italic">❤️</p>
             </div>
           </div>
         </div>
 
-        {/* Brush Text Container (Bottom Left) */}
-        <div className="relative mt-16 flex min-h-24 w-full max-w-105 -rotate-2 transform items-center justify-center px-6 py-5 sm:mt-20 sm:min-h-28 md:mt-24 lg:mt-28">
-          {/* Brush Background Image */}
+        {/* Mobile Hero Image (Middle) */}
+        <div className="relative mt-4 w-full max-w-95 sm:max-w-110">
+          <Image
+            src={aboutHeroImg}
+            alt="Why Transform To Liberation Hero Image"
+            width={600}
+            height={600}
+            className="h-auto w-full object-contain"
+            priority
+          />
+        </div>
+
+        {/* Mobile Brush Text Container (Bottom) */}
+        <div className="relative mt-6 flex min-h-22 w-full max-w-100 -rotate-2 transform items-center justify-center px-6 py-4 sm:mt-8 sm:min-h-26">
           <div className="absolute inset-0 h-full w-full">
             <Image
               src={aboutHeroBrush}
@@ -55,9 +63,7 @@ const AboutHeroSection = () => {
               priority
             />
           </div>
-
-          {/* Text inside Brush */}
-          <div className="relative z-10 px-4 text-center font-sans text-xs leading-snug font-semibold text-white sm:text-sm md:text-base">
+          <div className="relative z-10 px-4 text-center font-sans text-xs leading-snug font-semibold text-white sm:text-sm">
             <p>A Story About The Day Fear</p>
             <p className="mt-0.5">
               <span className="font-bold text-[#E81A66]">Loosened</span> Its Grip
@@ -66,9 +72,55 @@ const AboutHeroSection = () => {
         </div>
       </div>
 
-      {/* --- RIGHT HERO IMAGE COLUMN --- */}
-      <div className="flex w-full items-center justify-center md:w-1/2">
-        <div className="relative w-full max-w-115 sm:max-w-130 md:max-w-145 lg:max-w-160">
+      {/* ================= DESKTOP LAYOUT (>= md) ================= */}
+      <div className="hidden w-full flex-col items-start text-left md:flex md:w-1/2">
+        {/* Desktop Title Header */}
+        <div className="relative flex w-full flex-col items-start">
+          <div className="font-edo flex -rotate-6 transform flex-col items-start leading-none font-black uppercase">
+            <span className="text-5xl tracking-wider text-[#486221] lg:text-6xl xl:text-7xl">
+              WHY
+            </span>
+            <span className="mt-3 text-5xl tracking-wider whitespace-nowrap text-[#E81A66] lg:text-6xl xl:text-7xl">
+              TRANSFORM TO
+            </span>
+            <div className="relative mt-3 inline-block">
+              <span className="text-5xl tracking-wider whitespace-nowrap text-[#F3A134] lg:text-6xl xl:text-7xl">
+                LIBERATION
+              </span>
+
+              {/* Quote Text */}
+              <div className="font-playpen absolute -right-16 -bottom-12 z-10 shrink-0 -rotate-6 transform text-center text-sm leading-tight font-bold text-[#1A1A1A] lg:-right-24 lg:-bottom-14 lg:text-base">
+                <p className="whitespace-nowrap">&quot;Say</p>
+                <p className="whitespace-nowrap">what&apos;s real.&quot;</p>
+                <p className="mt-0.5 text-sm lg:text-base">❤️</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Desktop Brush Text Container */}
+        <div className="relative mt-20 flex min-h-26 w-full max-w-105 -rotate-2 transform items-center justify-center px-6 py-5 md:mt-24 lg:mt-28">
+          <div className="absolute inset-0 h-full w-full">
+            <Image
+              src={aboutHeroBrush}
+              alt="Black brush background"
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
+          <div className="relative z-10 px-4 text-center font-sans text-sm leading-snug font-semibold text-white md:text-base">
+            <p>A Story About The Day Fear</p>
+            <p className="mt-0.5">
+              <span className="font-bold text-[#E81A66]">Loosened</span> Its Grip
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop Right Hero Image */}
+      <div className="hidden w-full items-center justify-center md:flex md:w-1/2">
+        <div className="relative w-full max-w-130 md:max-w-145 lg:max-w-160">
           <Image
             src={aboutHeroImg}
             alt="Why Transform To Liberation Hero Image"
