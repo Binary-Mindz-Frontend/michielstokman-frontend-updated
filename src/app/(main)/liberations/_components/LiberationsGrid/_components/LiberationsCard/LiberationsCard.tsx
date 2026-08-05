@@ -4,15 +4,15 @@ import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicAc
 import Image, { StaticImageData } from 'next/image';
 import React from 'react';
 
-// Assets
 import ratingBadge from '@/assets/confessions/rating-badge.png';
 
 export interface LiberationItem {
   id: string | number;
+  journeyCode?: string;
   category: string;
   title: string;
   description: string;
-  image: StaticImageData;
+  image: string | StaticImageData;
   price: string;
   listenedCount: number;
   isExplicit?: boolean;
@@ -32,16 +32,17 @@ const LiberationsCard: React.FC<LiberationsCardProps> = ({ item }) => {
             src={item.image}
             alt={item.title}
             fill
+            unoptimized={typeof item.image === 'string'}
             className="object-cover object-center"
             priority
           />
 
           {/* Price/Rating Badge at Bottom-Right Corner */}
-          <div className="absolute right-6 bottom-3 flex h-7 w-14 items-center justify-center">
+          <div className="absolute right-6 bottom-3 flex h-6.5 w-12 items-center justify-center">
             <div className="absolute inset-0 h-full w-full">
               <Image src={ratingBadge} alt="Badge" fill className="object-fill" />
             </div>
-            <span className="relative z-10 font-sans text-sm font-semibold text-[#4A229D]">
+            <span className="relative z-10 font-sans text-xs font-semibold text-[#4A229D]">
               {item.price}
             </span>
           </div>
@@ -58,7 +59,7 @@ const LiberationsCard: React.FC<LiberationsCardProps> = ({ item }) => {
         </h3>
 
         {/* Description Excerpt */}
-        <p className="mt-2 font-sans text-sm leading-relaxed font-medium text-black">
+        <p className="mt-2 line-clamp-3 font-sans text-sm leading-relaxed font-medium text-black">
           {item.description}
         </p>
 
@@ -72,7 +73,7 @@ const LiberationsCard: React.FC<LiberationsCardProps> = ({ item }) => {
       <div className="mt-2">
         <DynamicActionButton
           text="Start Liberations"
-          href={`/liberations/${item.id}`}
+          href={item.journeyCode ? `/journeys/${item.journeyCode}` : `/details/${item.id}`}
           bgColor="#4A229D"
           textColor="white"
         />

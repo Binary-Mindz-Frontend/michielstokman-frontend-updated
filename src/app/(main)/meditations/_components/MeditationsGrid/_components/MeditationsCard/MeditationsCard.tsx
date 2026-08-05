@@ -11,7 +11,7 @@ export interface MeditationItem {
   category: string;
   title: string;
   description: string;
-  image: StaticImageData;
+  image: string | StaticImageData;
   rating: string;
   listenedCount: number;
   isExplicit?: boolean;
@@ -31,6 +31,7 @@ const MeditationsCard: React.FC<MeditationsCardProps> = ({ item }) => {
             src={item.image}
             alt={item.title}
             fill
+            unoptimized={typeof item.image === 'string'}
             className="object-cover object-center"
             priority
           />
@@ -57,7 +58,7 @@ const MeditationsCard: React.FC<MeditationsCardProps> = ({ item }) => {
         </h3>
 
         {/* Description Excerpt */}
-        <p className="mt-2 font-sans text-sm leading-relaxed font-medium text-black">
+        <p className="mt-2 line-clamp-3 font-sans text-sm leading-relaxed font-medium text-black">
           {item.description}
         </p>
 
@@ -71,7 +72,7 @@ const MeditationsCard: React.FC<MeditationsCardProps> = ({ item }) => {
       <div className="mt-2">
         <DynamicActionButton
           text="Start Listening"
-          href={`/meditations/${item.id}`}
+          href={`/details/${item.id}`}
           bgColor="#EEA13D"
           textColor="white"
         />
