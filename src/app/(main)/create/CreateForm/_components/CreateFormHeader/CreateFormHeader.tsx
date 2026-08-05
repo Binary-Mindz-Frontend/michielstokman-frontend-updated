@@ -8,7 +8,7 @@ export default function CreateFormHeader({ category }: { category: string }) {
   const isConfession = category === 'Confessions';
 
   return (
-    <div className="mx-auto mb-10 flex w-full flex-col items-center justify-between gap-8 md:flex-row md:items-center">
+    <div className="mx-auto mb-10 flex w-full flex-col items-center justify-between gap-2 md:flex-row md:items-center md:gap-6">
       {/* Left Column: Title & Subtitle */}
       <div className="flex w-full flex-col items-start md:w-1/2">
         {/* Title */}
