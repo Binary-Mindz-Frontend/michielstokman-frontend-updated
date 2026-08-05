@@ -4,7 +4,7 @@
 
 import InputField from '@/components/dashboard/Fields/InputField/InputField';
 import TextAreaField from '@/components/dashboard/Fields/TextAreaField/TextAreaField';
-import { Button } from '@/components/ui/button';
+import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicActionButton';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import { useGenerateStoryMutation } from '@/redux/features/aiStory/aiStory.api';
@@ -23,9 +23,7 @@ const GROWTH_AREAS = [
   'Forgiveness',
   'Letting Go',
   'Presence',
-  'Inner Peace',
   'Self-Compassion',
-  'Self-Discovery',
   'Rebuilding',
   'Patience',
   'Love & Connection',
@@ -65,6 +63,7 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
       growthAreas: [],
       lifePhase: 'Deepening',
       sensitiveContent: false,
+      tags: '',
     },
   });
 
@@ -97,6 +96,7 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
           growthAreas: [],
           lifePhase: 'Deepening',
           sensitiveContent: false,
+          tags: '',
         });
       }
     } catch (error: any) {
@@ -111,88 +111,104 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
         animate="visible"
         variants={FADE_IN_UP_CONTAINER}
         onSubmit={handleSubmit(onSubmit)}
-        className="space-y-8"
+        className="space-y-6"
       >
-        <motion.div variants={FADE_IN_UP_ITEM} className="space-y-4 sm:space-y-6">
+        {/* Title Input using custom InputField */}
+        <motion.div variants={FADE_IN_UP_ITEM}>
           <InputField
             label="Title"
             name="title"
-            placeholder="Give it a name that resonates..."
+            placeholder="Give Your Story A Name..."
             control={control}
             error={errors.title?.message}
             required
           />
+        </motion.div>
+
+        {/* First Name Input using custom InputField */}
+        <motion.div variants={FADE_IN_UP_ITEM}>
           <InputField
-            label="Your first name"
+            label="Your First Name"
             name="firstName"
-            placeholder="How you'd like to be known..."
+            placeholder="Give Your Story A Name..."
             control={control}
             error={errors.firstName?.message}
             required
           />
-          <div>
-            <TextAreaField
-              label={isConfession ? 'Your story' : 'Meditation Script'}
-              name="content"
-              placeholder={
-                isConfession ? 'Begin wherever feels right' : 'Write in second person (you)...'
-              }
-              control={control}
-              error={errors.content?.message}
-              required
-              rows={6}
-            />
-            <div
-              className={cn(
-                'mt-1 text-right text-xs',
-                contentValue.length > 8000 ? 'text-error font-bold' : 'text-secondary',
-              )}
-            >
-              {contentValue.length}/8000
-            </div>
+        </motion.div>
+
+        {/* Content Textarea using custom TextAreaField */}
+        <motion.div variants={FADE_IN_UP_ITEM}>
+          <TextAreaField
+            label={isConfession ? 'Your Story' : 'Meditation Script'}
+            name="content"
+            placeholder={
+              isConfession
+                ? 'Start Where It Hurts. Or Where It Healed.'
+                : 'Write in second person (you)...'
+            }
+            control={control}
+            error={errors.content?.message}
+            rows={5}
+          />
+          <div
+            className={cn(
+              'mt-1 text-right font-sans text-xs',
+              contentValue.length > 8000 ? 'font-bold text-[#D22D4C]' : 'font-semibold text-[#888]',
+            )}
+          >
+            {contentValue.length}/8000
           </div>
         </motion.div>
 
-        <motion.div variants={FADE_IN_UP_ITEM} className="space-y-4 sm:space-y-6">
-          <div className="space-y-3">
-            <label className="block font-medium">
-              Growth areas <span className="text-error">*</span>
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {GROWTH_AREAS.map((area) => (
-                <Button
+        {/* Growth Areas Pills */}
+        <motion.div variants={FADE_IN_UP_ITEM} className="space-y-3">
+          <label className="block font-sans text-sm font-semibold">
+            Growth Areas (Choose All That Resonate)
+          </label>
+          <div className="flex flex-wrap gap-2.5">
+            {GROWTH_AREAS.map((area) => {
+              const isSelected = selectedGrowthAreas.includes(area);
+              return (
+                <button
                   key={area}
                   type="button"
                   onClick={() => {
-                    const next = selectedGrowthAreas.includes(area)
+                    const next = isSelected
                       ? selectedGrowthAreas.filter((a: string) => a !== area)
                       : [...selectedGrowthAreas, area];
                     setValue('growthAreas', next);
                     trigger('growthAreas');
                   }}
                   className={cn(
-                    'rounded-sm border bg-transparent px-4 py-2 text-sm transition-all hover:bg-transparent',
-                    selectedGrowthAreas.includes(area)
-                      ? 'border-primary/50 text-primary'
-                      : 'border-primary/20 text-secondary',
+                    'cursor-pointer rounded-sm border bg-transparent px-4 py-2 font-sans text-xs font-semibold transition-all duration-300',
+                    isSelected
+                      ? 'border-[#EEA13D] font-semibold text-[#EEA13D]'
+                      : 'border-[#B39B7F] text-[#B39B7F] hover:border-[#EEA13D]/50',
                   )}
                 >
                   {area}
-                </Button>
-              ))}
-            </div>
-            {errors.growthAreas && (
-              <p className="text-error text-xs">{errors.growthAreas.message?.toString()}</p>
-            )}
+                </button>
+              );
+            })}
           </div>
+          {errors.growthAreas && (
+            <p className="font-sans text-xs font-semibold text-[#D22D4C]">
+              {errors.growthAreas.message?.toString()}
+            </p>
+          )}
+        </motion.div>
 
-          <div className="space-y-3">
-            <label className="block font-medium">
-              Life phase this speaks to <span className="text-error">*</span>
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {LIFE_PHASES.map((phase) => (
-                <Button
+        {/* Life Phase Pills */}
+        <motion.div variants={FADE_IN_UP_ITEM} className="space-y-3">
+          <label className="block font-sans text-sm font-semibold text-[#1A1A1A]">
+            Life Phase This Speaks To
+          </label>
+          <div className="flex flex-wrap gap-2.5">
+            {LIFE_PHASES.map((phase) => {
+              const isSelected = selectedLifePhase === phase;
+              return (
+                <button
                   key={phase}
                   type="button"
                   onClick={() => {
@@ -200,54 +216,73 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
                     trigger('lifePhase');
                   }}
                   className={cn(
-                    'rounded-sm border bg-transparent px-4 py-2 text-sm transition-all hover:bg-transparent',
-                    selectedLifePhase === phase
-                      ? 'border-primary/50 text-primary'
-                      : 'border-primary/20 text-secondary',
+                    'cursor-pointer rounded-sm border bg-transparent px-4 py-2 font-sans text-xs font-semibold transition-all duration-300',
+                    isSelected
+                      ? 'border-[#EEA13D] font-semibold text-[#EEA13D]'
+                      : 'border-[#B39B7F] text-[#B39B7F] hover:border-[#EEA13D]/50',
                   )}
                 >
                   {phase}
-                </Button>
-              ))}
-            </div>
-            {errors.lifePhase && (
-              <p className="text-error text-xs">{errors.lifePhase.message?.toString()}</p>
-            )}
+                </button>
+              );
+            })}
           </div>
-
-          <InputField
-            label="Tags"
-            name="tags"
-            placeholder="Vulnerability, courage, morning"
-            control={control}
-          />
-
-          <div className="flex items-center justify-between border-t border-[#E5E0DA] pt-4">
-            <div>
-              <p className="text-lg font-medium">Contains sensitive content</p>
-              <p className="text-secondary text-sm">Mature themes, heavy emotional content</p>
-            </div>
-            <Switch
-              checked={watch('sensitiveContent')}
-              onCheckedChange={(val) => setValue('sensitiveContent', val)}
-            />
-          </div>
+          {errors.lifePhase && (
+            <p className="font-sans text-xs font-semibold text-[#D22D4C]">
+              {errors.lifePhase.message?.toString()}
+            </p>
+          )}
         </motion.div>
 
-        <motion.div variants={FADE_IN_UP_ITEM}>
-          <Button
-            disabled={isGenerating}
-            type="submit"
-            className="bg-primary/90 hover:bg-primary w-full rounded-md py-5 font-medium text-white disabled:opacity-50 sm:py-6 sm:text-lg"
-          >
-            {isGenerating
-              ? 'Submitting...'
-              : `Submit ${isConfession ? 'Confession' : 'Meditation'}`}
-          </Button>
+        {/* Tags Input using custom InputField */}
+        <motion.div variants={FADE_IN_UP_ITEM} className="space-y-1">
+          <InputField
+            label="Tags (Optional)"
+            name="tags"
+            placeholder="Add Words That Describe Your Story..."
+            control={control}
+            error={errors.tags?.message}
+          />
+          <p className="font-sans text-xs text-[#888]">
+            Examples: Vulnerability, Courage, Healing, Letting Go...
+          </p>
+        </motion.div>
+
+        {/* Sensitive Content Toggle Switch */}
+        <motion.div variants={FADE_IN_UP_ITEM} className="flex items-center justify-between py-2">
+          <div>
+            <p className="font-sans text-sm font-bold text-[#1A1A1A]">Contains Sensitive Content</p>
+            <p className="font-sans text-xs text-[#777]">
+              Some Truths Are Heavy. That&apos;s Okay.
+            </p>
+          </div>
+          <Switch
+            className="cursor-pointer"
+            checked={watch('sensitiveContent')}
+            onCheckedChange={(val) => setValue('sensitiveContent', val)}
+          />
+        </motion.div>
+
+        {/* Submit Action Button using DynamicActionButton */}
+        <motion.div variants={FADE_IN_UP_ITEM} className="pt-2">
+          <DynamicActionButton
+            text={
+              isGenerating
+                ? 'Submitting...'
+                : `Submit ${isConfession ? 'Confession' : 'Meditation'}`
+            }
+            onClick={handleSubmit(onSubmit)}
+            bgColor="#D22D4C"
+            textColor="white"
+            fullWidth
+          />
+          <p className="mt-2.5 text-center font-sans text-xs font-semibold text-[#777]">
+            Every Submission Is Reviewed With Care And Compassion.
+          </p>
         </motion.div>
       </motion.form>
 
-      <SuccessModal isOpen={isSuccess} onClose={() => setIsSuccess(false)} />
+      <SuccessModal isOpen={isSuccess} onClose={() => setIsSuccess(false)} category={category} />
     </>
   );
 }
