@@ -78,25 +78,25 @@ export default function ReflectionStep({
             <div className="w-full">
               <div className="font-playpen mb-2 flex items-center justify-between text-base font-bold text-[#52277F]">
                 <span>Energy Level</span>
-                <span>{energyLevel}</span>
+                <span>{Math.round(energyLevel)}</span>
               </div>
               <div className="relative flex h-4 w-full items-center">
                 {/* Custom Track Background */}
                 <div className="absolute h-2 w-full rounded-full bg-[#EADDFF]/50" />
-                {/* Active Purple Track Fill with Smooth Transition */}
+                {/* Active Purple Track Fill */}
                 <div
-                  className="absolute h-2 rounded-full bg-[#B69DF8] transition-all duration-200 ease-out"
-                  style={{ width: `${((energyLevel - 1) / 9) * 100}%` }}
+                  className="absolute h-2 rounded-full bg-[#B69DF8] transition-[width] duration-75 ease-out"
+                  style={{ width: `${Math.min(100, Math.max(0, ((energyLevel - 1) / 9) * 100))}%` }}
                 />
                 {/* Actual Range Input */}
                 <input
                   type="range"
                   min={1}
                   max={10}
-                  step={1}
+                  step={0.1}
                   value={energyLevel}
                   onChange={(e) => setEnergyLevel(Number(e.target.value))}
-                  className="relative z-10 h-2 w-full cursor-pointer appearance-none bg-transparent accent-[#52277F] focus:outline-none [&::-moz-range-thumb]:h-4.5 [&::-moz-range-thumb]:w-4.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-[#52277F] [&::-moz-range-thumb]:transition-all [&::-moz-range-thumb]:duration-150 [&::-webkit-slider-thumb]:h-4.5 [&::-webkit-slider-thumb]:w-4.5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#52277F] [&::-webkit-slider-thumb]:shadow-xs [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:duration-150"
+                  className="relative z-10 h-2 w-full cursor-pointer appearance-none bg-transparent accent-[#52277F] focus:outline-none [&::-moz-range-thumb]:h-4.5 [&::-moz-range-thumb]:w-4.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-[#52277F] [&::-webkit-slider-thumb]:h-4.5 [&::-webkit-slider-thumb]:w-4.5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#52277F] [&::-webkit-slider-thumb]:shadow-xs"
                 />
               </div>
             </div>
@@ -104,21 +104,21 @@ export default function ReflectionStep({
             <div className="w-full">
               <div className="font-playpen mb-2 flex items-center justify-between text-base font-bold text-[#52277F]">
                 <span>Energy Level</span>
-                <span>{energyLevel}</span>
+                <span>{Math.round(energyLevel)}</span>
               </div>
               <div className="relative flex h-4 w-full items-center">
                 {/* Custom Track Background */}
                 <div className="absolute h-2 w-full rounded-full bg-[#EADDFF]/50" />
                 {/* Active Purple Track Fill */}
                 <div
-                  className="absolute h-2 rounded-full bg-[#B69DF8] transition-all duration-200 ease-out"
-                  style={{ width: `${((energyLevel - 1) / 9) * 100}%` }}
+                  className="absolute h-2 rounded-full bg-[#B69DF8] transition-[width] duration-75 ease-out"
+                  style={{ width: `${Math.min(100, Math.max(0, ((energyLevel - 1) / 9) * 100))}%` }}
                 />
                 <input
                   type="range"
                   min={1}
                   max={10}
-                  step={1}
+                  step={0.1}
                   value={energyLevel}
                   readOnly
                   className="relative z-10 h-2 w-full appearance-none bg-transparent accent-[#52277F] focus:outline-none [&::-moz-range-thumb]:h-4.5 [&::-moz-range-thumb]:w-4.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-[#52277F] [&::-webkit-slider-thumb]:h-4.5 [&::-webkit-slider-thumb]:w-4.5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#52277F]"

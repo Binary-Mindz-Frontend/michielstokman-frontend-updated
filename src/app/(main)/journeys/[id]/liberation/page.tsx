@@ -2,17 +2,15 @@
 /* eslint-disable react-hooks/incompatible-library */
 'use client';
 
-import flower1Image from '@/assets/home/flower1.png';
-import flower2Image from '@/assets/home/flower2.png';
-import flower3Image from '@/assets/home/flower3.png';
 import BeforeYouBeginStep from './_components/BeforeYouBeginStep/BeforeYouBeginStep';
 import DayCheckinStep from './_components/DayCheckinStep/DayCheckinStep';
+import DayCompleteStep from './_components/DayCompleteStep/DayCompleteStep';
 import ExerciseStep from './_components/ExerciseStep/ExerciseStep';
 import JourneyBeginStep from './_components/JourneyBeginStep/JourneyBeginStep';
+import JourneyOverviewStep from './_components/JourneyOverviewStep/JourneyOverviewStep';
+import LiberationCompleteStep from './_components/LiberationCompleteStep/LiberationCompleteStep';
 import ReflectionStep from './_components/ReflectionStep/ReflectionStep';
-import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
 import { useGetLiberationDetailsQuery } from '@/redux/features/discoveryFeed/discoveryFeed.api';
 import {
   useCompleteDayMutation,
@@ -23,8 +21,7 @@ import {
   useRepeatJourneyMutation,
 } from '@/redux/features/liberation/liberation.api';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AnimatePresence, motion } from 'framer-motion';
-import Image from 'next/image';
+import { AnimatePresence } from 'framer-motion';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -506,41 +503,12 @@ export default function JourneyPage() {
     // ─────────────────────────────────────────────────────────────────────────────
     if (activePhase === 'day-complete') {
       return (
-        <motion.section
-          key="day-complete"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-          className="mx-auto min-h-screen max-w-3xl px-4 py-12"
-        >
-          <button
-            onClick={() => setPhase('reflection')}
-            className="text-primary mb-4 flex cursor-pointer items-center gap-1 text-sm transition-opacity hover:opacity-80"
-          >
-            ← Back
-          </button>
-          <div className="flex min-h-[calc(100vh-200px)] flex-col items-center justify-center text-center">
-            <div className="mb-8">
-              <Image
-                src={flower2Image}
-                width={400}
-                height={400}
-                alt="Flower"
-                className="h-full w-full max-w-100"
-              />
-            </div>
-            <h1 className="text-dark-primary mb-2 font-serif text-2xl font-semibold md:text-3xl">
-              Day {currentDay.day} Complete
-            </h1>
-            <p className="text-secondary mb-6 max-w-xs text-sm leading-relaxed">
-              You let go of another layer today — beautiful.
-            </p>
-            <Button onClick={handleContinueAfterDay} className="btn-styles w-fit px-6">
-              Continue
-            </Button>
-          </div>
-        </motion.section>
+        <DayCompleteStep
+          dayNumber={currentDay?.day}
+          subtitle="You let go of another layer today — beautiful."
+          onContinue={handleContinueAfterDay}
+          onBack={() => setPhase('reflection')}
+        />
       );
     }
 
@@ -549,94 +517,13 @@ export default function JourneyPage() {
     // ─────────────────────────────────────────────────────────────────────────────
     if (activePhase === 'overview') {
       return (
-        <motion.section
-          key="overview"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-          className="mx-auto h-full max-w-3xl px-4 py-12"
-        >
-          <button
-            onClick={() => router.back()}
-            className="text-primary mb-4 flex cursor-pointer items-center gap-1 text-sm transition-opacity hover:opacity-80"
-          >
-            ← Back
-          </button>
-          <div>
-            <div className="mb-6 flex flex-col items-center text-center">
-              <Image
-                src={flower1Image}
-                width={400}
-                height={400}
-                alt="Flower"
-                className="h-full w-full max-w-100"
-              />
-              <p className="text-secondary mt-4 text-sm">
-                {completedDays.length > 0
-                  ? `${completedDays.length * 7 + 42} others are on this liberation today`
-                  : '42 others are on this liberation today'}
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              {JOURNEY?.days.map((day, i) => {
-                const stepFromApi = journeyStatus?.steps?.find(
-                  (s: any) => s.day_number === day.day,
-                );
-                const apiStatus = stepFromApi?.status;
-
-                const isCompleted = apiStatus
-                  ? apiStatus === 'completed'
-                  : completedDays.includes(i);
-                const isReadyToStart = apiStatus
-                  ? apiStatus === 'available'
-                  : i === 0 || completedDays.includes(i - 1);
-                const isLocked = apiStatus
-                  ? apiStatus === 'locked'
-                  : !isCompleted && !isReadyToStart;
-
-                return (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => !isLocked && !isCompleted && handleStartNextDay(i)}
-                    disabled={isLocked}
-                    className={cn(
-                      'w-full rounded-md border px-5 py-4 text-left transition-all',
-                      isCompleted && 'border-success/30 bg-success/10',
-                      isReadyToStart &&
-                        !isCompleted &&
-                        'border-error/30 bg-error/5 hover:border-error/50 cursor-pointer',
-                      isLocked && 'border-primary/10 cursor-default bg-transparent opacity-60',
-                    )}
-                  >
-                    <p
-                      className={cn(
-                        'font-medium',
-                        isCompleted && 'text-success',
-                        isReadyToStart && !isCompleted && 'text-dark-primary',
-                        isLocked && 'text-secondary',
-                      )}
-                    >
-                      Day {day.day}: {day.title}
-                    </p>
-                    <p
-                      className={cn(
-                        'mt-0.5 text-sm',
-                        isCompleted && 'text-success',
-                        isReadyToStart && !isCompleted && 'text-primary',
-                        isLocked && 'text-secondary',
-                      )}
-                    >
-                      {isCompleted ? 'Completed' : isReadyToStart ? 'Ready to Start' : 'Locked'}
-                    </p>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </motion.section>
+        <JourneyOverviewStep
+          journeyDays={JOURNEY?.days}
+          journeyStatus={journeyStatus}
+          completedDays={completedDays}
+          handleStartNextDay={handleStartNextDay}
+          onBack={() => router.back()}
+        />
       );
     }
 
@@ -645,52 +532,12 @@ export default function JourneyPage() {
     // ─────────────────────────────────────────────────────────────────────────────
     if (activePhase === 'liberation-complete') {
       return (
-        <motion.section
-          key="liberation-complete"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-          className="mx-auto min-h-screen max-w-3xl px-4 py-12"
-        >
-          <button
-            onClick={() => setPhase('overview')}
-            className="text-primary mb-4 flex cursor-pointer items-center gap-1 text-sm transition-opacity hover:opacity-80"
-          >
-            ← Back
-          </button>
-          <div className="flex min-h-[calc(100vh-200px)] flex-col items-center justify-center text-center">
-            <div className="mb-8">
-              <Image
-                src={flower3Image}
-                width={400}
-                height={400}
-                alt="Flower"
-                className="h-full w-full max-w-100"
-              />
-            </div>
-            <h1 className="text-dark-primary mb-3 font-serif text-2xl font-bold md:text-3xl">
-              Your Liberation is Complete 🌸
-            </h1>
-            <p className="text-secondary mb-10 max-w-xs text-sm leading-relaxed">
-              Seven days of showing up for yourself. Seven petals bloomed. This energy is yours to
-              keep.
-            </p>
-            <div className="w-full max-w-sm space-y-3">
-              <Button
-                type="button"
-                onClick={handleRepeatLiberation}
-                disabled={isRepeating}
-                className="border-primary/20 text-primary w-full rounded-md border bg-transparent py-5 text-sm hover:bg-transparent"
-              >
-                {isRepeating ? 'Resetting...' : 'Repeat This Liberation'}
-              </Button>
-              <Button type="button" onClick={() => router.push('/')} className="btn-styles">
-                Explore More Liberations
-              </Button>
-            </div>
-          </div>
-        </motion.section>
+        <LiberationCompleteStep
+          onExploreMore={() => router.push('/journeys')}
+          onRepeatLiberation={handleRepeatLiberation}
+          isRepeating={isRepeating}
+          onBack={() => setPhase('overview')}
+        />
       );
     }
 

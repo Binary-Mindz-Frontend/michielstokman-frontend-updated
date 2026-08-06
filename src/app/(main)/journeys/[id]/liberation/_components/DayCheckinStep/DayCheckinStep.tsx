@@ -78,7 +78,7 @@ export default function DayCheckinStep({
           <p className="font-playpen mb-1 text-[11px] font-semibold tracking-widest text-[#667085] uppercase sm:text-sm">
             DAY {dayNumber}
           </p>
-          <h1 className="font-edo text-2xl font-bold tracking-wider text-[#52277F] uppercase sm:text-4xl md:text-5xl lg:text-6xl">
+          <h1 className="font-edo text-2xl font-bold tracking-wider whitespace-nowrap text-[#52277F] uppercase sm:text-4xl md:text-5xl lg:text-6xl">
             {dayTitle}
           </h1>
         </div>
