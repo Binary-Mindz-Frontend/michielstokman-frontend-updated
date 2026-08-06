@@ -2,8 +2,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { Button } from '@/components/ui/button';
-
 import {
   useGetDiscoveryFeedQuery,
   useGetStoryDetailsQuery,
@@ -11,21 +9,25 @@ import {
 
 import { motion } from 'framer-motion';
 
-import { ArrowLeft } from 'lucide-react';
-
 import Image from 'next/image';
-
-import Link from 'next/link';
 
 import { useParams, useRouter } from 'next/navigation';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import LoginRequiredModal from '@/app/(main)/create/CreateForm/_components/LoginRequiredModal/LoginRequiredModal';
+import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicActionButton';
+import DynamicBackButton from '@/components/main/DynamicBackButton/DynamicBackButton';
 import { StoryDetailSkeleton } from '@/components/main/Skeletons/StoryDetailSkeleton';
 import { useCurrentUser, useIsAuthenticated } from '@/redux/features/auth/authSlice';
 import { useAppSelector } from '@/redux/hooks';
 import StoryPlayer from '../StoryPlayer/StoryPlayer';
+
+import brushTextBg from '@/assets/account/brush-text-bg.png';
+import confessionsHero from '@/assets/confessions/confessions-hero.png';
+import pinkHeartDrawn from '@/assets/home/pink-heart-drawn.png';
+import meditationsHero from '@/assets/meditations/meditations-hero.png';
+import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
 
 export default function StoryDetailPage() {
   const params = useParams();
@@ -81,6 +83,14 @@ export default function StoryDetailPage() {
       );
     }
   }, [isAuthenticated, user, storyId]);
+
+  const handleReflectClick = (e?: React.MouseEvent) => {
+    if (!isAuthenticated || user?.is_guest) {
+      if (e) e.preventDefault();
+      setPendingRedirectUrl(`/details/${storyId}/reflect`);
+      setShowLoginModal(true);
+    }
+  };
 
   // Fetch all feed items to support previous / next story navigation
   const { data: feedResponse } = useGetDiscoveryFeedQuery([]);
@@ -215,8 +225,8 @@ export default function StoryDetailPage() {
       });
     });
 
-    const alignment = feedData.alignment;
-    const duration = audioProgress.duration || feedData.audio_duration_seconds || 0;
+    const alignment = feedData?.alignment;
+    const duration = audioProgress.duration || feedData?.audio_duration_seconds || 0;
     const totalWords = flatTextWords.length;
 
     // Initialize timings array structure
@@ -323,6 +333,14 @@ export default function StoryDetailPage() {
 
   if (!storyId || isLoading) return <StoryDetailSkeleton />;
 
+  const isMeditation = feedData?.story_type === 'meditation';
+  const themeColor = isMeditation ? '#E9A139' : '#D22D4C';
+  const heroImageSrc = feedData?.cover_image_url
+    ? feedData?.cover_image_url
+    : isMeditation
+      ? meditationsHero
+      : confessionsHero;
+
   return (
     <div className="min-h-screen">
       <LoginRequiredModal
@@ -351,91 +369,122 @@ export default function StoryDetailPage() {
         isOpen={!isAuthenticated}
         redirectUrl={`/login?redirect=/details/${storyId}`}
       />
-      {/* Hero Section */}
-      <div className="relative h-[55vh] w-full overflow-hidden">
-        <Image
-          src={
-            feedData?.cover_image_url ||
-            'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=1200'
-          }
-          alt={feedData?.title || 'Story'}
-          fill
-          className="object-cover"
-          priority
-        />
-
-        <div
-          className="absolute inset-0 z-10"
-          style={{
-            background: 'linear-gradient(180deg, rgba(250, 247, 245, 0) -39.16%, #FAF7F5 93.71%)',
-          }}
-        />
-
-        <div className="relative z-20 container mx-auto pt-10">
-          <Link
-            href="/"
-            className="text-dark-primary inline-flex items-center gap-1 text-base font-medium hover:underline"
-          >
-            <ArrowLeft size={16} strokeWidth={1.5} /> Back
-          </Link>
+      {/* Brand Hero Section */}
+      <div className="mx-auto w-full max-w-350 px-4 pt-4 pb-8">
+        <div className="mb-6 sm:mb-8">
+          <DynamicBackButton href="/" bgColor={themeColor} />
         </div>
-      </div>
 
-      <div className="relative z-20 mx-auto -mt-40 w-full max-w-400 px-4">
-        <div className="space-y-6">
-          {/* Header Info */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="text-dark-primary text-sm font-medium tracking-wider uppercase">
-                {feedData?.story_type || 'Story'}
-              </span>
-
-              <div className="bg-dark-primary/30 h-0.5 w-12" />
-            </div>
-
-            {feedData?.avg_rating && (
-              <div className="bg-primary rounded px-3 py-1.5 text-xs font-semibold text-white uppercase">
-                Rating {feedData?.avg_rating}
-              </div>
-            )}
-          </div>
-
-          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-            <div className="w-full space-y-4">
-              <h1 className="text-dark-primary font-serif text-2xl font-semibold sm:text-3xl md:text-4xl lg:text-5xl">
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={FADE_IN_UP_CONTAINER}
+          className="flex w-full flex-col items-center justify-between gap-8 md:flex-row md:items-center"
+        >
+          {/* LEFT COLUMN: Title & Brush Subtitle */}
+          <motion.div
+            variants={FADE_IN_UP_ITEM}
+            className="flex w-full flex-col items-start md:w-1/2"
+          >
+            {/* Title */}
+            <div className="font-edo relative leading-none font-medium uppercase">
+              <h1
+                style={{ color: themeColor }}
+                className="-rotate-3 transform text-3xl tracking-wider sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl"
+              >
                 {feedData?.title}
               </h1>
-              <div className="text-secondary flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-                <p>
-                  {feedData?.author_name} • Listened to {feedData?.listened_count} times • Explicit
-                </p>
 
-                <p>
-                  Resonance:{' '}
-                  <span className="text-dark-primary font-semibold">
-                    {feedData?.avg_resonance || '0'}
-                  </span>{' '}
-                  from{' '}
-                  <span className="text-dark-primary font-semibold">
-                    {feedData?.total_reflections || '0'}
-                  </span>{' '}
-                  reflections
-                </p>
-              </div>
-
-              {/* Tags */}
-              <div className="flex flex-wrap gap-3">
-                {feedData?.top_tags?.map((tag: string) => (
-                  <span
-                    key={tag}
-                    className="border-primary/40 text-primary rounded-sm border bg-transparent px-4 py-2 text-xs transition-all hover:bg-transparent"
-                  >
-                    {tag}
-                  </span>
-                ))}
+              {/* Decorative Pink Heart Top-Right of Title */}
+              <div className="absolute -top-12 right-6 h-8 w-8 sm:-top-6 sm:right-8 sm:h-10 sm:w-10">
+                <Image src={pinkHeartDrawn} alt="Heart" fill className="object-contain" />
               </div>
             </div>
+
+            {/* Brush Stroke Subtitle */}
+            <div className="relative mt-6 flex min-h-18 w-full max-w-[320px] -rotate-1 transform items-center justify-center sm:mt-8 sm:min-h-22.5 sm:max-w-105">
+              {/* Black brush background */}
+              <div className="absolute inset-0 h-full w-full">
+                <Image src={brushTextBg} alt="Brush background" fill className="object-fill" />
+              </div>
+
+              <p className="relative z-10 px-4 py-2 text-center font-sans text-xs font-medium tracking-wide text-white uppercase sm:px-6 sm:text-sm">
+                A Story About The Day Fear <br /> <span className="text-[#E81A66]">Loosened</span>{' '}
+                Its Grip
+              </p>
+            </div>
+
+            {/* Bottom Left Pink Heart Deco */}
+            <div className="relative mt-6 ml-4 h-7 w-7 sm:ml-8 sm:h-9 sm:w-9">
+              <Image src={pinkHeartDrawn} alt="Heart" fill className="object-contain" />
+            </div>
+          </motion.div>
+
+          {/* RIGHT COLUMN: Hero Collage Image */}
+          <motion.div
+            variants={FADE_IN_UP_ITEM}
+            className="relative flex w-full justify-center md:w-1/2"
+          >
+            <div className="relative h-80 w-full max-w-85 shrink-0 sm:h-112.5 sm:max-w-125 md:max-w-150 lg:h-120 lg:max-w-170 xl:h-150 xl:max-w-187.5">
+              <Image
+                src={heroImageSrc}
+                alt={feedData?.title || 'Story Hero Image'}
+                fill
+                className="object-contain"
+                priority
+                unoptimized={typeof feedData?.cover_image_url === 'string'}
+              />
+            </div>
+          </motion.div>
+        </motion.div>
+      </div>
+
+      <div className="relative z-20 mx-auto w-full max-w-350 px-4">
+        <div className="space-y-0.5">
+          {/* Info Bar Matching Screenshot: Left Author Info | Right Resonance & Rating */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            {/* Left: Author & Listened Info */}
+            <p className="text-secondary font-sans text-sm font-medium">
+              {feedData?.author_name || 'Hero'} • Listened to {feedData?.listened_count || 0} times
+              • Explicit
+            </p>
+
+            {/* Right: Resonance & Rating Badge */}
+            <div className="flex items-center gap-4 text-sm">
+              <p className="text-secondary font-sans font-medium">
+                Resonance:{' '}
+                <span className="font-semibold text-[#503225]">
+                  {feedData?.avg_resonance || '0'}
+                </span>{' '}
+                from{' '}
+                <span className="font-semibold text-[#503225]">
+                  {feedData?.total_reflections || '0'}
+                </span>{' '}
+                reflections
+              </p>
+
+              {feedData?.avg_rating && (
+                <span className="rounded-sm bg-[#D22D4C] px-3 py-1 text-xs font-medium text-white uppercase">
+                  {feedData?.avg_rating} ★ (
+                  {feedData?.total_ratings || feedData?.total_reflections || 0} RATINGS)
+                </span>
+              )}
+            </div>
           </div>
+
+          {/* Tags Row */}
+          {feedData?.top_tags && feedData?.top_tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 pt-2">
+              {feedData?.top_tags.map((tag: string) => (
+                <span
+                  key={tag}
+                  className="text-secondary rounded-xs border border-[#EBE4D5] bg-[#FAF7F2] px-3 py-1 text-xs"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
 
           {/* Audio Player */}
 
@@ -470,7 +519,7 @@ export default function StoryDetailPage() {
                           animate={{
                             opacity: isVisible ? 1 : 0.3,
 
-                            color: isVisible ? '#bf7758' : '#414651',
+                            color: isVisible ? themeColor : '#414651',
                           }}
                           transition={{ duration: 0.2 / audioProgress.speed }}
                           className="inline-block"
@@ -485,10 +534,17 @@ export default function StoryDetailPage() {
             </div>
           </div>
 
-          <div className="flex flex-col items-center pt-10 pb-20">
-            <Link href={`/details/${storyId}/reflect`}>
-              <Button className="btn-styles w-full sm:w-auto">Reflect on this</Button>
-            </Link>
+          <div className="flex justify-center pt-10 pb-20">
+            <div className="w-56 sm:w-64">
+              <DynamicActionButton
+                text="Rate This Story"
+                href={`/details/${storyId}/reflect`}
+                onClick={handleReflectClick}
+                bgColor={themeColor}
+                textColor="white"
+                fullWidth
+              />
+            </div>
           </div>
         </div>
       </div>

@@ -16,24 +16,21 @@ function SafetyFreedomRulesPage() {
       variants={FADE_IN_UP_CONTAINER}
       className="min-h-screen w-full px-4 py-8 md:py-14"
     >
-      <div className="mx-auto max-w-6xl space-y-16 sm:space-y-20">
+      <div className="mx-auto max-w-350 space-y-16 sm:space-y-20">
         {/* ================= HERO SECTION ================= */}
         <SafetyHeroSection />
 
-        {/* ================= CONTENT SECTIONS ================= */}
-        <div className="mx-auto max-w-5xl space-y-16 text-left sm:space-y-20">
-          {/* --- Safety Section --- */}
-          <SafetySection />
+        {/* --- Safety Section --- */}
+        <SafetySection />
 
-          {/* --- Freedom Section --- */}
-          <FreedomSection />
+        {/* --- Freedom Section --- */}
+        <FreedomSection />
 
-          {/* --- Rules Section --- */}
-          <RulesSection />
+        {/* --- Rules Section --- */}
+        <RulesSection />
 
-          {/* --- Footer Note --- */}
-          <FooterNoteSection />
-        </div>
+        {/* --- Footer Note --- */}
+        <FooterNoteSection />
       </div>
     </motion.div>
   );

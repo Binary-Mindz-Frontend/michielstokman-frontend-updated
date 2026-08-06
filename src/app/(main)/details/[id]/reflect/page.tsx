@@ -2,24 +2,36 @@
 /* eslint-disable react-hooks/incompatible-library */
 'use client';
 
-import TextAreaField from '@/components/dashboard/Fields/TextAreaField/TextAreaField';
-import DynamicSectionHeader from '@/components/main/DynamicSectionHeader/DynamicSectionHeader';
-import GrowthSlider from '@/components/main/GrowthSlider/GrowthSlider';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { useSubmitStoryFeedbackMutation } from '@/redux/features/discoveryFeed/discoveryFeed.api';
-import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
-import ShareSection from './_components/ShareSection/ShareSection';
-import LoginRequiredModal from '@/app/(main)/create/CreateForm/_components/LoginRequiredModal/LoginRequiredModal';
-import { useIsAuthenticated, useCurrentUser } from '@/redux/features/auth/authSlice';
+
+import TextAreaField from '@/components/dashboard/Fields/TextAreaField/TextAreaField';
+import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicActionButton';
+import DynamicBackButton from '@/components/main/DynamicBackButton/DynamicBackButton';
+import DynamicSkipButton from '@/components/main/DynamicSkipButton/DynamicSkipButton';
+import GrowthSlider from '@/components/main/GrowthSlider/GrowthSlider';
+import { cn } from '@/lib/utils';
+
+import { useCurrentUser, useIsAuthenticated } from '@/redux/features/auth/authSlice';
+import {
+  useGetStoryDetailsQuery,
+  useSubmitStoryFeedbackMutation,
+} from '@/redux/features/discoveryFeed/discoveryFeed.api';
 import { useAppSelector } from '@/redux/hooks';
+import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
+
+import LoginRequiredModal from '@/app/(main)/create/CreateForm/_components/LoginRequiredModal/LoginRequiredModal';
+import ShareSection from './_components/ShareSection/ShareSection';
+
+import brushTextBg from '@/assets/account/brush-text-bg.png';
+import reflectCollageImg from '@/assets/reflect/Object (8).png';
+import vectorUnderline from '@/assets/reflect/Vector 14.png';
 
 // Zod Schema
 const resonanceSchema = z.object({
@@ -76,7 +88,6 @@ export default function ResonanceReflection() {
   const router = useRouter();
   const storyId = params?.id as string;
 
-  // All hooks must be called unconditionally (Rules of Hooks)
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [feedbackTag, setFeedbackTag] = useState<string>('');
   const [starRating, setStarRating] = useState<number>(5);
@@ -84,6 +95,15 @@ export default function ResonanceReflection() {
   const isAuthenticated = useAppSelector(useIsAuthenticated);
   const user = useAppSelector(useCurrentUser) as any;
   const [showLoginModal, setShowLoginModal] = useState(false);
+
+  const { data: response } = useGetStoryDetailsQuery(storyId, {
+    skip: !storyId,
+  });
+
+  const feedData = response?.data;
+  const isMeditation = feedData?.story_type === 'meditation';
+  const themeColor = isMeditation ? '#E9A139' : '#D22D4C';
+  const heroImageSrc = feedData?.cover_image_url || reflectCollageImg;
 
   const [submitFeedback, { isLoading }] = useSubmitStoryFeedbackMutation();
 
@@ -106,7 +126,6 @@ export default function ResonanceReflection() {
 
   const resonanceScore = watch('resonanceScore');
 
-  // Guard: after all hooks, wait for route params to resolve
   if (!storyId) return null;
 
   const toggleTag = (tag: string) => {
@@ -117,7 +136,6 @@ export default function ResonanceReflection() {
     setValue('selectedTags', updated, { shouldValidate: true });
   };
 
-  // Feedback Tag Click Logic with Professional Messages
   const handleFeedbackTag = (tag: string) => {
     const isDeselecting = feedbackTag === tag;
     const updatedTag = isDeselecting ? '' : tag;
@@ -125,7 +143,6 @@ export default function ResonanceReflection() {
     setFeedbackTag(updatedTag);
     setValue('feedbackTag', updatedTag, { shouldValidate: true });
 
-    // Set professional message in textarea
     const messageToSet = isDeselecting ? '' : FEEDBACK_MESSAGES[tag] || tag;
     setValue('thought', messageToSet, { shouldValidate: true });
   };
@@ -147,10 +164,10 @@ export default function ResonanceReflection() {
         },
       };
 
-      const response = await submitFeedback(payload).unwrap();
+      const res = await submitFeedback(payload).unwrap();
 
-      if (response.success) {
-        toast.success(response.message || 'Feedback submitted successfully!');
+      if (res.success) {
+        toast.success(res.message || 'Feedback submitted successfully!');
         router.push(`/details/${storyId}`);
       }
     } catch (error: any) {
@@ -163,12 +180,7 @@ export default function ResonanceReflection() {
   const dynamicQuestion = getDynamicQuestion(resonanceScore);
 
   return (
-    <motion.section
-      initial="hidden"
-      animate="visible"
-      variants={FADE_IN_UP_CONTAINER}
-      className="mx-auto max-w-3xl px-4 py-12"
-    >
+    <div className="min-h-screen pb-12">
       <LoginRequiredModal
         isOpen={showLoginModal}
         onClose={() => {
@@ -177,113 +189,195 @@ export default function ResonanceReflection() {
         }}
         redirectUrl={`/login?redirect=${encodeURIComponent(`/details/${storyId}/reflect`)}`}
       />
-      <motion.div variants={FADE_IN_UP_ITEM}>
-        <DynamicSectionHeader
-          title="Resonance Reflection"
-          description="The Morning I Stopped Running"
-        />
-      </motion.div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* Slider Section */}
-        <motion.div variants={FADE_IN_UP_ITEM} className="space-y-3">
-          <label className="block font-medium">
-            How much did this touch or open something in you right now?
-          </label>
-          <GrowthSlider
-            label={sliderLabel}
-            value={resonanceScore}
-            onChange={(val) => {
-              setValue('resonanceScore', val, { shouldValidate: true });
-              setSelectedTags([]);
-              setValue('selectedTags', []);
-            }}
-          />
-        </motion.div>
+      {/* Hero Section matching Screenshot Design */}
+      <div className="mx-auto w-full max-w-350 px-4 pt-4 pb-8">
+        <div className="mb-6 sm:mb-8">
+          <DynamicBackButton href={`/details/${storyId}`} bgColor={themeColor} />
+        </div>
 
-        {/* Professional Star Rating Section */}
-        <motion.div variants={FADE_IN_UP_ITEM} className="flex flex-col gap-2">
-          <label className="text-secondary text-sm font-medium">Your Rating</label>
-          <div className="flex items-center gap-1">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button
-                key={star}
-                type="button"
-                onMouseEnter={() => setHoverRating(star)}
-                onMouseLeave={() => setHoverRating(0)}
-                onClick={() => setStarRating(star)}
-                className="relative p-1 transition-transform hover:scale-110 active:scale-90"
-              >
-                <span
-                  className={cn(
-                    'text-3xl leading-none transition-all duration-200 ease-in-out',
-                    (hoverRating || starRating) >= star
-                      ? 'text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]'
-                      : 'text-gray-300',
-                  )}
-                >
-                  ★
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={FADE_IN_UP_CONTAINER}
+          className="flex w-full flex-col items-center justify-between gap-8 md:flex-row md:items-center"
+        >
+          {/* LEFT COLUMN: Resonance Reflection Title & Brush Subtitle */}
+          <motion.div
+            variants={FADE_IN_UP_ITEM}
+            className="flex w-full flex-col items-start md:w-1/2"
+          >
+            {/* Title */}
+            <div className="font-edo relative leading-none font-medium uppercase">
+              <h1 className="-rotate-3 transform text-3xl tracking-wider sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl">
+                <span className="block text-[#4D6E26]">RESONANCE</span>
+                <span className="relative block text-[#E81A66]">
+                  REFLECTION
+                  {/* Decorative drawn white heart */}
+                  <span className="absolute -top-3 -right-6 font-sans text-2xl font-light text-[#E81A66] sm:-top-5 sm:-right-8 sm:text-4xl">
+                    ♡
+                  </span>
                 </span>
-              </button>
-            ))}
+              </h1>
 
-            <motion.span
-              key={hoverRating || starRating}
-              initial={{ opacity: 0, x: -5 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="text-dark-primary ml-2 min-w-10 font-semibold"
-            >
-              {(hoverRating || starRating).toFixed(1)}
-            </motion.span>
-          </div>
-        </motion.div>
-
-        {/* Dynamic Tags */}
-        <motion.div variants={FADE_IN_UP_ITEM} className="space-y-3">
-          <label className="block font-medium">{dynamicQuestion}</label>
-          <div className="flex flex-wrap gap-2">
-            {dynamicTags.map((tag) => (
-              <Button
-                key={tag.label}
-                type="button"
-                onClick={() => toggleTag(tag.label)}
-                className={cn(
-                  'rounded-sm border bg-transparent px-4 py-2 text-sm transition-all hover:bg-transparent',
-                  selectedTags.includes(tag.label)
-                    ? 'border-primary/50 text-primary'
-                    : 'border-primary/20 text-secondary',
-                )}
-              >
-                {tag.emoji} {tag.label}
-              </Button>
-            ))}
-          </div>
-        </motion.div>
-
-        <motion.div variants={FADE_IN_UP_ITEM}>
-          {/* Feedback Tags */}
-          <div className="border-primary/10 space-y-3 border-t pt-6">
-            <label className="block font-medium">How did this feel?</label>
-            <div className="flex flex-wrap gap-2">
-              {FEEDBACK_TAGS.map((tag) => (
-                <Button
-                  key={tag}
-                  type="button"
-                  onClick={() => handleFeedbackTag(tag)}
-                  className={cn(
-                    'rounded-sm border bg-transparent px-4 py-2 text-sm transition-all hover:bg-transparent',
-                    feedbackTag === tag
-                      ? 'border-primary/50 text-primary'
-                      : 'border-primary/20 text-secondary',
-                  )}
-                >
-                  {tag}
-                </Button>
-              ))}
+              {/* Purple Underline Stroke */}
+              <div className="relative mt-2 h-4 w-full max-w-70 sm:max-w-85">
+                <Image src={vectorUnderline} alt="underline" fill className="object-contain" />
+              </div>
             </div>
-          </div>
 
-          <div className="mt-4">
+            {/* Brush Stroke Subtitle */}
+            <div className="relative mt-6 flex min-h-18 w-full max-w-[320px] -rotate-1 transform items-center justify-center sm:mt-8 sm:min-h-22.5 sm:max-w-105">
+              <div className="absolute inset-0 h-full w-full">
+                <Image src={brushTextBg} alt="Brush background" fill className="object-fill" />
+              </div>
+
+              <p className="relative z-10 px-4 py-2 text-center font-sans text-xs font-medium tracking-wide text-white uppercase sm:px-6 sm:text-sm">
+                {feedData?.title || 'THE MORNING I STOPPED RUNNING'}
+              </p>
+            </div>
+          </motion.div>
+
+          {/* RIGHT COLUMN: Hero Collage Image with Torn Border */}
+          <motion.div
+            variants={FADE_IN_UP_ITEM}
+            className="relative flex w-full justify-center md:w-1/2"
+          >
+            <div className="relative h-80 w-full max-w-85 shrink-0 sm:h-112.5 sm:max-w-125 md:max-w-150 lg:h-120 lg:max-w-170 xl:h-150 xl:max-w-187.5">
+              <Image
+                src={heroImageSrc}
+                alt={feedData?.title || 'Reflect Collage'}
+                fill
+                className="object-contain"
+                priority
+                unoptimized={typeof feedData?.cover_image_url === 'string'}
+              />
+            </div>
+          </motion.div>
+        </motion.div>
+      </div>
+
+      {/* Original Reflection Form Container */}
+      <motion.section
+        initial="hidden"
+        animate="visible"
+        variants={FADE_IN_UP_CONTAINER}
+        className="mx-auto max-w-3xl px-4 py-6"
+      >
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* Slider Section */}
+          <motion.div variants={FADE_IN_UP_ITEM} className="space-y-3">
+            <label className="block font-medium">
+              How much did this touch or open something in you right now?
+            </label>
+            <GrowthSlider
+              label={sliderLabel}
+              value={resonanceScore}
+              onChange={(val) => {
+                setValue('resonanceScore', val, { shouldValidate: true });
+                setSelectedTags([]);
+                setValue('selectedTags', []);
+              }}
+            />
+          </motion.div>
+
+          {/* Star Rating, Question & Soft Gold Pill Badges Section matching Screenshot */}
+          <motion.div
+            variants={FADE_IN_UP_ITEM}
+            className="flex flex-col items-center justify-center space-y-4 pt-4 pb-2 text-center"
+          >
+            {/* Centered 5 Golden Stars with Score */}
+            <div className="flex items-center justify-center gap-1.5">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onMouseEnter={() => setHoverRating(star)}
+                  onMouseLeave={() => setHoverRating(0)}
+                  onClick={() => setStarRating(star)}
+                  className="cursor-pointer p-0.5 transition-transform hover:scale-110 active:scale-95"
+                >
+                  <span
+                    className={cn(
+                      'text-2xl leading-none transition-colors sm:text-3xl',
+                      (hoverRating || starRating) >= star ? 'text-[#F5B400]' : 'text-gray-300',
+                    )}
+                  >
+                    ★
+                  </span>
+                </button>
+              ))}
+
+              <span className="ml-2 font-sans text-base font-bold text-[#1A1A1A]">
+                {(hoverRating || starRating).toFixed(1)}
+              </span>
+            </div>
+
+            {/* Centered Dynamic Question */}
+            <h3 className="max-w-xl font-serif text-lg leading-tight font-bold text-[#1A1A1A] sm:text-2xl">
+              {dynamicQuestion}
+            </h3>
+
+            {/* Rows of Soft-Gold Warm Paper Pill Badges */}
+            <div className="flex w-full flex-col items-center justify-center gap-3 pt-2">
+              {/* Row 1: Dynamic Resonance Tags */}
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                {dynamicTags.map((tag) => {
+                  const isSelected = selectedTags.includes(tag.label);
+                  return (
+                    <button
+                      key={tag.label}
+                      type="button"
+                      onClick={() => toggleTag(tag.label)}
+                      className={cn(
+                        'cursor-pointer rounded-sm border px-4 py-1.5 text-xs font-medium shadow-2xs transition-all sm:text-sm',
+                        isSelected
+                          ? 'border-[#E81A66] bg-[#FFEBF0] text-[#A60C38]'
+                          : 'border-[#DFB54C] bg-[#F8DF94] text-[#4A3408] hover:bg-[#f5d77f]',
+                      )}
+                    >
+                      {tag.emoji} {tag.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Row 2: Feedback Tags with "How did this feel?" label */}
+              <div className="flex w-full flex-col items-center justify-center gap-2 pt-1">
+                <label className="block font-sans text-xs font-semibold text-[#555] sm:text-sm">
+                  How did this feel?
+                </label>
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  {FEEDBACK_TAGS.map((tag, idx) => {
+                    const isSelected = feedbackTag === tag;
+                    // Color highlights matching screenshot borders
+                    const activeColor =
+                      idx % 2 === 0
+                        ? 'border-[#E81A66] bg-[#FFEBF0] text-[#A60C38] '
+                        : 'border-[#8B5CF6] bg-[#F5F3FF] text-[#5B21B6] ';
+
+                    return (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => handleFeedbackTag(tag)}
+                        className={cn(
+                          'cursor-pointer rounded-sm border px-4 py-1.5 text-xs font-medium shadow-2xs transition-all sm:text-sm',
+                          isSelected
+                            ? activeColor
+                            : 'border-[#DFB54C] bg-[#F8DF94] text-[#4A3408] hover:bg-[#f5d77f]',
+                        )}
+                      >
+                        {tag}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div variants={FADE_IN_UP_ITEM} className="mt-4">
             <TextAreaField
               label="Share a thought"
               name="thought"
@@ -292,34 +386,41 @@ export default function ResonanceReflection() {
               error={errors.thought?.message}
               rows={5}
             />
-          </div>
-        </motion.div>
+          </motion.div>
 
-        {/* Submit / Skip Buttons */}
-        <motion.div variants={FADE_IN_UP_ITEM} className="space-y-3">
-          <div className="flex w-full gap-3">
-            <Button type="submit" className="btn-styles flex-1" disabled={isLoading}>
-              {isLoading ? 'Submitting...' : 'Submit'}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => router.back()}
-              className="btn-styles border-primary/20 text-primary hover:text-primary/80 hover:bg-primary/10 flex-1"
-            >
-              Skip
-            </Button>
-          </div>
-          <p className="text-secondary text-center text-sm">
-            All submissions are reviewed with care before publishing.
-          </p>
-        </motion.div>
+          {/* Submit / Skip Buttons */}
+          <motion.div
+            variants={FADE_IN_UP_ITEM}
+            className="flex items-center justify-center gap-4 pt-4 sm:gap-6"
+          >
+            <div className="w-48 sm:w-56">
+              <DynamicActionButton
+                type="submit"
+                text={isLoading ? 'Submitting...' : 'Submit'}
+                bgColor={themeColor}
+                textColor="white"
+                fullWidth
+                disabled={isLoading}
+              />
+            </div>
 
-        {/* Social Share Section */}
-        <motion.div variants={FADE_IN_UP_ITEM}>
-          <ShareSection />
-        </motion.div>
-      </form>
-    </motion.section>
+            <div className="w-48 sm:w-56">
+              <DynamicSkipButton
+                text="Skip"
+                onClick={() => router.back()}
+                borderColor={themeColor}
+                textColor={themeColor}
+                fullWidth
+              />
+            </div>
+          </motion.div>
+
+          {/* Social Share Section */}
+          <motion.div variants={FADE_IN_UP_ITEM}>
+            <ShareSection />
+          </motion.div>
+        </form>
+      </motion.section>
+    </div>
   );
 }
