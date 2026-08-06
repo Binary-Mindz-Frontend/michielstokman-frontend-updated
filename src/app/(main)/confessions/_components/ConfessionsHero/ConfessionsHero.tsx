@@ -38,7 +38,7 @@ export default function ConfessionsHero() {
             <Image src={brushTextBg} alt="Brush background" fill className="object-fill" />
           </div>
 
-          <p className="relative z-10 px-4 py-2 text-center font-sans text-xs font-medium tracking-wide text-white uppercase sm:px-6 sm:text-[14px]">
+          <p className="relative z-10 px-4 py-2 text-center font-sans text-xs font-medium tracking-wide text-white uppercase sm:px-6 sm:text-sm">
             A SPACE TO SAY WHAT <br /> YOU&apos;VE <span className="text-[#E81A66]">NEVER </span>
             DARED TO SAY.
           </p>

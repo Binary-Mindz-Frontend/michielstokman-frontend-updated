@@ -24,39 +24,39 @@ interface FeatureCardProps {
 
 const FeatureCard: React.FC<FeatureCardProps> = ({ item }) => {
   return (
-    <div className="relative flex min-h-87.5 flex-col justify-between overflow-hidden rounded-md bg-[#F8F3ED] p-5 shadow-xs sm:min-h-92.5 sm:p-6 lg:min-h-95 lg:p-7">
+    <div className="relative flex min-h-80 flex-col justify-between overflow-hidden rounded-md bg-[#F8F3ED] p-5 shadow-xs sm:min-h-85 lg:min-h-90 xl:min-h-92.5">
       {/* Left Content Area */}
-      <div className="relative z-10 max-w-[50%] sm:max-w-[48%]">
+      <div className="relative z-10 max-w-[53%]">
         {/* Card Top: Number */}
-        <span className="font-sans text-sm font-semibold text-[#301C05] sm:text-base">
-          {item.number}
+        <span className="font-sans text-xs font-semibold text-[#301C05] sm:text-sm">
+          {item?.number}
         </span>
 
         {/* Title */}
         <h3
-          className={`font-edo mt-0.5 text-2xl leading-tight font-medium tracking-wide uppercase sm:text-[1.9rem] lg:text-[2.2rem] ${item.titleColor}`}
+          className={`font-edo mt-0.5 text-xl leading-tight font-medium tracking-wide uppercase sm:text-[1.6rem] lg:text-[1.85rem] xl:text-[2rem] ${item?.titleColor}`}
         >
-          {item.title}
+          {item?.title}
         </h3>
 
         {/* Description */}
-        <p className="mt-3 font-sans text-xs leading-relaxed font-medium text-black sm:mt-4 sm:text-sm">
-          {item.description}
+        <p className="mt-2.5 font-sans text-xs leading-relaxed font-medium text-black sm:mt-3 lg:text-sm">
+          {item?.description}
         </p>
 
         {/* Icon Bottom Right of Left Column (Next to image) */}
-        <div className="mt-4 flex w-full justify-end sm:mt-6">
-          <div className="relative h-8 w-8 shrink-0 sm:h-9 sm:w-9">
-            <Image src={item.icon} alt={item.iconAlt} fill className="object-contain" />
+        <div className="mt-6 flex w-full justify-end sm:mt-12">
+          <div className="relative h-7 w-7 shrink-0 sm:h-8 sm:w-8">
+            <Image src={item?.icon} alt={item?.iconAlt} fill className="object-contain" />
           </div>
         </div>
       </div>
 
       {/* Right Photo Layer - Absolute Positioned to Fill Right Side */}
-      <div className="absolute top-8 right-2 bottom-18 z-0 w-[48%] sm:top-10 sm:bottom-20 sm:w-[50%]">
+      <div className="absolute top-8 right-2 bottom-16 z-0 w-[47%] sm:top-8 sm:bottom-18 lg:top-8 lg:bottom-18">
         <Image
-          src={item.image}
-          alt={item.title}
+          src={item?.image}
+          alt={item?.title}
           fill
           className="object-contain object-bottom-right"
           priority
@@ -64,12 +64,12 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ item }) => {
       </div>
 
       {/* Reusable Dynamic Action Button */}
-      <div className="relative z-10 mt-5 sm:mt-6">
+      <div className="relative z-10 mt-4">
         <DynamicActionButton
-          text={item.btnText}
-          href={item.link}
-          bgColor={item.bgColor}
-          textColor={item.textColor}
+          text={item?.btnText}
+          href={item?.link}
+          bgColor={item?.bgColor}
+          textColor={item?.textColor}
         />
       </div>
     </div>

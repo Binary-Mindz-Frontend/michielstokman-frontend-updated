@@ -12,6 +12,7 @@ import heartGreen from '@/assets/home/heart-green.png';
 import heartPink from '@/assets/home/heart-pink.png';
 import heroImage from '@/assets/home/heroImage.png';
 import starDeco from '@/assets/home/star-deco.png';
+import arrowBlack from '@/assets/shared/arrow-black.png';
 
 const HeroContent = () => {
   return (
@@ -19,30 +20,30 @@ const HeroContent = () => {
       initial="hidden"
       animate="visible"
       variants={FADE_IN_UP_CONTAINER}
-      className="mx-auto flex w-full flex-col items-center gap-8 md:flex-row md:items-center md:gap-8 lg:gap-12 xl:gap-20"
+      className="mx-auto flex w-full flex-col items-center gap-8 md:flex-row md:items-center lg:gap-12 xl:gap-20"
     >
       {/* ===== LEFT COLUMN: Text ===== */}
       <motion.div variants={FADE_IN_UP_ITEM} className="flex w-full flex-col items-start md:w-1/2">
         {/* Title */}
-        <div className="font-edo flex flex-col items-start gap-0.5 leading-none font-medium uppercase">
-          <span className="-rotate-3 transform text-[42px] tracking-wider text-[#486221] sm:text-[60px] md:text-[72px] lg:text-[85px] xl:text-[100px]">
+        <div className="font-edo flex -rotate-4 transform flex-col items-start gap-0.5 leading-none font-medium uppercase">
+          <span className="text-5xl tracking-wider text-[#486221] sm:text-[60px] md:text-6xl lg:text-7xl xl:text-8xl">
             Transform
           </span>
-          <span className="-rotate-3 transform text-[42px] tracking-wide text-[#E81A66] sm:mt-2 sm:text-[60px] md:text-[72px] lg:text-[85px] xl:text-[100px]">
+          <span className="text-5xl tracking-wide text-[#E81A66] sm:mt-2 sm:text-[60px] md:text-6xl lg:text-7xl xl:text-8xl">
             To
           </span>
-          <span className="-rotate-3 transform text-[42px] tracking-normal text-[#F3A134] sm:text-[60px] md:text-[72px] lg:text-[85px] xl:text-[100px]">
+          <span className="text-5xl tracking-normal text-[#F3A134] sm:text-[60px] md:text-6xl lg:text-7xl xl:text-8xl">
             Liberation
           </span>
         </div>
 
         {/* Brush stroke subtitle */}
-        <div className="relative mt-6 flex min-h-18 w-full max-w-[320px] -rotate-1 transform items-center justify-center sm:mt-8 sm:min-h-22.5 sm:max-w-105">
+        <div className="relative mt-6 flex min-h-18 w-full max-w-[320px] -rotate-2 transform items-center justify-center sm:mt-8 sm:min-h-22.5 sm:max-w-105">
           {/* Black brush background */}
           <div className="absolute inset-0 h-full w-full">
             <Image src={brushTextBg} alt="Brush background" fill className="object-fill" />
           </div>
-          <p className="relative z-10 px-4 py-2 text-center font-sans text-xs font-medium tracking-wide text-white uppercase sm:px-6 sm:text-[14px]">
+          <p className="relative z-10 px-4 py-2 text-center font-sans text-xs font-medium text-white uppercase sm:px-6 sm:text-sm">
             A space to <span className="text-[#E81A66]">be real,</span>
             <br />
             to feel deep, to <span className="text-[#F3A134]">transform.</span>
@@ -50,15 +51,18 @@ const HeroContent = () => {
         </div>
 
         {/* READ CONFESSIONS Button */}
-        <div className="relative mt-6 h-12 w-52 sm:mt-8 sm:h-13 sm:w-62.5">
+        <div className="relative mt-6 ml-4 h-12 w-56 sm:mt-8 sm:ml-8 sm:h-13 sm:w-64 lg:ml-20">
           <Image src={btnBg} alt="Button background" fill className="object-fill" />
           <Link
             href="/confessions"
-            className="relative z-10 flex h-full w-full items-center justify-center gap-2"
+            className="relative z-10 flex h-full w-full items-center justify-center gap-2.5 px-4"
           >
-            <span className="font-edo text-[12px] font-semibold tracking-widest text-[#3a2200] uppercase sm:text-[14px]">
-              Read Confessions →
+            <span className="font-edo text-xs font-semibold text-[#3a2200] uppercase sm:text-sm">
+              READ CONFESSIONS
             </span>
+            <div className="relative h-3.5 w-7 shrink-0">
+              <Image src={arrowBlack} alt="Arrow" fill className="object-contain" />
+            </div>
           </Link>
         </div>
       </motion.div>

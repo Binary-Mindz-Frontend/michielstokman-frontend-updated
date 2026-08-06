@@ -39,7 +39,7 @@ export default function LiberationsHero() {
             <Image src={brushTextBg} alt="Brush background" fill className="object-fill" />
           </div>
 
-          <p className="relative z-10 px-4 py-2 text-center font-sans text-xs font-medium tracking-wide text-white uppercase sm:px-6 sm:text-[14px]">
+          <p className="relative z-10 px-4 py-2 text-center font-sans text-xs font-medium tracking-wide text-white uppercase sm:px-6 sm:text-sm">
             Raw Confessions. Deep Meditations. <br /> Real{' '}
             <span className="text-[#8058D3]">Transformation.</span>
           </p>
