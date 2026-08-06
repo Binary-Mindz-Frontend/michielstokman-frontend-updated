@@ -1,29 +1,28 @@
 'use client';
 
+import { zodResolver } from '@hookform/resolvers/zod';
+import { motion } from 'framer-motion';
+import { Lock, Mail } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { toast } from 'sonner';
-import { Mail, Lock } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { z } from 'zod';
 
 import { useGuestLoginMutation, useRegisterUserMutation } from '@/redux/features/auth/auth.api';
 import { setAuth } from '@/redux/features/auth/authSlice';
 import { useAppDispatch } from '@/redux/hooks';
 import { setUserProfile } from '@/services/auth/auth.service';
 import { TLoginUser } from '@/types/userRole.types';
-import { catchAsyncMutation } from '@/utils/apiReqRes.utils';
 import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
+import { catchAsyncMutation } from '@/utils/apiReqRes.utils';
 import GoogleSignInButton from '../login/_components/GoogleLogin/GoogleLogin';
 
 // Assets from src/assets/account
 import accountHeroImg from '@/assets/account/account-hero-image.png';
-import mobileAccountHeroImg from '@/assets/account/mobile-account-hero.png';
-import brushTextBg from '@/assets/account/brush-text-bg.png';
 import buttonBrushBg from '@/assets/account/brush-button-bg.png';
+import brushTextBg from '@/assets/account/brush-text-bg.png';
 import guestIcon from '@/assets/account/guest.png';
 
 // Zod Schema definition
@@ -110,24 +109,13 @@ export default function RegisterPage() {
         variants={FADE_IN_UP_CONTAINER}
         className="flex w-full max-w-5xl flex-col items-center justify-center gap-8 md:flex-row md:gap-16"
       >
-        {/* --- IMAGE COLUMN --- */}
+        {/* --- IMAGE COLUMN (Desktop Only) --- */}
         <motion.div
           variants={FADE_IN_UP_ITEM}
-          className="order-1 mt-4 flex w-full justify-center md:order-2 md:mt-0 md:w-1/2"
+          className="order-1 hidden w-full justify-center md:order-2 md:mt-0 md:flex md:w-1/2"
         >
-          {/* Mobile Hero Image */}
-          <div className="relative block aspect-4/5 w-full max-w-95 md:hidden">
-            <Image
-              src={mobileAccountHeroImg}
-              alt="Mobile Reflecting Woman"
-              fill
-              className="object-contain"
-              priority
-            />
-          </div>
-
           {/* Desktop Hero Image */}
-          <div className="relative hidden aspect-square w-full max-w-112.5 md:block">
+          <div className="relative aspect-square w-full max-w-112.5">
             <Image
               src={accountHeroImg}
               alt="Desktop Reflecting Woman"
@@ -143,9 +131,9 @@ export default function RegisterPage() {
           variants={FADE_IN_UP_ITEM}
           className="order-2 mt-4 flex w-full max-w-110 flex-col items-center text-center md:order-1 md:w-1/2 md:items-start md:text-left"
         >
-          {/* Title Header */}
-          <Link href="/" className="w-full">
-            <div className="font-edo flex w-full flex-col items-start justify-center pl-4 leading-none font-black uppercase md:pl-0">
+          {/* Title Header (Desktop Only) */}
+          <Link href="/" className="hidden w-full md:block">
+            <div className="font-edo flex w-full flex-col items-start justify-center leading-none font-black uppercase">
               <span className="-rotate-3 transform self-start text-[2.75rem] tracking-wider text-[#486221] sm:text-5xl md:text-[3.6rem] lg:text-[4.2rem]">
                 Transform
               </span>
@@ -158,17 +146,17 @@ export default function RegisterPage() {
             </div>
           </Link>
 
-          {/* "Join The Journey" Brush Background Section */}
-          <div className="relative mt-8 flex min-h-35 w-full max-w-105 -rotate-1 transform items-center justify-center sm:mt-10">
+          {/* "Join The Journey" Brush Background Section (Shown on Mobile & Desktop) */}
+          <div className="relative mt-2 flex min-h-35 w-full max-w-105 -rotate-1 transform items-center justify-center sm:mt-10">
             <div className="absolute inset-0 h-full w-full">
               <Image src={brushTextBg} alt="Brush background" fill className="object-contain" />
             </div>
 
             <div className="relative z-10 mt-1 flex flex-col items-center px-6 pt-2 pb-4 text-white sm:px-8">
-              <h3 className="font-edo mb-1 text-lg font-bold tracking-wider sm:text-xl">
+              <h3 className="font-edo mb-1 text-lg font-medium tracking-wider sm:text-xl">
                 Join The Journey
               </h3>
-              <p className="text-center font-sans text-[12px] leading-relaxed font-medium text-white sm:text-[13px]">
+              <p className="text-center font-sans text-xs leading-relaxed font-medium text-white">
                 Create An Account To Save Your Reflections,
                 <br />
                 Get Personalized Content, And Share Your
