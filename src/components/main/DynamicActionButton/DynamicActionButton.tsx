@@ -11,22 +11,26 @@ export interface DynamicActionButtonProps {
   href?: string;
   // eslint-disable-next-line no-unused-vars
   onClick?: (e?: React.MouseEvent) => void;
+  type?: 'button' | 'submit' | 'reset';
   bgColor?: string;
   textColor?: 'white' | 'black' | string;
   showArrow?: boolean;
   className?: string;
   fullWidth?: boolean;
+  disabled?: boolean;
 }
 
 const DynamicActionButton: React.FC<DynamicActionButtonProps> = ({
   text,
   href,
   onClick,
+  type = 'button',
   bgColor = '#D22D4C',
   textColor = 'white',
   showArrow = true,
   className = '',
   fullWidth = true,
+  disabled = false,
 }) => {
   // Determine if bgColor is hex string (starts with '#') or Tailwind class
   const isHexBg = bgColor.startsWith('#');
@@ -43,14 +47,14 @@ const DynamicActionButton: React.FC<DynamicActionButtonProps> = ({
     textColor === 'white' ? 'text-white' : textColor === 'black' ? 'text-[#3A2200]' : textColor;
   const isWhiteArrow = !isDarkText;
 
-  const roundedClass = className.includes('rounded-') ? '' : 'rounded-sm';
+  const roundedClass = className.includes('rounded-') ? '' : 'rounded-none';
 
   const content = (
     <div
       style={bgStyle}
-      className={`flex cursor-pointer items-center justify-center gap-3 ${roundedClass} px-6 py-3 text-center font-sans text-sm font-semibold text-nowrap uppercase transition-all duration-300 hover:opacity-90 ${bgClass} ${textColorClass} ${
+      className={`flex cursor-pointer items-center justify-center gap-3 border-2 border-transparent ${roundedClass} px-6 py-2.5 text-center font-sans text-sm font-semibold text-nowrap uppercase transition-all duration-300 hover:opacity-90 ${bgClass} ${textColorClass} ${
         fullWidth ? 'w-full' : 'w-auto'
-      } ${className}`}
+      } ${disabled ? 'pointer-events-none opacity-50' : ''} ${className}`}
     >
       <span>{text}</span>
 
@@ -78,7 +82,7 @@ const DynamicActionButton: React.FC<DynamicActionButtonProps> = ({
   }
 
   return (
-    <button type="button" onClick={onClick} className="w-full cursor-pointer">
+    <button type={type} onClick={onClick} disabled={disabled} className="w-full cursor-pointer">
       {content}
     </button>
   );
