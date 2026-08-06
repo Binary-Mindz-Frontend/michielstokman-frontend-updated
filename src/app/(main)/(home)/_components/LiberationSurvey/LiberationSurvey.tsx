@@ -47,12 +47,12 @@ const LiberationSurvey = () => {
       {/* Title */}
       <motion.div
         variants={FADE_IN_UP_ITEM}
-        className="flex items-center justify-center gap-2 sm:gap-3.5"
+        className="flex items-center justify-center gap-2 sm:gap-3"
       >
-        <h2 className="font-edo text-center text-xl font-medium uppercase sm:text-3xl lg:text-3xl xl:text-[2.8rem]">
+        <h2 className="font-edo text-center text-2xl font-medium uppercase lg:text-[2.2rem]">
           Liberation Survey 2026
         </h2>
-        <div className="relative h-7 w-7 shrink-0 sm:h-9 sm:w-9 lg:h-10 lg:w-10">
+        <div className="relative h-8 w-8 shrink-0 lg:h-9 lg:w-9">
           <Image src={heartPinkDeco} alt="heart" fill className="object-contain" />
         </div>
       </motion.div>
@@ -60,20 +60,20 @@ const LiberationSurvey = () => {
       {/* "The Juicy Research" brush subtitle */}
       <motion.div
         variants={FADE_IN_UP_ITEM}
-        className="relative mx-auto mt-3 flex h-12 w-full max-w-70 items-center justify-center sm:mt-4 sm:h-14 sm:max-w-85 lg:h-15 lg:max-w-95"
+        className="relative mx-auto mt-2.5 flex h-10 w-full max-w-60 items-center justify-center sm:mt-4 sm:h-12 sm:max-w-75 lg:h-13 lg:max-w-85"
       >
         <div className="absolute inset-0 h-full w-full">
           <Image src={brushBg} alt="Brush background" fill className="object-fill" />
         </div>
-        <p className="relative z-10 font-sans text-base font-medium text-white sm:text-lg lg:text-xl">
+        <p className="relative z-10 font-sans text-sm font-medium text-white lg:text-base">
           The <span className="text-[#F83871]">Juicy</span> Research —
         </p>
       </motion.div>
 
-      {/* Stats Row: Fine-tuned for 1024px laptops & large desktop screens */}
+      {/* Stats Row */}
       <motion.div
         variants={FADE_IN_UP_ITEM}
-        className="mx-auto mt-6 grid w-full grid-cols-2 gap-6 rounded-2xl bg-[#F9F4EE] px-4 py-6 sm:mt-8 sm:grid-cols-3 sm:gap-6 sm:px-8 sm:py-8 lg:mt-10 lg:flex lg:flex-nowrap lg:items-start lg:justify-between lg:gap-2 lg:px-6 lg:py-8 xl:gap-4 xl:px-10 xl:py-10"
+        className="mx-auto mt-6 grid w-full grid-cols-2 gap-4 rounded-md bg-[#F9F4EE] px-4 py-5 sm:grid-cols-3 sm:gap-5 sm:px-6 sm:py-6 md:mt-8 lg:flex lg:flex-nowrap lg:items-start lg:justify-between lg:gap-2 lg:px-6 lg:py-7 xl:gap-3"
       >
         {stats.map((stat, index) => (
           <div
@@ -83,17 +83,17 @@ const LiberationSurvey = () => {
             }`}
           >
             {/* Icon */}
-            <div className="relative h-10 w-10 shrink-0 sm:h-12 sm:w-12 lg:h-11 lg:w-11 xl:h-14 xl:w-14">
+            <div className="relative h-9 w-9 shrink-0 sm:h-10 sm:w-10 xl:h-12 xl:w-12">
               <Image src={stat?.icon} alt={stat?.label} fill className="object-contain" />
             </div>
 
             {/* Percent */}
-            <span className="mt-2 font-sans text-2xl font-semibold text-[#1A1A1A] sm:text-3xl lg:text-[1.9rem] xl:text-[2.4rem]">
+            <span className="mt-1.5 font-sans text-2xl font-semibold text-[#1A1A1A] xl:text-[2.1rem]">
               {stat?.percent}
             </span>
 
             {/* Label */}
-            <p className="mt-1 max-w-45 text-center font-sans text-xs leading-snug font-medium text-[#272626] capitalize sm:text-sm lg:max-w-36.25 lg:text-xs xl:max-w-45 xl:text-base">
+            <p className="mt-1 max-w-40 text-center font-sans text-xs leading-snug font-medium text-[#272626] capitalize lg:max-w-32 lg:text-[11px] xl:max-w-40 xl:text-xs">
               {stat?.label}
             </p>
           </div>
