@@ -15,13 +15,13 @@ export default function MeditationsHero() {
       initial="hidden"
       animate="visible"
       variants={FADE_IN_UP_CONTAINER}
-      className="mx-auto flex w-full flex-col items-center gap-8 md:flex-row md:items-center md:gap-8 lg:gap-12 xl:gap-20"
+      className="mx-auto flex w-full flex-col items-center gap-8 pt-10 sm:pt-0 md:flex-row md:items-center lg:gap-12 xl:gap-20"
     >
       {/* ===== LEFT COLUMN: Text & Subtitle ===== */}
       <motion.div variants={FADE_IN_UP_ITEM} className="flex w-full flex-col items-start md:w-1/2">
         {/* Title */}
         <div className="font-edo relative leading-none font-medium uppercase">
-          <h1 className="-rotate-3 transform text-[42px] tracking-wider text-[#E9A139] sm:text-[60px] md:text-[72px] lg:text-[85px] xl:text-[100px]">
+          <h1 className="-rotate-4 transform text-5xl tracking-wider text-[#E9A139] md:text-6xl lg:text-7xl xl:text-8xl">
             MEDITATIONS
           </h1>
 
@@ -32,13 +32,13 @@ export default function MeditationsHero() {
         </div>
 
         {/* Brush Stroke Subtitle */}
-        <div className="relative mt-6 flex min-h-18 w-full max-w-[320px] -rotate-1 transform items-center justify-center sm:mt-8 sm:min-h-22.5 sm:max-w-105">
+        <div className="relative mt-6 flex min-h-18 w-full max-w-[320px] -rotate-2 transform items-center justify-center sm:mt-8 sm:min-h-22.5 sm:max-w-105">
           {/* Black brush background */}
           <div className="absolute inset-0 h-full w-full">
             <Image src={brushTextBg} alt="Brush background" fill className="object-fill" />
           </div>
 
-          <p className="relative z-10 px-4 py-2 text-center font-sans text-xs font-medium tracking-wide text-white uppercase sm:px-6 sm:text-sm">
+          <p className="relative z-10 px-4 py-2 text-center font-sans text-xs font-medium text-white uppercase sm:px-6 sm:text-sm">
             You&apos;re Not Alone. Read What Others
             <br /> Have <span className="text-[#E9A139]">Never </span>
             Dared To Say.
@@ -46,7 +46,7 @@ export default function MeditationsHero() {
         </div>
 
         {/* Share Your Story Button */}
-        <div className="mt-8 w-56 sm:w-64">
+        <div className="mt-6 ml-4 w-56 sm:mt-8 sm:ml-8 sm:w-64 lg:ml-20">
           <DynamicActionButton
             text="Share Your Story"
             href="/create?type=Meditation"
@@ -56,7 +56,7 @@ export default function MeditationsHero() {
         </div>
 
         {/* Bottom Left Sun Deco */}
-        <div className="relative mt-6 ml-2 h-7 w-7 sm:h-9 sm:w-9">
+        <div className="relative mt-6 ml-6 h-7 w-7 sm:ml-10 sm:h-9 sm:w-9 lg:ml-22">
           <Image src={iconSun} alt="Sun" fill className="object-contain" />
         </div>
       </motion.div>

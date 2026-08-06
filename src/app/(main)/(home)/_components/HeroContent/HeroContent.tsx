@@ -20,19 +20,19 @@ const HeroContent = () => {
       initial="hidden"
       animate="visible"
       variants={FADE_IN_UP_CONTAINER}
-      className="mx-auto flex w-full flex-col items-center gap-8 md:flex-row md:items-center lg:gap-12 xl:gap-20"
+      className="mx-auto flex w-full flex-col items-center gap-8 pt-10 sm:pt-0 md:flex-row md:items-center lg:gap-12 xl:gap-20"
     >
       {/* ===== LEFT COLUMN: Text ===== */}
       <motion.div variants={FADE_IN_UP_ITEM} className="flex w-full flex-col items-start md:w-1/2">
         {/* Title */}
         <div className="font-edo flex -rotate-4 transform flex-col items-start gap-0.5 leading-none font-medium uppercase">
-          <span className="text-5xl tracking-wider text-[#486221] sm:text-[60px] md:text-6xl lg:text-7xl xl:text-8xl">
+          <span className="text-5xl tracking-wider text-[#486221] md:text-6xl lg:text-7xl xl:text-8xl">
             Transform
           </span>
-          <span className="text-5xl tracking-wide text-[#E81A66] sm:mt-2 sm:text-[60px] md:text-6xl lg:text-7xl xl:text-8xl">
+          <span className="text-5xl tracking-wide text-[#E81A66] sm:mt-2 md:text-6xl lg:text-7xl xl:text-8xl">
             To
           </span>
-          <span className="text-5xl tracking-normal text-[#F3A134] sm:text-[60px] md:text-6xl lg:text-7xl xl:text-8xl">
+          <span className="text-5xl tracking-wider text-[#F3A134] md:text-6xl lg:text-7xl xl:text-8xl">
             Liberation
           </span>
         </div>

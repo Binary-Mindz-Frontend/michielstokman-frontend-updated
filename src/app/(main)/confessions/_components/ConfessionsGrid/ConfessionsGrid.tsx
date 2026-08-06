@@ -56,7 +56,7 @@ export default function ConfessionsGrid() {
       {/* 3 Column Grid */}
       <motion.div
         variants={FADE_IN_UP_ITEM}
-        className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+        className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3"
       >
         {visibleConfessions.length > 0 ? (
           visibleConfessions.map((item) => <ConfessionsCard key={item.id} item={item} />)
