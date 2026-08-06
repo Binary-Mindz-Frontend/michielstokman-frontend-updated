@@ -46,8 +46,6 @@ const DynamicBackButton: React.FC<DynamicBackButtonProps> = ({
     textColor === 'white' ? 'text-white' : textColor === 'black' ? 'text-[#3A2200]' : textColor;
   const isWhiteArrow = !isDarkText;
 
-  const roundedClass = className.includes('rounded-') ? '' : 'rounded-sm';
-
   const handleClick = (e: React.MouseEvent) => {
     if (onClick) {
       onClick(e);
@@ -59,7 +57,7 @@ const DynamicBackButton: React.FC<DynamicBackButtonProps> = ({
   const content = (
     <div
       style={bgStyle}
-      className={`flex cursor-pointer items-center justify-center gap-2 ${roundedClass} px-4 py-2.5 text-center font-sans text-xs font-semibold text-nowrap uppercase transition-all duration-300 hover:opacity-90 ${bgClass} ${textColorClass} ${
+      className={`flex cursor-pointer items-center justify-center gap-2 px-4 py-2.5 text-center font-sans text-xs font-medium text-nowrap uppercase transition-all duration-300 hover:opacity-90 ${bgClass} ${textColorClass} ${
         fullWidth ? 'w-full' : 'w-auto'
       } ${className}`}
     >
@@ -67,7 +65,7 @@ const DynamicBackButton: React.FC<DynamicBackButtonProps> = ({
         <Image
           src={arrowLeftWhite}
           alt="back arrow"
-          width={20}
+          width={22}
           height={10}
           className="inline-block shrink-0 object-contain"
           style={{

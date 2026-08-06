@@ -371,7 +371,9 @@ export default function StoryDetailPage() {
       />
       {/* Brand Hero Section */}
       <div className="mx-auto w-full max-w-350 px-4 pt-4 pb-8">
-        <DynamicBackButton href="/" bgColor={themeColor} />
+        <div className="mb-6 sm:mb-8">
+          <DynamicBackButton href="/" bgColor={themeColor} />
+        </div>
 
         <motion.div
           initial="hidden"
@@ -382,7 +384,7 @@ export default function StoryDetailPage() {
           {/* LEFT COLUMN: Title & Brush Subtitle */}
           <motion.div
             variants={FADE_IN_UP_ITEM}
-            className="mt-6 flex w-full flex-col items-start sm:mt-0 md:w-1/2"
+            className="flex w-full flex-col items-start md:w-1/2"
           >
             {/* Title */}
             <div className="font-edo relative leading-none font-medium uppercase">
