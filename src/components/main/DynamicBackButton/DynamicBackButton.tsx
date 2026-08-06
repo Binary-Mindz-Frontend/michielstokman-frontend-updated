@@ -2,12 +2,13 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import React from 'react';
 
-import arrowBlack from '@/assets/shared/arrow-black.png';
+import arrowLeftWhite from '@/assets/shared/arrow-left-white.png';
 
-export interface DynamicActionButtonProps {
-  text: string;
+export interface DynamicBackButtonProps {
+  text?: string;
   href?: string;
   // eslint-disable-next-line no-unused-vars
   onClick?: (e?: React.MouseEvent) => void;
@@ -18,16 +19,18 @@ export interface DynamicActionButtonProps {
   fullWidth?: boolean;
 }
 
-const DynamicActionButton: React.FC<DynamicActionButtonProps> = ({
-  text,
+const DynamicBackButton: React.FC<DynamicBackButtonProps> = ({
+  text = 'Back',
   href,
   onClick,
   bgColor = '#D22D4C',
   textColor = 'white',
   showArrow = true,
   className = '',
-  fullWidth = true,
+  fullWidth = false,
 }) => {
+  const router = useRouter();
+
   // Determine if bgColor is hex string (starts with '#') or Tailwind class
   const isHexBg = bgColor.startsWith('#');
   const bgClass = isHexBg ? '' : bgColor;
@@ -45,43 +48,51 @@ const DynamicActionButton: React.FC<DynamicActionButtonProps> = ({
 
   const roundedClass = className.includes('rounded-') ? '' : 'rounded-sm';
 
+  const handleClick = (e: React.MouseEvent) => {
+    if (onClick) {
+      onClick(e);
+    } else if (!href) {
+      router.back();
+    }
+  };
+
   const content = (
     <div
       style={bgStyle}
-      className={`flex cursor-pointer items-center justify-center gap-3 ${roundedClass} px-6 py-3 text-center font-sans text-sm font-semibold text-nowrap uppercase transition-all duration-300 hover:opacity-90 ${bgClass} ${textColorClass} ${
+      className={`flex cursor-pointer items-center justify-center gap-2 ${roundedClass} px-4 py-2.5 text-center font-sans text-xs font-semibold text-nowrap uppercase transition-all duration-300 hover:opacity-90 ${bgClass} ${textColorClass} ${
         fullWidth ? 'w-full' : 'w-auto'
       } ${className}`}
     >
-      <span>{text}</span>
-
       {showArrow && (
         <Image
-          src={arrowBlack}
-          alt="arrow"
-          width={28}
-          height={12}
+          src={arrowLeftWhite}
+          alt="back arrow"
+          width={20}
+          height={10}
           className="inline-block shrink-0 object-contain"
           style={{
-            filter: isWhiteArrow ? 'invert(1) brightness(2)' : 'none',
+            filter: isWhiteArrow ? 'none' : 'invert(1)',
           }}
         />
       )}
+
+      <span>{text}</span>
     </div>
   );
 
   if (href) {
     return (
-      <Link href={href} className="block w-full cursor-pointer">
+      <Link href={href} className="inline-block cursor-pointer">
         {content}
       </Link>
     );
   }
 
   return (
-    <button type="button" onClick={onClick} className="w-full cursor-pointer">
+    <button type="button" onClick={handleClick} className="inline-block cursor-pointer">
       {content}
     </button>
   );
 };
 
-export default DynamicActionButton;
+export default DynamicBackButton;
