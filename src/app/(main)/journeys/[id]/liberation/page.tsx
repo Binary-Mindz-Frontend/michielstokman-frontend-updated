@@ -5,11 +5,11 @@
 import flower1Image from '@/assets/home/flower1.png';
 import flower2Image from '@/assets/home/flower2.png';
 import flower3Image from '@/assets/home/flower3.png';
-import TextAreaField from '@/components/dashboard/Fields/TextAreaField/TextAreaField';
 import BeforeYouBeginStep from './_components/BeforeYouBeginStep/BeforeYouBeginStep';
 import DayCheckinStep from './_components/DayCheckinStep/DayCheckinStep';
+import ExerciseStep from './_components/ExerciseStep/ExerciseStep';
 import JourneyBeginStep from './_components/JourneyBeginStep/JourneyBeginStep';
-import GrowthSlider from '@/components/main/GrowthSlider/GrowthSlider';
+import ReflectionStep from './_components/ReflectionStep/ReflectionStep';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
@@ -78,67 +78,6 @@ function buildGoogleCalendarUrl(title: string, reminderTime: string, days = 7) {
   });
 
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
-}
-
-// ─── Step Progress Bar
-function StepBar({ current, total }: { current: number; total: number }) {
-  return (
-    <div className="mb-8 flex gap-3">
-      {Array.from({ length: total }).map((_, i) => (
-        <div
-          key={i}
-          className={cn(
-            'h-0.75 flex-1 rounded-full transition-all duration-500',
-            i < current ? 'bg-primary' : 'bg-primary/25',
-          )}
-        />
-      ))}
-    </div>
-  );
-}
-
-// ─── Exercise Image Placeholder ───────────────────────────────────────────────
-function ExerciseImage({ imageUrl }: { imageUrl?: string }) {
-  return (
-    <div className="mb-6 overflow-hidden rounded-lg bg-[#F0EBE0]" style={{ minHeight: 200 }}>
-      {imageUrl ? (
-        <div className="relative h-52 w-full">
-          <Image
-            src={imageUrl}
-            alt="Exercise illustration"
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, 768px"
-            unoptimized
-          />
-        </div>
-      ) : (
-        <div className="flex h-52 items-center justify-center">
-          <div className="flex flex-col items-center gap-2 text-[#C4855A]/40">
-            <svg width="48" height="48" fill="none" viewBox="0 0 24 24">
-              <rect
-                x="3"
-                y="3"
-                width="18"
-                height="18"
-                rx="2"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              />
-              <circle cx="8.5" cy="8.5" r="1.5" stroke="currentColor" strokeWidth="1.5" />
-              <path
-                d="M21 15l-5-5L5 21"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-            </svg>
-            <span className="text-xs">Exercise illustration</span>
-          </div>
-        </div>
-      )}
-    </div>
-  );
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -270,10 +209,6 @@ export default function JourneyPage() {
     { skip: !journeyCode || !currentDay?.day },
   );
   const dayExercisesData = dayExercisesResponse?.data;
-
-  // Single step exercise configuration based on API response
-  const totalSteps = 2; // 1. Check-in, 2. Exercise
-  const currentStep = phase === 'day-checkin' ? 1 : 2;
 
   // ── Timer State & Effects ──
   const [secondsElapsed, setSecondsElapsed] = useState(0);
@@ -520,96 +455,30 @@ export default function JourneyPage() {
 
     // SCREEN: EXERCISE
     if (activePhase === 'exercise') {
+      const exerciseType = currentDay?.exercises?.[0]?.type || 'Morning Exercise';
       const title = dayExercisesData?.day_theme || currentDay?.title;
       const greeting = dayExercisesData?.ai_greeting || currentDay?.exercises?.[0]?.quote;
       const rawWhatToDo =
         dayExercisesData?.ai_exercise_text || currentDay?.exercises?.[0]?.whatToDo;
       const rawWhyThis = dayExercisesData?.ai_why_text || currentDay?.exercises?.[0]?.whyThis;
+      const duration = currentDay?.exercises?.[0]?.duration || '2 Min';
 
       return (
-        <motion.section
-          key="exercise"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-          className="mx-auto min-h-screen max-w-3xl px-4 py-12"
-        >
-          <button
-            onClick={() => setPhase('day-checkin')}
-            className="text-primary mb-4 flex cursor-pointer items-center gap-1 text-sm transition-opacity hover:opacity-80"
-          >
-            ← Back
-          </button>
-          <StepBar current={currentStep} total={totalSteps} />
-
-          <div>
-            <ExerciseImage imageUrl={dayExercisesData?.image_url} />
-
-            {title && (
-              <h2 className="text-dark-primary mb-3 font-serif text-xl font-bold">{title}</h2>
-            )}
-
-            {greeting && (
-              <div className="border-primary/10 bg-primary/5 text-primary mb-5 rounded-md border px-4 py-3 text-sm italic">
-                {greeting}
-              </div>
-            )}
-
-            {rawWhatToDo && (
-              <>
-                <h3 className="text-dark-primary mb-2 font-semibold">What to do</h3>
-
-                <div className="mb-8">
-                  <div
-                    className="text-dark-primary space-y-4 text-base leading-relaxed [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
-                    dangerouslySetInnerHTML={{ __html: rawWhatToDo }}
-                  />
-                </div>
-              </>
-            )}
-
-            {rawWhyThis && (
-              <>
-                <h3 className="text-dark-primary mb-2 font-semibold">Why this exercise</h3>
-
-                <div className="mb-8">
-                  <div
-                    className="text-dark-primary space-y-4 text-base leading-relaxed [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
-                    dangerouslySetInnerHTML={{ __html: rawWhyThis }}
-                  />
-                </div>
-              </>
-            )}
-
-            <div className="mb-6 flex items-center justify-between">
-              <span className="text-secondary font-mono text-sm">{formatTime(secondsElapsed)}</span>
-              <Button
-                type="button"
-                onClick={() => {
-                  if (!timerRunning) {
-                    setSecondsElapsed(0);
-                    setTimerRunning(true);
-                  } else {
-                    setTimerRunning(false);
-                  }
-                }}
-                className={cn(
-                  'rounded-md border bg-transparent px-5 py-2 text-sm transition-all hover:bg-transparent',
-                  timerRunning
-                    ? 'border-primary/50 text-primary'
-                    : 'border-primary/20 text-secondary',
-                )}
-              >
-                {timerRunning ? 'Stop' : 'Start Timer'}
-              </Button>
-            </div>
-
-            <Button onClick={handleNextExercise} className="btn-styles">
-              Complete & Reflect
-            </Button>
-          </div>
-        </motion.section>
+        <ExerciseStep
+          exerciseType={exerciseType}
+          imageUrl={dayExercisesData?.image_url}
+          title={title}
+          greeting={greeting}
+          whatToDo={rawWhatToDo}
+          whyThis={rawWhyThis}
+          duration={duration}
+          secondsElapsed={secondsElapsed}
+          timerRunning={timerRunning}
+          setTimerRunning={setTimerRunning}
+          formatTime={formatTime}
+          onNextExercise={handleNextExercise}
+          onBack={() => setPhase('day-checkin')}
+        />
       );
     }
 
@@ -618,59 +487,17 @@ export default function JourneyPage() {
     // ─────────────────────────────────────────────────────────────────────────────
     if (activePhase === 'reflection') {
       return (
-        <motion.section
-          key="reflection"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-          className="mx-auto min-h-screen max-w-3xl px-4 py-12"
-        >
-          <button
-            onClick={() => setPhase('exercise')}
-            className="text-primary mb-8 flex cursor-pointer items-center gap-1 text-sm transition-opacity hover:opacity-80"
-          >
-            ← Back
-          </button>
-          <div>
-            <div className="mb-8 text-center">
-              <p className="text-primary mb-1 text-sm">Day {currentDay.day} Complete</p>
-              <h1 className="text-dark-primary font-serif text-2xl font-semibold md:text-3xl">
-                How did today land?
-              </h1>
-            </div>
-
-            <form onSubmit={handleCompleteDay} className="space-y-6">
-              <GrowthSlider
-                label="Energy Level"
-                value={energyLevel}
-                onChange={(val) =>
-                  reflectionForm.setValue('energyLevel', val, { shouldValidate: true })
-                }
-              />
-
-              <TextAreaField
-                label="What opened today?"
-                name="whatOpened"
-                control={reflectionForm.control}
-                placeholder="A feeling, a realization, a release"
-                rows={4}
-              />
-
-              <TextAreaField
-                label="One key takeaway"
-                name="keyTakeaway"
-                control={reflectionForm.control}
-                placeholder="What will you carry forward"
-                rows={4}
-              />
-
-              <Button type="submit" disabled={isCompleting} className="btn-styles">
-                {isCompleting ? 'Completing...' : `Complete Day ${currentDay.day}`}
-              </Button>
-            </form>
-          </div>
-        </motion.section>
+        <ReflectionStep
+          dayNumber={currentDay?.day}
+          energyLevel={energyLevel}
+          setEnergyLevel={(val) =>
+            reflectionForm.setValue('energyLevel', val, { shouldValidate: true })
+          }
+          register={reflectionForm.register}
+          onSubmit={handleCompleteDay}
+          isCompleting={isCompleting}
+          onBack={() => setPhase('exercise')}
+        />
       );
     }
 
