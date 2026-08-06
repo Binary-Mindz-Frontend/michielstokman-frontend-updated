@@ -7,6 +7,7 @@ import flower2Image from '@/assets/home/flower2.png';
 import flower3Image from '@/assets/home/flower3.png';
 import TextAreaField from '@/components/dashboard/Fields/TextAreaField/TextAreaField';
 import DynamicSectionHeader from '@/components/main/DynamicSectionHeader/DynamicSectionHeader';
+import JourneyBeginStep from './_components/JourneyBeginStep/JourneyBeginStep';
 import GrowthSlider from '@/components/main/GrowthSlider/GrowthSlider';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -434,29 +435,28 @@ export default function JourneyPage() {
 
   if (isPageLoading) {
     return (
-      <section className="mx-auto h-full max-w-3xl px-4 py-12">
+      <section className="relative min-h-screen w-full overflow-x-hidden bg-[#FAF7F2] px-4 py-8 md:px-8 md:py-12">
         {/* Back Button Skeleton */}
-        <div className="mb-4">
-          <Skeleton className="bg-primary/5 h-5 w-16" />
+        <div className="absolute top-4 left-4 z-10 sm:top-6 sm:left-8 md:top-8 md:left-10">
+          <Skeleton className="h-9 w-20 animate-pulse rounded-xs !bg-[#52277F]/20" />
         </div>
-        <div>
-          {/* Flower Section Skeleton */}
-          <div className="mb-6 flex flex-col items-center text-center">
-            <Skeleton className="bg-primary/5 h-64 w-64 animate-pulse rounded-full" />
-            <Skeleton className="bg-primary/5 mt-4 h-4 w-64 animate-pulse" />
+
+        {/* Centered Content Skeleton */}
+        <div className="mx-auto flex min-h-[calc(100vh-140px)] max-w-4xl flex-col items-center justify-center text-center">
+          {/* Title Skeleton */}
+          <div className="mb-4 flex justify-center">
+            <Skeleton className="h-10 w-64 animate-pulse rounded-md !bg-[#52277F]/20 sm:h-14 sm:w-96 md:h-16 md:w-[480px]" />
           </div>
 
-          {/* 7 Days Cards Skeleton */}
-          <div className="space-y-3">
-            {Array.from({ length: 7 }).map((_, i) => (
-              <div
-                key={i}
-                className="border-primary/10 w-full rounded-md border bg-transparent px-5 py-4 text-left"
-              >
-                <Skeleton className="bg-primary/5 mb-2 h-5 w-48 animate-pulse" />
-                <Skeleton className="bg-primary/5 h-4 w-24 animate-pulse" />
-              </div>
-            ))}
+          {/* Subtitle & Stats Skeleton */}
+          <div className="mb-10 flex flex-col items-center space-y-3">
+            <Skeleton className="h-5 w-72 animate-pulse rounded-md !bg-[#344054]/15 sm:h-6 sm:w-[460px]" />
+            <Skeleton className="h-4 w-52 animate-pulse rounded-md !bg-[#667085]/15 sm:h-4 sm:w-72" />
+          </div>
+
+          {/* CTA Button Skeleton */}
+          <div>
+            <Skeleton className="h-12 w-56 animate-pulse rounded-xs !bg-[#52277F]/20 sm:h-14 sm:w-64" />
           </div>
         </div>
       </section>
@@ -469,40 +469,13 @@ export default function JourneyPage() {
   const renderPhaseContent = () => {
     if (activePhase === 'landing') {
       return (
-        <motion.section
-          key="landing"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-          className="mx-auto max-w-3xl px-4 py-12"
-        >
-          <button
-            onClick={() => router.back()}
-            className="text-primary mb-4 flex cursor-pointer items-center gap-1 text-sm transition-opacity hover:opacity-80"
-          >
-            ← Back
-          </button>
-          <div className="flex min-h-[calc(100vh-200px)] flex-col items-center justify-center text-center">
-            <div className="mb-8">
-              <Image
-                src={flower1Image}
-                width={400}
-                height={400}
-                alt="Flower"
-                className="h-full w-full max-w-100"
-              />
-            </div>
-            <h1 className="text-dark-primary mb-3 font-serif text-3xl font-bold md:text-4xl">
-              {JOURNEY?.title}
-            </h1>
-            <p className="text-secondary mb-2 text-sm">{JOURNEY?.subtitle}</p>
-            <p className="text-secondary mb-10 text-sm">{JOURNEY?.stats}</p>
-            <Button onClick={handleBeginLiberation} className="btn-styles w-fit px-6">
-              Begin Your Liberation
-            </Button>
-          </div>
-        </motion.section>
+        <JourneyBeginStep
+          title={JOURNEY?.title}
+          subtitle={JOURNEY?.subtitle}
+          stats={JOURNEY?.stats}
+          onBeginLiberation={handleBeginLiberation}
+          onBack={() => router.back()}
+        />
       );
     }
 
