@@ -6,7 +6,8 @@ import flower1Image from '@/assets/home/flower1.png';
 import flower2Image from '@/assets/home/flower2.png';
 import flower3Image from '@/assets/home/flower3.png';
 import TextAreaField from '@/components/dashboard/Fields/TextAreaField/TextAreaField';
-import DynamicSectionHeader from '@/components/main/DynamicSectionHeader/DynamicSectionHeader';
+import BeforeYouBeginStep from './_components/BeforeYouBeginStep/BeforeYouBeginStep';
+import DayCheckinStep from './_components/DayCheckinStep/DayCheckinStep';
 import JourneyBeginStep from './_components/JourneyBeginStep/JourneyBeginStep';
 import GrowthSlider from '@/components/main/GrowthSlider/GrowthSlider';
 import { Button } from '@/components/ui/button';
@@ -23,7 +24,6 @@ import {
 } from '@/redux/features/liberation/liberation.api';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Check } from 'lucide-react';
 import Image from 'next/image';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -438,25 +438,25 @@ export default function JourneyPage() {
       <section className="relative min-h-screen w-full overflow-x-hidden bg-[#FAF7F2] px-4 py-8 md:px-8 md:py-12">
         {/* Back Button Skeleton */}
         <div className="absolute top-4 left-4 z-10 sm:top-6 sm:left-8 md:top-8 md:left-10">
-          <Skeleton className="h-9 w-20 animate-pulse rounded-xs !bg-[#52277F]/20" />
+          <Skeleton className="h-9 w-20 animate-pulse rounded-xs bg-[#52277F]/20!" />
         </div>
 
         {/* Centered Content Skeleton */}
         <div className="mx-auto flex min-h-[calc(100vh-140px)] max-w-4xl flex-col items-center justify-center text-center">
           {/* Title Skeleton */}
           <div className="mb-4 flex justify-center">
-            <Skeleton className="h-10 w-64 animate-pulse rounded-md !bg-[#52277F]/20 sm:h-14 sm:w-96 md:h-16 md:w-[480px]" />
+            <Skeleton className="h-10 w-64 animate-pulse rounded-md bg-[#52277F]/20! sm:h-14 sm:w-96 md:h-16 md:w-120" />
           </div>
 
           {/* Subtitle & Stats Skeleton */}
           <div className="mb-10 flex flex-col items-center space-y-3">
-            <Skeleton className="h-5 w-72 animate-pulse rounded-md !bg-[#344054]/15 sm:h-6 sm:w-[460px]" />
-            <Skeleton className="h-4 w-52 animate-pulse rounded-md !bg-[#667085]/15 sm:h-4 sm:w-72" />
+            <Skeleton className="h-5 w-72 animate-pulse rounded-md bg-[#344054]/15! sm:h-6 sm:w-115" />
+            <Skeleton className="h-4 w-52 animate-pulse rounded-md bg-[#667085]/15! sm:h-4 sm:w-72" />
           </div>
 
           {/* CTA Button Skeleton */}
           <div>
-            <Skeleton className="h-12 w-56 animate-pulse rounded-xs !bg-[#52277F]/20 sm:h-14 sm:w-64" />
+            <Skeleton className="h-12 w-56 animate-pulse rounded-xs bg-[#52277F]/20! sm:h-14 sm:w-64" />
           </div>
         </div>
       </section>
@@ -484,107 +484,20 @@ export default function JourneyPage() {
     // ─────────────────────────────────────────────────────────────────────────────
     if (activePhase === 'before-begin') {
       return (
-        <motion.section
-          key="before-begin"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-          className="mx-auto min-h-screen max-w-2xl px-4 py-12"
-        >
-          <button
-            onClick={() => setPhase('landing')}
-            className="text-primary mb-8 flex cursor-pointer items-center gap-1 text-sm transition-opacity hover:opacity-80"
-          >
-            ← Back
-          </button>
-
-          <div>
-            <DynamicSectionHeader
-              title="Before You Begin"
-              description="Set yourself up for 7 days of gentle liberation."
-            />
-
-            {/* ── Preparation Checklist — selectable ── */}
-            <div className="space-y-3">
-              {JOURNEY?.preparations.map((prep) => {
-                const isChecked = checkedPreps.includes(prep.id);
-                return (
-                  <button
-                    key={prep.id}
-                    type="button"
-                    onClick={() => togglePrep(prep.id)}
-                    className={cn(
-                      'flex w-full cursor-pointer items-center justify-between rounded-md border px-5 py-4 text-left text-sm transition-all duration-200',
-                      isChecked
-                        ? 'border-primary/40 bg-primary/5 text-primary'
-                        : 'border-primary/15 text-dark-primary hover:border-primary/30',
-                    )}
-                  >
-                    <span>{prep.label}</span>
-                    <span
-                      className={cn(
-                        'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all duration-200',
-                        isChecked
-                          ? 'border-primary bg-primary text-white'
-                          : 'border-primary/25 bg-transparent',
-                      )}
-                    >
-                      {isChecked && <Check size={11} strokeWidth={3} />}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* ── Daily Reminders ── */}
-            <div className="border-primary/15 mt-6 rounded-md border p-4">
-              <p className="text-dark-primary mb-4 font-medium">Daily Reminders</p>
-              <div className="space-y-2">
-                {JOURNEY?.reminders.map((reminder) => (
-                  <button
-                    key={reminder.id}
-                    type="button"
-                    onClick={() => setSelectedReminder(reminder.id)}
-                    className={cn(
-                      'w-full cursor-pointer rounded-sm border px-5 py-3 text-left text-sm transition-all duration-200',
-                      selectedReminder === reminder.id
-                        ? 'border-primary/40 bg-primary/5 text-primary'
-                        : 'border-primary/15 text-dark-primary hover:border-primary/30',
-                    )}
-                  >
-                    {reminder.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* ── Add To Calendar — Google Calendar ── */}
-              <Button
-                type="button"
-                onClick={handleAddToCalendar}
-                className={cn(
-                  'mt-4 w-full rounded-md border bg-transparent py-4 text-sm transition-all hover:bg-transparent',
-                  calendarAdded
-                    ? 'border-primary/40 text-primary'
-                    : 'border-primary/20 text-primary hover:border-primary/40',
-                )}
-              >
-                {calendarAdded ? '✓ Added to Google Calendar' : 'Add To Calendar'}
-              </Button>
-            </div>
-
-            {/* ── Start Day 1 — disabled until all 3 checked ── */}
-            <Button
-              onClick={handleStartDay}
-              disabled={!allPrepsChecked || isEnrolling}
-              className="btn-styles mt-6"
-            >
-              {allPrepsChecked
-                ? 'Start Day 1'
-                : `Check ${JOURNEY?.preparations.length - checkedPreps.length} item${JOURNEY?.preparations.length - checkedPreps.length === 1 ? '' : 's'} above`}
-            </Button>
-          </div>
-        </motion.section>
+        <BeforeYouBeginStep
+          preparations={JOURNEY?.preparations}
+          checkedPreps={checkedPreps}
+          togglePrep={togglePrep}
+          reminders={JOURNEY?.reminders}
+          selectedReminder={selectedReminder}
+          setSelectedReminder={setSelectedReminder}
+          calendarAdded={calendarAdded}
+          handleAddToCalendar={handleAddToCalendar}
+          handleStartDay={handleStartDay}
+          allPrepsChecked={allPrepsChecked}
+          isEnrolling={isEnrolling}
+          onBack={() => setPhase('landing')}
+        />
       );
     }
 
@@ -593,44 +506,15 @@ export default function JourneyPage() {
     // ─────────────────────────────────────────────────────────────────────────────
     if (activePhase === 'day-checkin') {
       return (
-        <motion.section
-          key="day-checkin"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-          className="mx-auto min-h-screen max-w-3xl px-4 py-12"
-        >
-          <button
-            onClick={() => setPhase(currentDayIndex === 0 ? 'before-begin' : 'overview')}
-            className="text-primary mb-4 flex cursor-pointer items-center gap-1 text-sm transition-opacity hover:opacity-80"
-          >
-            ← Back
-          </button>
-          <StepBar current={currentStep} total={totalSteps} />
-
-          <div>
-            <div className="mb-8 text-center">
-              <p className="text-primary mb-1 text-sm">Day {currentDay.day}</p>
-              <h1 className="text-dark-primary font-serif text-2xl font-semibold md:text-3xl">
-                {currentDay.title}
-              </h1>
-            </div>
-
-            <form onSubmit={checkinForm.handleSubmit(handleBeginExercises)} className="space-y-6">
-              <TextAreaField
-                label={currentDay.checkinPrompt}
-                name="feeling"
-                control={checkinForm.control}
-                placeholder="A word or two is enough"
-                rows={4}
-              />
-              <Button type="submit" disabled={isGenerating} className="btn-styles">
-                {isGenerating ? 'Generating...' : 'Begin Exercises →'}
-              </Button>
-            </form>
-          </div>
-        </motion.section>
+        <DayCheckinStep
+          dayNumber={currentDay?.day}
+          dayTitle={currentDay?.title}
+          checkinPrompt={currentDay?.checkinPrompt}
+          register={checkinForm.register}
+          onSubmit={checkinForm.handleSubmit(handleBeginExercises)}
+          isGenerating={isGenerating}
+          onBack={() => setPhase(currentDayIndex === 0 ? 'before-begin' : 'overview')}
+        />
       );
     }
 
