@@ -1,4 +1,5 @@
 'use client';
+
 import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
 import { motion } from 'framer-motion';
 import HeroContent from './_components/HeroContent/HeroContent';
@@ -11,12 +12,12 @@ import YouBelongHere from './_components/YouBelongHere/YouBelongHere';
 const Homepage = () => {
   return (
     <section className="relative w-full bg-[#FBF9F3]">
-      {/* Content Area */}
+      {/* Content Area: max-w-7xl mx-auto */}
       <motion.div
         initial="hidden"
         animate="visible"
         variants={FADE_IN_UP_CONTAINER}
-        className="relative z-10 mx-auto max-w-400 space-y-10 px-4 lg:space-y-25"
+        className="relative z-10 mx-auto max-w-350 space-y-10 px-4 lg:space-y-20"
       >
         <motion.div variants={FADE_IN_UP_ITEM}>
           <HeroContent />

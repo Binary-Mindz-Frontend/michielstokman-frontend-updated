@@ -17,7 +17,7 @@ function WhyTransformToLiberationPage() {
       variants={FADE_IN_UP_CONTAINER}
       className="min-h-screen w-full px-4 py-8 md:py-14"
     >
-      <div className="mx-auto max-w-6xl space-y-16 sm:space-y-24">
+      <div className="mx-auto max-w-350 space-y-16 sm:space-y-24">
         {/* ================= HERO SECTION ================= */}
         <AboutHeroSection />
 

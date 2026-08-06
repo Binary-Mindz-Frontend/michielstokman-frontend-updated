@@ -47,7 +47,7 @@ const DynamicActionButton: React.FC<DynamicActionButtonProps> = ({
   const content = (
     <div
       style={bgStyle}
-      className={`flex cursor-pointer items-center justify-center gap-3 ${roundedClass} px-6 py-3.5 text-center font-sans text-sm font-semibold tracking-widest text-nowrap uppercase transition-all duration-300 hover:opacity-90 ${bgClass} ${textColorClass} ${
+      className={`flex cursor-pointer items-center justify-center gap-3 ${roundedClass} px-6 py-3 text-center font-sans text-sm font-semibold text-nowrap uppercase transition-all duration-300 hover:opacity-90 ${bgClass} ${textColorClass} ${
         fullWidth ? 'w-full' : 'w-auto'
       } ${className}`}
     >
