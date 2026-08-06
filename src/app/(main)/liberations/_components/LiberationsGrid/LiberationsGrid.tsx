@@ -61,7 +61,7 @@ export default function LiberationsGrid() {
       {/* 3 Column Grid */}
       <motion.div
         variants={FADE_IN_UP_ITEM}
-        className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+        className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3"
       >
         {visibleLiberations.length > 0 ? (
           visibleLiberations.map((item) => <LiberationsCard key={item.id} item={item} />)
