@@ -17,15 +17,15 @@ const AboutHeroSection = () => {
       {/* ================= MOBILE LAYOUT (< md) ================= */}
       <div className="flex w-full flex-col items-center text-center md:hidden">
         {/* Mobile Title Stack */}
-        <div className="font-edo flex flex-col items-center leading-none font-black uppercase">
+        <div className="font-edo flex flex-col items-center leading-none font-medium uppercase">
           {/* Line 1: WHY TRANSFORM */}
-          <div className="-rotate-2 transform text-3xl font-black tracking-wider min-[400px]:text-4xl sm:text-4xl">
+          <div className="-rotate-2 transform text-3xl font-medium tracking-wider min-[400px]:text-4xl sm:text-4xl">
             <span className="text-[#486221]">WHY </span>
             <span className="text-[#E81A66]">TRANSFORM</span>
           </div>
 
           {/* Line 2: TO LIBERATION */}
-          <div className="relative mt-2 -rotate-2 transform text-3xl font-black tracking-wider min-[400px]:text-4xl sm:text-4xl">
+          <div className="relative mt-2 -rotate-2 transform text-3xl font-medium tracking-wider min-[400px]:text-4xl sm:text-4xl">
             <span className="text-[#E81A66]">TO </span>
             <span className="text-[#F3A134]">LIBERATION</span>
           </div>
@@ -76,7 +76,7 @@ const AboutHeroSection = () => {
       <div className="hidden w-full flex-col items-start text-left md:flex md:w-1/2">
         {/* Desktop Title Header */}
         <div className="relative flex w-full flex-col items-start">
-          <div className="font-edo flex -rotate-6 transform flex-col items-start leading-none font-black uppercase">
+          <div className="font-edo flex -rotate-6 transform flex-col items-start leading-none font-medium uppercase">
             <span className="text-5xl tracking-wider text-[#486221] lg:text-6xl xl:text-7xl">
               WHY
             </span>

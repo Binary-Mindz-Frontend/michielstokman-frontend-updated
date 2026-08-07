@@ -5,9 +5,9 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 
 // Assets from src/assets/safety/safety-section
-import safetyLine from '@/assets/safety/share/title-underline.png';
 import safetySectionIcon from '@/assets/safety/safety-section/safety-section-icon.svg';
 import safetySectionImg from '@/assets/safety/safety-section/safety-section-image.png';
+import safetyLine from '@/assets/safety/share/title-underline.png';
 
 const SafetySection = () => {
   return (
@@ -42,7 +42,7 @@ const SafetySection = () => {
 
           {/* 3. SAFETY Title with Brush Underline */}
           <div className="relative ml-2 flex flex-col items-center">
-            <h2 className="font-edo text-4xl font-black tracking-wide text-black uppercase md:text-5xl">
+            <h2 className="font-edo text-4xl font-medium tracking-wide text-black uppercase md:text-5xl">
               SAFETY
             </h2>
 

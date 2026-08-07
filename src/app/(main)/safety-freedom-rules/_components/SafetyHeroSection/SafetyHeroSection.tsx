@@ -27,7 +27,7 @@ const SafetyHeroSection = () => {
           </div>
 
           {/* Title Text */}
-          <div className="font-edo flex flex-col items-start leading-none font-black uppercase">
+          <div className="font-edo flex flex-col items-start leading-none font-medium uppercase">
             <span className="-rotate-2 transform text-[2.75rem] tracking-wider text-[#486221] sm:text-5xl md:text-[3.5rem] lg:text-[4.5rem]">
               SAFETY.
             </span>
@@ -56,7 +56,7 @@ const SafetyHeroSection = () => {
           {/* Text inside Brush */}
           <div className="relative z-10 px-4 text-center font-sans text-[11px] leading-relaxed font-medium text-white sm:text-xs md:text-sm">
             <p>
-              The Ground We <span className="font-bold text-[#E81A66]">Stand On</span> Together.
+              The Ground We <span className="text-[#E81A66]">Stand On</span> Together.
             </p>
             <p className="mt-0.5">Read It Once. Carry It With You.</p>
           </div>

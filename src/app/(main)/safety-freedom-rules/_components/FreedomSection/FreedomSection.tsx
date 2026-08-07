@@ -61,7 +61,7 @@ const FreedomSection = () => {
 
           {/* 3. FREEDOM Title with Brush Underline */}
           <div className="relative ml-2 flex flex-col items-center">
-            <h2 className="font-edo text-4xl font-black tracking-wide text-black uppercase md:text-5xl">
+            <h2 className="font-edo text-4xl font-medium tracking-wide text-black uppercase md:text-5xl">
               FREEDOM
             </h2>
 

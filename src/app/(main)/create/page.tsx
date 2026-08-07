@@ -25,7 +25,7 @@ export default function CreateFormPage() {
   const createPath = typeParam ? `/create?type=${typeParam}` : '/create';
 
   return (
-    <section className="mx-auto max-w-5xl px-4 py-8">
+    <section className="mx-auto max-w-6xl px-4 py-8">
       <LoginRequiredModal
         isOpen={isAuthModalOpen}
         redirectUrl={`/login?redirect=${encodeURIComponent(createPath)}`}
