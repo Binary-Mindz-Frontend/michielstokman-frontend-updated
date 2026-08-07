@@ -10,9 +10,9 @@ import featureLiberation from '@/assets/home/feature-liberation.png';
 import featureMeditation from '@/assets/home/feature-meditation.png';
 
 // Icons
-import heartPinkDeco from '@/assets/home/heart-pink.png';
+import heartPinkDeco from '@/assets/shared/heart-pink.png';
 import iconBirdPurple from '@/assets/home/icon-bird-purple.png';
-import iconSun from '@/assets/home/icon-sun.png';
+import iconSun from '@/assets/shared/icon-sun.png';
 
 const features: FeatureItem[] = [
   {

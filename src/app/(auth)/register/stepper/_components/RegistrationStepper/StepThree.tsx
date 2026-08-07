@@ -11,8 +11,8 @@ import { StepperFormData } from './RegistrationStepper.types';
 
 import step3Hero from '@/assets/account-step/step3-hero-image.png';
 import step3HeroMobile from '@/assets/account-step/step3-hero-image-mobile.png';
-import stepBrushBg from '@/assets/account-step/step-brush-bg.png';
-import buttonArrow from '@/assets/account-step/button-arrow.png';
+import stepBrushBg from '@/assets/shared/step-brush-bg.png';
+import buttonArrow from '@/assets/shared/button-arrow.png';
 
 interface StepThreeProps {
   growthValues: Record<string, number> | undefined;

@@ -1,7 +1,7 @@
 'use client';
 
-import btnBg from '@/assets/home/btnBg.png';
-import submitSuccessBg from '@/assets/submit/submit-success.png';
+import btnBg from '@/assets/shared/btnBg.png';
+import submitSuccessBg from '@/assets/shared/submit-success.png';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';

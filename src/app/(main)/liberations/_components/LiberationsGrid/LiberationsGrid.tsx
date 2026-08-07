@@ -10,7 +10,7 @@ import { useState } from 'react';
 import LiberationsCard, { LiberationItem } from './_components/LiberationsCard/LiberationsCard';
 
 // Fallback Asset
-import fallbackCardImage from '@/assets/confessions/confession-card-1.png';
+import fallbackCardImage from '@/assets/shared/confession-card-1.png';
 
 export default function LiberationsGrid() {
   const [visibleCount, setVisibleCount] = useState(8);

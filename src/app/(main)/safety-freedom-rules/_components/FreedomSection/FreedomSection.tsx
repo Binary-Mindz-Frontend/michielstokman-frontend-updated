@@ -7,7 +7,7 @@ import Image from 'next/image';
 // Assets from src/assets/safety/freedom-section & share
 import freedomSectionIcon from '@/assets/safety/freedom-section/freedom-icon.svg';
 import freedomSectionImg from '@/assets/safety/freedom-section/freedom-image.png';
-import titleUnderline from '@/assets/safety/share/title-underline.png';
+import titleUnderline from '@/assets/shared/title-underline.png';
 
 const FreedomSection = () => {
   return (

@@ -3,9 +3,9 @@
 'use client';
 
 import completeIcon from '@/assets/liberations/liberation-steps/complete-icon.png';
-import greenHeartIcon from '@/assets/liberations/liberation-steps/green-pink-icon.png';
-import lovePinkIcon from '@/assets/liberations/liberation-steps/love-pink-icon.png';
-import starIcon from '@/assets/liberations/liberation-steps/star-icon.png';
+import greenHeartIcon from '@/assets/shared/green-pink-icon.png';
+import lovePinkIcon from '@/assets/shared/love-pink-icon.png';
+import starIcon from '@/assets/shared/star-icon.png';
 import unlockIcon from '@/assets/liberations/liberation-steps/unlock-icon.png';
 import DynamicBackButton from '@/components/main/DynamicBackButton/DynamicBackButton';
 import { cn } from '@/lib/utils';

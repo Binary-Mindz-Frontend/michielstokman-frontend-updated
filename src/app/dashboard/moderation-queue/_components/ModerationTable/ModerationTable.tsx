@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
-import img from '@/assets/table_placeholder_image.jpg';
+import img from '@/assets/shared/table_placeholder_image.jpg';
 import CustomPagination from '@/components/dashboard/CustomPagination/CustomPagination';
 import CustomTable from '@/components/dashboard/CustomTable/CustomTable';
 import TableEmptyState from '@/components/dashboard/CustomTable/TableEmptyState';

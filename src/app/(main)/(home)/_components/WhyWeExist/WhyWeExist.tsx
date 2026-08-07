@@ -5,12 +5,12 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 
 // Assets
-import iconCocktail from '@/assets/home/icon-cocktail.png';
-import iconFlame from '@/assets/home/icon-flame.png';
-import iconLips from '@/assets/home/icon-lips.png';
-import womanPhoto from '@/assets/home/image 117.png';
-import pinkUnderline from '@/assets/home/pink-underline.png';
-import iconBird from '@/assets/home/Vector (1).png';
+import iconCocktail from '@/assets/shared/icon-cocktail.png';
+import iconFlame from '@/assets/shared/icon-flame.png';
+import iconLips from '@/assets/shared/icon-lips.png';
+import womanPhoto from '@/assets/home/why-we-exist-image.png';
+import pinkUnderline from '@/assets/shared/pink-underline.png';
+import iconBird from '@/assets/home/why-we-exist-vector.png';
 
 const cards = [
   {

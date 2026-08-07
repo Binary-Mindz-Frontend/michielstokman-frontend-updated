@@ -1,6 +1,6 @@
 'use client';
 
-import brushTextBg from '@/assets/account/brush-text-bg.png';
+import brushTextBg from '@/assets/shared/brush-text-bg.png';
 import submitHero from '@/assets/submit/submit-hero.png';
 import Image from 'next/image';
 

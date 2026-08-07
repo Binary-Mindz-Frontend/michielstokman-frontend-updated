@@ -10,7 +10,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'sonner';
 
-import buttonArrow from '@/assets/account-step/button-arrow.png';
+import buttonArrow from '@/assets/shared/button-arrow.png';
 
 import { cn } from '@/lib/utils';
 import { useUpdateUserProfileMutation } from '@/redux/features/auth/auth.api';

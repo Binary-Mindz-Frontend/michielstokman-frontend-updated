@@ -11,7 +11,7 @@ import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicAc
 import DynamicBackButton from '@/components/main/DynamicBackButton/DynamicBackButton';
 import { JourneyDetailSkeleton } from '@/components/main/Skeletons/JourneyDetailSkeleton';
 
-import brushTextBg from '@/assets/account/brush-text-bg.png';
+import brushTextBg from '@/assets/shared/brush-text-bg.png';
 import purpleCheckBorder from '@/assets/journeys/purple-check-border.png';
 import purpleCircleBadge from '@/assets/journeys/purple-circle-badge.png';
 import purpleUnderline from '@/assets/journeys/purple-underline.png';

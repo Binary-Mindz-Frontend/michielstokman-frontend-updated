@@ -20,10 +20,10 @@ import { catchAsyncMutation } from '@/utils/apiReqRes.utils';
 import GoogleSignInButton from './_components/GoogleLogin/GoogleLogin';
 
 // Assets from src/assets/account
-import accountHeroImg from '@/assets/account/account-hero-image.png';
-import buttonBrushBg from '@/assets/account/brush-button-bg.png';
-import brushTextBg from '@/assets/account/brush-text-bg.png';
-import guestIcon from '@/assets/account/guest.png';
+import accountHeroImg from '@/assets/shared/account-hero-image.png';
+import buttonBrushBg from '@/assets/shared/brush-button-bg.png';
+import brushTextBg from '@/assets/shared/brush-text-bg.png';
+import guestIcon from '@/assets/shared/guest.png';
 
 // Zod Schema for Login Validation
 const loginSchema = z.object({

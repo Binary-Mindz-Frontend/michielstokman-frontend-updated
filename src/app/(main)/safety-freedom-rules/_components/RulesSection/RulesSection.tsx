@@ -7,7 +7,7 @@ import Image from 'next/image';
 // Assets from src/assets/safety/rules-section & share
 import rulesSectionIcon from '@/assets/safety/rules-section/rules-icon.svg';
 import rulesSectionImg from '@/assets/safety/rules-section/rules-image.png';
-import titleUnderline from '@/assets/safety/share/title-underline.png';
+import titleUnderline from '@/assets/shared/title-underline.png';
 
 const RulesSection = () => {
   return (

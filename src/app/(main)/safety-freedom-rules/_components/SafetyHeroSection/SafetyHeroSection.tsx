@@ -5,11 +5,11 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 
 // Assets from src/assets/safety/hero-section
-import greenLoveImg from '@/assets/safety/hero-section/green-love-image.png';
-import pinkLoveImg from '@/assets/safety/hero-section/pink-love-image.png';
+import greenLoveImg from '@/assets/shared/heart-green.png';
+import pinkLoveImg from '@/assets/shared/heart-pink.png';
 import safetyBrushBg from '@/assets/safety/hero-section/safety-brush-bg.png';
 import safetyHeroImg from '@/assets/safety/hero-section/safety-hero-image.png';
-import starImg from '@/assets/safety/hero-section/star-image.png';
+import starImg from '@/assets/shared/star-deco.png';
 
 const SafetyHeroSection = () => {
   return (

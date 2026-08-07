@@ -1,9 +1,9 @@
 'use client';
 
-import awakingRightIcon from '@/assets/liberations/liberation-steps/awaking-right-icon.png';
-import greenHeartIcon from '@/assets/liberations/liberation-steps/green-pink-icon.png';
-import lovePinkIcon from '@/assets/liberations/liberation-steps/love-pink-icon.png';
-import starIcon from '@/assets/liberations/liberation-steps/star-icon.png';
+import awakingRightIcon from '@/assets/shared/awaking-right-icon.png';
+import greenHeartIcon from '@/assets/shared/green-pink-icon.png';
+import lovePinkIcon from '@/assets/shared/love-pink-icon.png';
+import starIcon from '@/assets/shared/star-icon.png';
 import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicActionButton';
 import DynamicBackButton from '@/components/main/DynamicBackButton/DynamicBackButton';
 import { motion } from 'framer-motion';
