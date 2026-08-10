@@ -5,9 +5,9 @@ import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils'
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 
-import brushTextBg from '@/assets/account/brush-text-bg.png';
-import iconSun from '@/assets/home/icon-sun.png';
-import meditationsHero from '@/assets/meditations/meditations-hero.png';
+import brushTextBg from '@/assets/shared/brush-text-bg.png';
+import iconSun from '@/assets/shared/icon-sun.png';
+import meditationsHero from '@/assets/shared/meditations-hero.png';
 
 export default function MeditationsHero() {
   return (

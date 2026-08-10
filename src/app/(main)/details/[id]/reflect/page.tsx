@@ -29,9 +29,9 @@ import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils'
 import LoginRequiredModal from '@/app/(main)/create/CreateForm/_components/LoginRequiredModal/LoginRequiredModal';
 import ShareSection from './_components/ShareSection/ShareSection';
 
-import brushTextBg from '@/assets/account/brush-text-bg.png';
-import reflectCollageImg from '@/assets/reflect/Object (8).png';
-import vectorUnderline from '@/assets/reflect/Vector 14.png';
+import brushTextBg from '@/assets/shared/brush-text-bg.png';
+import reflectCollageImg from '@/assets/reflect/reflect-object.png';
+import vectorUnderline from '@/assets/reflect/reflect-vector.png';
 
 // Zod Schema
 const resonanceSchema = z.object({

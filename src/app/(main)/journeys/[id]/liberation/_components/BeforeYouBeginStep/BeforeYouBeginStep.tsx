@@ -3,8 +3,8 @@
 'use client';
 
 import beforeYourBeginImg from '@/assets/liberations/liberation-steps/before-your-begin.png';
-import greenHeartIcon from '@/assets/liberations/liberation-steps/green-pink-icon.png';
-import starIcon from '@/assets/liberations/liberation-steps/star-icon.png';
+import greenHeartIcon from '@/assets/shared/green-pink-icon.png';
+import starIcon from '@/assets/shared/star-icon.png';
 import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicActionButton';
 import DynamicBackButton from '@/components/main/DynamicBackButton/DynamicBackButton';
 import { cn } from '@/lib/utils';

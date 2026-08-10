@@ -23,10 +23,10 @@ import { useCurrentUser, useIsAuthenticated } from '@/redux/features/auth/authSl
 import { useAppSelector } from '@/redux/hooks';
 import StoryPlayer from '../StoryPlayer/StoryPlayer';
 
-import brushTextBg from '@/assets/account/brush-text-bg.png';
-import confessionsHero from '@/assets/confessions/confessions-hero.png';
-import pinkHeartDrawn from '@/assets/home/pink-heart-drawn.png';
-import meditationsHero from '@/assets/meditations/meditations-hero.png';
+import brushTextBg from '@/assets/shared/brush-text-bg.png';
+import confessionsHero from '@/assets/shared/confessions-hero.png';
+import pinkHeartDrawn from '@/assets/shared/pink-heart-drawn.png';
+import meditationsHero from '@/assets/shared/meditations-hero.png';
 import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
 
 export default function StoryDetailPage() {

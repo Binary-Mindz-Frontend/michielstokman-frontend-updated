@@ -3,16 +3,15 @@
 'use client';
 
 import completeIcon from '@/assets/liberations/liberation-steps/complete-icon.png';
-import greenHeartIcon from '@/assets/liberations/liberation-steps/green-pink-icon.png';
-import lovePinkIcon from '@/assets/liberations/liberation-steps/love-pink-icon.png';
-import starIcon from '@/assets/liberations/liberation-steps/star-icon.png';
+import greenHeartIcon from '@/assets/shared/green-pink-icon.png';
+import lovePinkIcon from '@/assets/shared/love-pink-icon.png';
+import starIcon from '@/assets/shared/star-icon.png';
 import unlockIcon from '@/assets/liberations/liberation-steps/unlock-icon.png';
 import DynamicBackButton from '@/components/main/DynamicBackButton/DynamicBackButton';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { Lock } from 'lucide-react';
 import Image from 'next/image';
-import React from 'react';
 
 export interface JourneyOverviewStepProps {
   journeyDays?: Array<{ day: number; title: string }>;
@@ -79,7 +78,7 @@ export default function JourneyOverviewStep({
       <div className="relative z-20 mx-auto flex min-h-[calc(100vh-160px)] max-w-2xl flex-col items-center justify-start pt-2 pb-12 text-center">
         {/* Main Title Section */}
         <div className="mb-8">
-          <h1 className="font-edo mb-1 text-3xl font-bold tracking-wider whitespace-nowrap text-[#52277F] uppercase sm:text-4xl md:text-5xl lg:text-6xl">
+          <h1 className="font-edo mb-1 text-3xl font-medium tracking-wider whitespace-nowrap text-[#52277F] uppercase sm:text-4xl md:text-5xl lg:text-6xl">
             THE JOURNEY
           </h1>
           <p className="font-playpen text-xs font-semibold tracking-widest text-[#667085] uppercase sm:text-sm">
@@ -164,7 +163,7 @@ export default function JourneyOverviewStep({
                   <div>
                     <h2
                       className={cn(
-                        'font-edo text-base font-bold tracking-wider uppercase sm:text-lg',
+                        'font-edo text-base font-medium tracking-wider uppercase sm:text-lg',
                         isCompleted && 'text-[#16A34A]',
                         isReadyToStart && !isCompleted && 'text-[#52277F]',
                         isLocked && 'text-[#A0AEC0]',

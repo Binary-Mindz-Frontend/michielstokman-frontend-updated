@@ -21,7 +21,7 @@ export const SummaryCardSkeleton = () => {
 export const WeeklyTrendSkeleton = () => {
   return (
     <div className="rounded-md bg-[#F5F2F0] p-6">
-      <h2 className="text-dark-primary mb-0.5 text-xl font-semibold md:text-2xl">Weekly Trends</h2>
+      <h2 className="text-secondary mb-0.5 text-xl font-semibold md:text-2xl">Weekly Trends</h2>
       <p className="text-secondary text-sm sm:text-base">Performance over recent weeks</p>
 
       <div className="mt-4 space-y-4">
@@ -43,7 +43,7 @@ export const WeeklyTrendSkeleton = () => {
 export const TopResonanceContentSkeleton = () => {
   return (
     <div className="rounded-md bg-[#F5F2F0] p-6">
-      <h2 className="text-dark-primary mb-0.5 text-xl font-semibold md:text-2xl">
+      <h2 className="text-secondary mb-0.5 text-xl font-semibold md:text-2xl">
         Top Resonance Content
       </h2>
       <p className="text-secondary text-sm sm:text-base">Highest pulse scores this month</p>

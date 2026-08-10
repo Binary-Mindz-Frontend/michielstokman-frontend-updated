@@ -11,8 +11,8 @@ import belongWoman from '@/assets/home/belong-woman.png';
 import iconButterfly from '@/assets/home/icon-butterfly.png';
 import iconGlobe from '@/assets/home/icon-globe.png';
 import iconPerson from '@/assets/home/icon-person.png';
-import pinkHeartDrawn from '@/assets/home/pink-heart-drawn.png';
-import pinkUnderline from '@/assets/home/pink-underline.png';
+import pinkHeartDrawn from '@/assets/shared/pink-heart-drawn.png';
+import pinkUnderline from '@/assets/shared/pink-underline.png';
 
 const YouBelongHere = () => {
   return (

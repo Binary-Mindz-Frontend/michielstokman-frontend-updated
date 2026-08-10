@@ -5,12 +5,12 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 
 // Assets
-import brushBg from '@/assets/home/Vector (2).png';
-import heartPinkDeco from '@/assets/home/heart-pink.png';
-import iconCocktail from '@/assets/home/icon-cocktail.png';
-import iconFlame from '@/assets/home/icon-flame.png';
+import brushBg from '@/assets/home/survey-vector.png';
+import heartPinkDeco from '@/assets/shared/heart-pink.png';
+import iconCocktail from '@/assets/shared/icon-cocktail.png';
+import iconFlame from '@/assets/shared/icon-flame.png';
 import iconHeartArrow from '@/assets/home/icon-heart-arrow.png';
-import iconLips from '@/assets/home/icon-lips.png';
+import iconLips from '@/assets/shared/icon-lips.png';
 import iconPeach from '@/assets/home/icon-peach.png';
 
 const stats = [

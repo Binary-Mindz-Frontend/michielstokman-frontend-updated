@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Playpen+Sans:wght@100..800&display=swap');
 @import 'tailwindcss';
 
@@ -17,6 +18,7 @@
   --font-sans: 'Playpen Sans', cursive, sans-serif;
   --font-playpen: 'Playpen Sans', cursive, sans-serif;
   --font-edo: 'Edo', cursive, sans-serif;
+  --font-inter: 'Inter', sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -174,6 +176,22 @@
   }
   .font-edo {
     font-family: 'Edo', cursive, sans-serif !important;
+  }
+  .font-inter {
+    font-family: 'Inter', sans-serif !important;
+  }
+
+  .dashboard-typography {
+    font-family: 'Inter', sans-serif !important;
+    --color-dark-primary: var(--color-secondary);
+  }
+  .dashboard-typography h1,
+  .dashboard-typography h2,
+  .dashboard-typography h3,
+  .dashboard-typography h4,
+  .dashboard-typography h5,
+  .dashboard-typography h6 {
+    font-family: 'Inter', sans-serif !important;
   }
 }
 

@@ -2,8 +2,8 @@
 /* eslint-disable no-unused-vars */
 'use client';
 
-import awakingLeftIcon from '@/assets/liberations/liberation-steps/awaking-left-icon.png';
-import awakingRightIcon from '@/assets/liberations/liberation-steps/awaking-right-icon.png';
+import awakingLeftIcon from '@/assets/shared/awaking-left-icon.png';
+import awakingRightIcon from '@/assets/shared/awaking-right-icon.png';
 import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicActionButton';
 import DynamicBackButton from '@/components/main/DynamicBackButton/DynamicBackButton';
 import { motion } from 'framer-motion';

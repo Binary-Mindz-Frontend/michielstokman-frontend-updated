@@ -9,7 +9,7 @@ import Image from 'next/image';
 import confession1 from '@/assets/home/confession1.png';
 import confession2 from '@/assets/home/confession2.png';
 import confession3 from '@/assets/home/confession3.png';
-import greenWaves from '@/assets/home/green-waves.png';
+import greenWaves from '@/assets/shared/green-waves.png';
 import iconBirdWhite from '@/assets/home/icon-bird-white.png';
 import iconHeartWhite from '@/assets/home/icon-heart-white.png';
 import iconLotusWhite from '@/assets/home/icon-lotus-white.png';

@@ -6,12 +6,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 // Assets
-import brushTextBg from '@/assets/account/brush-text-bg.png';
-import btnBg from '@/assets/home/btnBg.png';
-import heartGreen from '@/assets/home/heart-green.png';
-import heartPink from '@/assets/home/heart-pink.png';
+import brushTextBg from '@/assets/shared/brush-text-bg.png';
+import btnBg from '@/assets/shared/btnBg.png';
+import heartGreen from '@/assets/shared/heart-green.png';
+import heartPink from '@/assets/shared/heart-pink.png';
 import heroImage from '@/assets/home/heroImage.png';
-import starDeco from '@/assets/home/star-deco.png';
+import starDeco from '@/assets/shared/star-deco.png';
 import arrowBlack from '@/assets/shared/arrow-black.png';
 
 const HeroContent = () => {

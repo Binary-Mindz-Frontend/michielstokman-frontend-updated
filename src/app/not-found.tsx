@@ -6,11 +6,11 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 
 // Assets
-import brushTextBg from '@/assets/account/brush-text-bg.png';
-import greenWaves from '@/assets/home/green-waves.png';
-import pinkHeartDrawn from '@/assets/home/pink-heart-drawn.png';
-import starDeco from '@/assets/home/star-deco.png';
-import iconBirdPurple from '@/assets/liberations/icon-bird-purple.png';
+import brushTextBg from '@/assets/shared/brush-text-bg.png';
+import greenWaves from '@/assets/shared/green-waves.png';
+import pinkHeartDrawn from '@/assets/shared/pink-heart-drawn.png';
+import starDeco from '@/assets/shared/star-deco.png';
+import iconBirdPurple from '@/assets/shared/icon-bird-purple.png';
 
 export default function NotFound() {
   return (

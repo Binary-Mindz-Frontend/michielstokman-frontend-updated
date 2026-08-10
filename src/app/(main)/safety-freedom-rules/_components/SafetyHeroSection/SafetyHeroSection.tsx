@@ -5,11 +5,11 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 
 // Assets from src/assets/safety/hero-section
-import greenLoveImg from '@/assets/safety/hero-section/green-love-image.png';
-import pinkLoveImg from '@/assets/safety/hero-section/pink-love-image.png';
+import greenLoveImg from '@/assets/shared/heart-green.png';
+import pinkLoveImg from '@/assets/shared/heart-pink.png';
 import safetyBrushBg from '@/assets/safety/hero-section/safety-brush-bg.png';
 import safetyHeroImg from '@/assets/safety/hero-section/safety-hero-image.png';
-import starImg from '@/assets/safety/hero-section/star-image.png';
+import starImg from '@/assets/shared/star-deco.png';
 
 const SafetyHeroSection = () => {
   return (
@@ -27,7 +27,7 @@ const SafetyHeroSection = () => {
           </div>
 
           {/* Title Text */}
-          <div className="font-edo flex flex-col items-start leading-none font-black uppercase">
+          <div className="font-edo flex flex-col items-start leading-none font-medium uppercase">
             <span className="-rotate-2 transform text-[2.75rem] tracking-wider text-[#486221] sm:text-5xl md:text-[3.5rem] lg:text-[4.5rem]">
               SAFETY.
             </span>
@@ -56,7 +56,7 @@ const SafetyHeroSection = () => {
           {/* Text inside Brush */}
           <div className="relative z-10 px-4 text-center font-sans text-[11px] leading-relaxed font-medium text-white sm:text-xs md:text-sm">
             <p>
-              The Ground We <span className="font-bold text-[#E81A66]">Stand On</span> Together.
+              The Ground We <span className="text-[#E81A66]">Stand On</span> Together.
             </p>
             <p className="mt-0.5">Read It Once. Carry It With You.</p>
           </div>

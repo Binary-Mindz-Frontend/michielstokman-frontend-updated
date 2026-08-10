@@ -6,9 +6,9 @@ import { useAuthState } from '@/redux/features/auth/authSlice';
 import { useAppSelector } from '@/redux/hooks';
 
 // Assets
-import greenWaves from '@/assets/home/green-waves.png';
-import pinkHeartDrawn from '@/assets/home/pink-heart-drawn.png';
-import pinkUnderline from '@/assets/home/pink-underline.png';
+import greenWaves from '@/assets/shared/green-waves.png';
+import pinkHeartDrawn from '@/assets/shared/pink-heart-drawn.png';
+import pinkUnderline from '@/assets/shared/pink-underline.png';
 
 function MainFooter() {
   const { user } = useAppSelector(useAuthState);

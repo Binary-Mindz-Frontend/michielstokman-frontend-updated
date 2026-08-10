@@ -112,7 +112,7 @@ function PhotoManagementTable() {
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
               ) : (
-                <span className="text-dark-primary px-2 text-center text-xs font-medium">
+                <span className="text-secondary px-2 text-center text-xs font-medium">
                   Click to Add Image
                 </span>
               )}
@@ -134,7 +134,7 @@ function PhotoManagementTable() {
     {
       header: 'Type',
       cell: (row) => (
-        <span className="text-dark-primary font-semibold">{row?.story_type.toUpperCase()}</span>
+        <span className="text-secondary font-semibold">{row?.story_type.toUpperCase()}</span>
       ),
     },
   ];

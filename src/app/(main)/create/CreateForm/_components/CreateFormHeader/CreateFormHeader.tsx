@@ -1,6 +1,6 @@
 'use client';
 
-import brushTextBg from '@/assets/account/brush-text-bg.png';
+import brushTextBg from '@/assets/shared/brush-text-bg.png';
 import submitHero from '@/assets/submit/submit-hero.png';
 import Image from 'next/image';
 
@@ -12,7 +12,7 @@ export default function CreateFormHeader({ category }: { category: string }) {
       {/* Left Column: Title & Subtitle */}
       <div className="flex w-full flex-col items-start md:w-1/2">
         {/* Title */}
-        <div className="font-edo flex flex-col items-start leading-none font-black uppercase">
+        <div className="font-edo flex flex-col items-start leading-none font-medium uppercase">
           <span className="-rotate-2 transform text-5xl tracking-wide text-[#486221] sm:text-6xl lg:text-7xl">
             SHARE
           </span>

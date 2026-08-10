@@ -5,9 +5,9 @@ import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils'
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 
-import brushTextBg from '@/assets/account/brush-text-bg.png';
-import confessionsHero from '@/assets/confessions/confessions-hero.png';
-import pinkHeartDrawn from '@/assets/home/pink-heart-drawn.png';
+import brushTextBg from '@/assets/shared/brush-text-bg.png';
+import confessionsHero from '@/assets/shared/confessions-hero.png';
+import pinkHeartDrawn from '@/assets/shared/pink-heart-drawn.png';
 
 export default function ConfessionsHero() {
   return (

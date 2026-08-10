@@ -5,7 +5,7 @@ import Link from 'next/link';
 function JourneyManagementHeader() {
   return (
     <div className="flex justify-between gap-4">
-      <DynamicPageHeader title="Journey Management" />
+      <DynamicPageHeader title="Liberations" />
 
       <Link href={'/dashboard/journey-management/create'}>
         <Button className="btn-styles w-fit">Create New Journey</Button>

@@ -4,7 +4,7 @@ import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicAc
 import Image, { StaticImageData } from 'next/image';
 import React from 'react';
 
-import ratingBadge from '@/assets/confessions/rating-badge.png';
+import ratingBadge from '@/assets/shared/rating-badge.png';
 
 export interface LiberationItem {
   id: string | number;

@@ -89,7 +89,7 @@ const ChatBox = () => {
             <Sparkles size={20} className="text-primary" />
           </div>
           <div>
-            <h2 className="text-dark-primary text-xl font-semibold">Admin AI Insights</h2>
+            <h2 className="text-secondary text-xl font-semibold">Admin AI Insights</h2>
             <p className="text-secondary font-sans text-[10px] tracking-widest uppercase">
               Powered by Metrics Engine
             </p>
@@ -121,7 +121,7 @@ const ChatBox = () => {
               className={`w-max-w-[90%] rounded-md p-3 transition-all md:max-w-[45%] ${
                 msg?.role === 'user'
                   ? 'shadow-brown-200 bg-dark-primary rounded-br-none text-white'
-                  : 'text-dark-primary border-primary/10 rounded-bl-none border bg-white'
+                  : 'text-secondary border-primary/10 rounded-bl-none border bg-white'
               }`}
             >
               <div className="text-sm leading-relaxed md:text-base">
@@ -175,7 +175,7 @@ const ChatBox = () => {
             onChange={(e) => setInput(e.target.value)}
             disabled={isApiLoading}
             placeholder="Ask anything about this week's performance..."
-            className="text-dark-primary placeholder:text-secondary flex-1 border-none bg-transparent px-2 py-2 outline-none disabled:cursor-not-allowed"
+            className="text-secondary placeholder:text-secondary flex-1 border-none bg-transparent px-2 py-2 outline-none disabled:cursor-not-allowed"
           />
           <button
             type="submit"

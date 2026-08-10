@@ -6,8 +6,8 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 
 // Assets
-import brushTextBg from '@/assets/account/brush-text-bg.png';
-import iconBirdPurple from '@/assets/liberations/icon-bird-purple.png';
+import brushTextBg from '@/assets/shared/brush-text-bg.png';
+import iconBirdPurple from '@/assets/shared/icon-bird-purple.png';
 import liberationsHero from '@/assets/liberations/liberations-hero.png';
 
 export default function LiberationsHero() {

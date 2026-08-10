@@ -14,8 +14,8 @@ import { StepperFormData } from './RegistrationStepper.types';
 
 import step1Hero from '@/assets/account-step/step1-hero.png';
 import step1HeroMobile from '@/assets/account-step/step1-hero-mobile.png';
-import stepBrushBg from '@/assets/account-step/step-brush-bg.png';
-import buttonArrow from '@/assets/account-step/button-arrow.png';
+import stepBrushBg from '@/assets/shared/step-brush-bg.png';
+import buttonArrow from '@/assets/shared/button-arrow.png';
 
 interface StepOneProps {
   register: UseFormRegister<StepperFormData>;

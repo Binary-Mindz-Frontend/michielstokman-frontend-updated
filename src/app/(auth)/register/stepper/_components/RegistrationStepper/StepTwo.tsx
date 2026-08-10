@@ -7,8 +7,8 @@ import { StepperFormData } from './RegistrationStepper.types';
 
 import step2Hero from '@/assets/account-step/step2-hero-image.png';
 import step2HeroMobile from '@/assets/account-step/step2-hero-image-mobile.png';
-import stepBrushBg from '@/assets/account-step/step-brush-bg.png';
-import buttonArrow from '@/assets/account-step/button-arrow.png';
+import stepBrushBg from '@/assets/shared/step-brush-bg.png';
+import buttonArrow from '@/assets/shared/button-arrow.png';
 
 interface StepTwoProps {
   selectedLifePhase: string;

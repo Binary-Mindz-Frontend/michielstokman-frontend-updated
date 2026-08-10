@@ -2,6 +2,7 @@
 'use client';
 
 import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicActionButton';
+import ProductCardSkeleton from '@/components/main/Skeletons/ProductCardSkeleton';
 import { useGetDiscoveryFeedQuery } from '@/redux/features/discoveryFeed/discoveryFeed.api';
 import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
 import { motion } from 'framer-motion';
@@ -9,7 +10,7 @@ import { useState } from 'react';
 import ConfessionsCard, { ConfessionItem } from './_components/ConfessionsCard/ConfessionsCard';
 
 // Fallback Asset
-import fallbackCardImage from '@/assets/confessions/confession-card-1.png';
+import fallbackCardImage from '@/assets/shared/confession-card-1.png';
 
 export default function ConfessionsGrid() {
   const [visibleCount, setVisibleCount] = useState(8);
@@ -45,8 +46,12 @@ export default function ConfessionsGrid() {
 
   if (isLoading) {
     return (
-      <div className="py-16 text-center font-sans text-sm font-semibold text-[#777]">
-        Loading Confessions...
+      <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+        {Array(6)
+          .fill(null)
+          .map((_, idx) => (
+            <ProductCardSkeleton key={idx} />
+          ))}
       </div>
     );
   }

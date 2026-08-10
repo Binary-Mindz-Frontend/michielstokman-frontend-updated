@@ -108,13 +108,13 @@ const DayImageUpload = ({
           {uploading ? (
             <>
               <Loader2 size={22} className="text-primary animate-spin" />
-              <span className="text-dark-primary text-xs">Uploading...</span>
+              <span className="text-secondary text-xs">Uploading...</span>
             </>
           ) : (
             <>
-              <ImageIcon size={22} className="text-dark-primary" />
-              <span className="text-dark-primary text-xs">Click to upload day image</span>
-              <span className="text-dark-primary text-xs">PNG, JPG, WEBP supported</span>
+              <ImageIcon size={22} className="text-secondary" />
+              <span className="text-secondary text-xs">Click to upload day image</span>
+              <span className="text-secondary text-xs">PNG, JPG, WEBP supported</span>
             </>
           )}
         </button>

@@ -7,7 +7,7 @@ import Image from 'next/image';
 // Assets from src/assets/safety/freedom-section & share
 import freedomSectionIcon from '@/assets/safety/freedom-section/freedom-icon.svg';
 import freedomSectionImg from '@/assets/safety/freedom-section/freedom-image.png';
-import titleUnderline from '@/assets/safety/share/title-underline.png';
+import titleUnderline from '@/assets/shared/title-underline.png';
 
 const FreedomSection = () => {
   return (
@@ -61,7 +61,7 @@ const FreedomSection = () => {
 
           {/* 3. FREEDOM Title with Brush Underline */}
           <div className="relative ml-2 flex flex-col items-center">
-            <h2 className="font-edo text-4xl font-black tracking-wide text-black uppercase md:text-5xl">
+            <h2 className="font-edo text-4xl font-medium tracking-wide text-black uppercase md:text-5xl">
               FREEDOM
             </h2>
 
