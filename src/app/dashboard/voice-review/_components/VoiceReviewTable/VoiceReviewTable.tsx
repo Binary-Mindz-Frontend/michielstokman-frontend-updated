@@ -111,7 +111,7 @@ function VoiceReviewTable() {
     {
       header: 'Content Title',
       cell: (row) => (
-        <p className="text-dark-primary line-clamp-2 leading-snug font-semibold">{row?.title}</p>
+        <p className="text-secondary line-clamp-2 leading-snug font-semibold">{row?.title}</p>
       ),
     },
     {

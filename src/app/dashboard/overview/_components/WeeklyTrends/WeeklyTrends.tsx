@@ -30,7 +30,7 @@ function WeeklyTrends({ trends, isLoading }: { trends: TrendItem[]; isLoading: b
 
   return (
     <div className="rounded-md bg-[#F5F2F0] p-6">
-      <h2 className="text-dark-primary mb-0.5 text-xl font-semibold md:text-2xl">Weekly Trends</h2>
+      <h2 className="text-secondary mb-0.5 text-xl font-semibold md:text-2xl">Weekly Trends</h2>
       <p className="text-secondary text-sm sm:text-base">Performance over recent weeks</p>
 
       <div>
@@ -39,9 +39,7 @@ function WeeklyTrends({ trends, isLoading }: { trends: TrendItem[]; isLoading: b
             key={index}
             className="border-primary/20 flex flex-col justify-between gap-x-4 gap-y-0.5 border-b py-5 last:border-0 sm:flex-row sm:items-center"
           >
-            <span className="text-dark-primary text-lg font-semibold sm:text-xl">
-              {item?.label}
-            </span>
+            <span className="text-secondary text-lg font-semibold sm:text-xl">{item?.label}</span>
 
             <div className="text-secondary flex gap-4 font-medium md:text-lg">
               <span>{item?.views} views</span>

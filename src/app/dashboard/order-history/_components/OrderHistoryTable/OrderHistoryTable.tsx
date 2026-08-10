@@ -60,7 +60,7 @@ function OrderHistoryTable() {
     {
       header: 'Name',
       cell: (row) => (
-        <p className="text-dark-primary line-clamp-1 font-semibold">{row?.plan_name || 'N/A'}</p>
+        <p className="text-secondary line-clamp-1 font-semibold">{row?.plan_name || 'N/A'}</p>
       ),
     },
     {

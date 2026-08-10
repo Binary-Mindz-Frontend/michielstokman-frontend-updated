@@ -8,12 +8,12 @@ export default function UserAvatarDropdown() {
     <div className="flex items-center gap-6">
       {/* Notification Bell with Red Dot */}
       {/* <div className="border-primary/10 relative cursor-pointer rounded-full border p-2.5 transition-colors hover:bg-gray-50">
-        <Bell size={22} className="text-dark-primary" />
+        <Bell size={22} className="text-secondary" />
         <span className="bg-error absolute top-1.5 right-1.5 h-3 w-3 rounded-full border-2 border-white" />
       </div> */}
 
       <div className="hidden text-left lg:block">
-        <h4 className="text-dark-primary text-lg leading-tight font-semibold">Michiel Stockman</h4>
+        <h4 className="text-secondary text-lg leading-tight font-semibold">Michiel Stockman</h4>
         <p className="text-secondary text-sm opacity-90">Admin</p>
       </div>
     </div>

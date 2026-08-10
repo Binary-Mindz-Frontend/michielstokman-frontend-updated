@@ -48,7 +48,7 @@ export default function TiptapEditor({ label, value, onChange, error }: TiptapEd
   const toolbarBtn = (active: boolean) =>
     cn(
       'rounded p-1.5 transition-colors hover:bg-primary/10 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer',
-      active ? 'bg-primary/15 text-primary' : 'text-dark-primary',
+      active ? 'bg-primary/15 text-primary' : 'text-secondary',
     );
 
   return (

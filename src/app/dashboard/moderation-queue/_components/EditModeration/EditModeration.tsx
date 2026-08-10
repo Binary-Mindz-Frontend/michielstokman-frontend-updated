@@ -128,7 +128,7 @@ const EditAction: React.FC<EditActionProps> = ({ id, onSuccess }) => {
           type="button"
           variant="outline"
           onClick={onSuccess}
-          className="border-primary/10 text-dark-primary h-12 flex-1 bg-white font-semibold transition-colors hover:bg-[#F5F2F0]"
+          className="border-primary/10 text-secondary h-12 flex-1 bg-white font-semibold transition-colors hover:bg-[#F5F2F0]"
         >
           Close
         </Button>

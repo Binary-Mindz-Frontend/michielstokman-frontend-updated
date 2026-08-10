@@ -108,7 +108,7 @@ function JourneyManagementTable() {
       cell: (row) => (
         <Link
           href={`/dashboard/journey-management/${row?.id}`}
-          className="text-dark-primary hover:bg-primary/10 flex w-fit cursor-pointer items-center gap-3 rounded-sm px-3 py-2.5 transition-all"
+          className="text-secondary hover:bg-primary/10 flex w-fit cursor-pointer items-center gap-3 rounded-sm px-3 py-2.5 transition-all"
         >
           <Edit size={18} className="text-secondary" /> Edit
         </Link>

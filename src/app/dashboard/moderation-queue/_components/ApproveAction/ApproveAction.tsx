@@ -72,7 +72,7 @@ export const RejectAction = ({ id, onSuccess }: ActionProps) => {
   return (
     <div className="space-y-5">
       <div className="text-center">
-        <p className="text-dark-primary font-medium">
+        <p className="text-secondary font-medium">
           Are you sure you want to <span className="text-error font-bold">Reject</span> this story?
         </p>
         <p className="text-mute mt-1 text-xs">Please provide a reason for the author.</p>
