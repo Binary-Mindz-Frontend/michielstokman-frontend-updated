@@ -23,7 +23,7 @@ function SidebarContentSection() {
         { title: 'Metrics Chat', url: '/dashboard/metrics-chat', icon: MessageSquare },
         { title: 'Voice Review', url: '/dashboard/voice-review', icon: Mic2 },
         { title: 'Photo Management', url: '/dashboard/photo-management', icon: Images },
-        { title: 'Journey Management', url: '/dashboard/journey-management', icon: Route },
+        { title: 'Liberations', url: '/dashboard/journey-management', icon: Route },
         { title: 'Order History', url: '/dashboard/order-history', icon: FileText },
       ],
     },

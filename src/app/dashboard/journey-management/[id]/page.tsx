@@ -175,7 +175,7 @@ export default function JourneyForm() {
         onClick={() => router.back()}
         className="mb-4 flex cursor-pointer items-center gap-2 hover:underline"
       >
-        <ArrowLeft size={18} /> Back to Journey Management
+        <ArrowLeft size={18} /> Back to Liberations
       </p>
 
       <div className="min-h-screen w-full rounded-md bg-[#FAF7F5] p-4 md:p-6">
