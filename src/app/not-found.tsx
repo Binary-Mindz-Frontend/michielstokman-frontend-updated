@@ -61,7 +61,7 @@ export default function NotFound() {
         {/* Brush Stroke Subtitle */}
         <motion.div
           variants={FADE_IN_UP_ITEM}
-          className="relative mt-6 flex min-h-18 w-full max-w-[340px] -rotate-1 transform items-center justify-center sm:min-h-20 sm:max-w-105"
+          className="relative mt-6 flex min-h-18 w-full max-w-85 -rotate-1 transform items-center justify-center sm:min-h-20 sm:max-w-105"
         >
           <div className="absolute inset-0 h-full w-full">
             <Image src={brushTextBg} alt="Brush background" fill className="object-fill" />
