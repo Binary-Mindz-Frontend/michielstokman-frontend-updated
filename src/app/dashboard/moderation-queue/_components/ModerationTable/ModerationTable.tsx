@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
-import img from '@/assets/table_placeholder_image.jpg';
+import img from '@/assets/shared/table_placeholder_image.jpg';
 import CustomPagination from '@/components/dashboard/CustomPagination/CustomPagination';
 import CustomTable from '@/components/dashboard/CustomTable/CustomTable';
 import TableEmptyState from '@/components/dashboard/CustomTable/TableEmptyState';
@@ -115,7 +115,7 @@ const ModerationTable = () => {
           <div className="relative h-12 w-16 shrink-0 overflow-hidden rounded bg-gray-100">
             <Image src={row?.cover_image_url || img} alt="thumb" fill className="object-cover" />
           </div>
-          <p className="text-dark-primary line-clamp-2 leading-snug font-semibold">{row?.title}</p>
+          <p className="text-secondary line-clamp-2 leading-snug font-semibold">{row?.title}</p>
         </div>
       ),
     },
@@ -152,33 +152,33 @@ const ModerationTable = () => {
             <div className="flex flex-col">
               <button
                 onClick={() => openModal('review', row)}
-                className="text-dark-primary hover:bg-primary/5 flex cursor-pointer items-center gap-3 px-3 py-2.5 transition-all"
+                className="text-secondary hover:bg-primary/5 flex cursor-pointer items-center gap-3 px-3 py-2.5 transition-all"
               >
                 <Eye size={16} /> Review
               </button>
               <div className="my-1 h-px bg-[#F1E9E4]" />
               <button
                 onClick={() => openModal('approve', row)}
-                className="text-dark-primary hover:bg-primary/5 flex cursor-pointer items-center gap-3 px-3 py-2.5 transition-all"
+                className="text-secondary hover:bg-primary/5 flex cursor-pointer items-center gap-3 px-3 py-2.5 transition-all"
               >
                 <CheckCircle2 size={16} className="text-success" /> Approve
               </button>
               <button
                 onClick={() => openModal('reject', row)}
-                className="text-dark-primary hover:bg-primary/5 flex cursor-pointer items-center gap-3 px-3 py-2.5 transition-all"
+                className="text-secondary hover:bg-primary/5 flex cursor-pointer items-center gap-3 px-3 py-2.5 transition-all"
               >
                 <XCircle size={16} className="text-error" /> Reject
               </button>
               <div className="my-1 h-px bg-[#F1E9E4]" />
               <button
                 onClick={() => openModal('remove', row)}
-                className="text-dark-primary hover:bg-primary/5 flex cursor-pointer items-center gap-3 px-3 py-2.5 transition-all"
+                className="text-secondary hover:bg-primary/5 flex cursor-pointer items-center gap-3 px-3 py-2.5 transition-all"
               >
                 <Trash2 size={16} className="text-error" /> Remove
               </button>
               <button
                 onClick={() => openModal('edit', row)}
-                className="text-dark-primary hover:bg-primary/5 flex cursor-pointer items-center gap-3 px-3 py-2.5 transition-all"
+                className="text-secondary hover:bg-primary/5 flex cursor-pointer items-center gap-3 px-3 py-2.5 transition-all"
               >
                 <Edit3 size={16} className="text-secondary" /> Edit
               </button>

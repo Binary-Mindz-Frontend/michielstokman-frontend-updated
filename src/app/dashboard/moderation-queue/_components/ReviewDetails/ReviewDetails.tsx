@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import img from '@/assets/table_placeholder_image.jpg';
+import img from '@/assets/shared/table_placeholder_image.jpg';
 import { useGetStoryDetailsQuery } from '@/redux/features/admin/adminModeration/adminModeration.api';
 import { Compass, Heart, MessageSquareText, User, Volume2 } from 'lucide-react';
 import Image from 'next/image';

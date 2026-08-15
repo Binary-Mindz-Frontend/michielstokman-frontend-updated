@@ -2,15 +2,15 @@
 /* eslint-disable react-hooks/incompatible-library */
 'use client';
 
-import flower1Image from '@/assets/home/flower1.png';
-import flower2Image from '@/assets/home/flower2.png';
-import flower3Image from '@/assets/home/flower3.png';
-import TextAreaField from '@/components/dashboard/Fields/TextAreaField/TextAreaField';
-import DynamicSectionHeader from '@/components/main/DynamicSectionHeader/DynamicSectionHeader';
-import GrowthSlider from '@/components/main/GrowthSlider/GrowthSlider';
-import { Button } from '@/components/ui/button';
+import BeforeYouBeginStep from './_components/BeforeYouBeginStep/BeforeYouBeginStep';
+import DayCheckinStep from './_components/DayCheckinStep/DayCheckinStep';
+import DayCompleteStep from './_components/DayCompleteStep/DayCompleteStep';
+import ExerciseStep from './_components/ExerciseStep/ExerciseStep';
+import JourneyBeginStep from './_components/JourneyBeginStep/JourneyBeginStep';
+import JourneyOverviewStep from './_components/JourneyOverviewStep/JourneyOverviewStep';
+import LiberationCompleteStep from './_components/LiberationCompleteStep/LiberationCompleteStep';
+import ReflectionStep from './_components/ReflectionStep/ReflectionStep';
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
 import { useGetLiberationDetailsQuery } from '@/redux/features/discoveryFeed/discoveryFeed.api';
 import {
   useCompleteDayMutation,
@@ -21,9 +21,7 @@ import {
   useRepeatJourneyMutation,
 } from '@/redux/features/liberation/liberation.api';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AnimatePresence, motion } from 'framer-motion';
-import { Check } from 'lucide-react';
-import Image from 'next/image';
+import { AnimatePresence } from 'framer-motion';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -77,67 +75,6 @@ function buildGoogleCalendarUrl(title: string, reminderTime: string, days = 7) {
   });
 
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
-}
-
-// ─── Step Progress Bar
-function StepBar({ current, total }: { current: number; total: number }) {
-  return (
-    <div className="mb-8 flex gap-3">
-      {Array.from({ length: total }).map((_, i) => (
-        <div
-          key={i}
-          className={cn(
-            'h-0.75 flex-1 rounded-full transition-all duration-500',
-            i < current ? 'bg-primary' : 'bg-primary/25',
-          )}
-        />
-      ))}
-    </div>
-  );
-}
-
-// ─── Exercise Image Placeholder ───────────────────────────────────────────────
-function ExerciseImage({ imageUrl }: { imageUrl?: string }) {
-  return (
-    <div className="mb-6 overflow-hidden rounded-lg bg-[#F0EBE0]" style={{ minHeight: 200 }}>
-      {imageUrl ? (
-        <div className="relative h-52 w-full">
-          <Image
-            src={imageUrl}
-            alt="Exercise illustration"
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, 768px"
-            unoptimized
-          />
-        </div>
-      ) : (
-        <div className="flex h-52 items-center justify-center">
-          <div className="flex flex-col items-center gap-2 text-[#C4855A]/40">
-            <svg width="48" height="48" fill="none" viewBox="0 0 24 24">
-              <rect
-                x="3"
-                y="3"
-                width="18"
-                height="18"
-                rx="2"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              />
-              <circle cx="8.5" cy="8.5" r="1.5" stroke="currentColor" strokeWidth="1.5" />
-              <path
-                d="M21 15l-5-5L5 21"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-            </svg>
-            <span className="text-xs">Exercise illustration</span>
-          </div>
-        </div>
-      )}
-    </div>
-  );
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -269,10 +206,6 @@ export default function JourneyPage() {
     { skip: !journeyCode || !currentDay?.day },
   );
   const dayExercisesData = dayExercisesResponse?.data;
-
-  // Single step exercise configuration based on API response
-  const totalSteps = 2; // 1. Check-in, 2. Exercise
-  const currentStep = phase === 'day-checkin' ? 1 : 2;
 
   // ── Timer State & Effects ──
   const [secondsElapsed, setSecondsElapsed] = useState(0);
@@ -434,29 +367,28 @@ export default function JourneyPage() {
 
   if (isPageLoading) {
     return (
-      <section className="mx-auto h-full max-w-3xl px-4 py-12">
+      <section className="relative min-h-screen w-full overflow-x-hidden bg-[#FAF7F2] px-4 py-8 md:px-8 md:py-12">
         {/* Back Button Skeleton */}
-        <div className="mb-4">
-          <Skeleton className="bg-primary/5 h-5 w-16" />
+        <div className="absolute top-4 left-4 z-10 sm:top-6 sm:left-8 md:top-8 md:left-10">
+          <Skeleton className="h-9 w-20 animate-pulse rounded-xs bg-[#52277F]/20!" />
         </div>
-        <div>
-          {/* Flower Section Skeleton */}
-          <div className="mb-6 flex flex-col items-center text-center">
-            <Skeleton className="bg-primary/5 h-64 w-64 animate-pulse rounded-full" />
-            <Skeleton className="bg-primary/5 mt-4 h-4 w-64 animate-pulse" />
+
+        {/* Centered Content Skeleton */}
+        <div className="mx-auto flex min-h-[calc(100vh-140px)] max-w-4xl flex-col items-center justify-center text-center">
+          {/* Title Skeleton */}
+          <div className="mb-4 flex justify-center">
+            <Skeleton className="h-10 w-64 animate-pulse rounded-md bg-[#52277F]/20! sm:h-14 sm:w-96 md:h-16 md:w-120" />
           </div>
 
-          {/* 7 Days Cards Skeleton */}
-          <div className="space-y-3">
-            {Array.from({ length: 7 }).map((_, i) => (
-              <div
-                key={i}
-                className="border-primary/10 w-full rounded-md border bg-transparent px-5 py-4 text-left"
-              >
-                <Skeleton className="bg-primary/5 mb-2 h-5 w-48 animate-pulse" />
-                <Skeleton className="bg-primary/5 h-4 w-24 animate-pulse" />
-              </div>
-            ))}
+          {/* Subtitle & Stats Skeleton */}
+          <div className="mb-10 flex flex-col items-center space-y-3">
+            <Skeleton className="h-5 w-72 animate-pulse rounded-md bg-[#344054]/15! sm:h-6 sm:w-115" />
+            <Skeleton className="h-4 w-52 animate-pulse rounded-md bg-[#667085]/15! sm:h-4 sm:w-72" />
+          </div>
+
+          {/* CTA Button Skeleton */}
+          <div>
+            <Skeleton className="h-12 w-56 animate-pulse rounded-xs bg-[#52277F]/20! sm:h-14 sm:w-64" />
           </div>
         </div>
       </section>
@@ -469,40 +401,13 @@ export default function JourneyPage() {
   const renderPhaseContent = () => {
     if (activePhase === 'landing') {
       return (
-        <motion.section
-          key="landing"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-          className="mx-auto max-w-3xl px-4 py-12"
-        >
-          <button
-            onClick={() => router.back()}
-            className="text-primary mb-4 flex cursor-pointer items-center gap-1 text-sm transition-opacity hover:opacity-80"
-          >
-            ← Back
-          </button>
-          <div className="flex min-h-[calc(100vh-200px)] flex-col items-center justify-center text-center">
-            <div className="mb-8">
-              <Image
-                src={flower1Image}
-                width={400}
-                height={400}
-                alt="Flower"
-                className="h-full w-full max-w-100"
-              />
-            </div>
-            <h1 className="text-dark-primary mb-3 font-serif text-3xl font-bold md:text-4xl">
-              {JOURNEY?.title}
-            </h1>
-            <p className="text-secondary mb-2 text-sm">{JOURNEY?.subtitle}</p>
-            <p className="text-secondary mb-10 text-sm">{JOURNEY?.stats}</p>
-            <Button onClick={handleBeginLiberation} className="btn-styles w-fit px-6">
-              Begin Your Liberation
-            </Button>
-          </div>
-        </motion.section>
+        <JourneyBeginStep
+          title={JOURNEY?.title}
+          subtitle={JOURNEY?.subtitle}
+          stats={JOURNEY?.stats}
+          onBeginLiberation={handleBeginLiberation}
+          onBack={() => router.back()}
+        />
       );
     }
 
@@ -511,107 +416,20 @@ export default function JourneyPage() {
     // ─────────────────────────────────────────────────────────────────────────────
     if (activePhase === 'before-begin') {
       return (
-        <motion.section
-          key="before-begin"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-          className="mx-auto min-h-screen max-w-2xl px-4 py-12"
-        >
-          <button
-            onClick={() => setPhase('landing')}
-            className="text-primary mb-8 flex cursor-pointer items-center gap-1 text-sm transition-opacity hover:opacity-80"
-          >
-            ← Back
-          </button>
-
-          <div>
-            <DynamicSectionHeader
-              title="Before You Begin"
-              description="Set yourself up for 7 days of gentle liberation."
-            />
-
-            {/* ── Preparation Checklist — selectable ── */}
-            <div className="space-y-3">
-              {JOURNEY?.preparations.map((prep) => {
-                const isChecked = checkedPreps.includes(prep.id);
-                return (
-                  <button
-                    key={prep.id}
-                    type="button"
-                    onClick={() => togglePrep(prep.id)}
-                    className={cn(
-                      'flex w-full cursor-pointer items-center justify-between rounded-md border px-5 py-4 text-left text-sm transition-all duration-200',
-                      isChecked
-                        ? 'border-primary/40 bg-primary/5 text-primary'
-                        : 'border-primary/15 text-dark-primary hover:border-primary/30',
-                    )}
-                  >
-                    <span>{prep.label}</span>
-                    <span
-                      className={cn(
-                        'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all duration-200',
-                        isChecked
-                          ? 'border-primary bg-primary text-white'
-                          : 'border-primary/25 bg-transparent',
-                      )}
-                    >
-                      {isChecked && <Check size={11} strokeWidth={3} />}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* ── Daily Reminders ── */}
-            <div className="border-primary/15 mt-6 rounded-md border p-4">
-              <p className="text-dark-primary mb-4 font-medium">Daily Reminders</p>
-              <div className="space-y-2">
-                {JOURNEY?.reminders.map((reminder) => (
-                  <button
-                    key={reminder.id}
-                    type="button"
-                    onClick={() => setSelectedReminder(reminder.id)}
-                    className={cn(
-                      'w-full cursor-pointer rounded-sm border px-5 py-3 text-left text-sm transition-all duration-200',
-                      selectedReminder === reminder.id
-                        ? 'border-primary/40 bg-primary/5 text-primary'
-                        : 'border-primary/15 text-dark-primary hover:border-primary/30',
-                    )}
-                  >
-                    {reminder.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* ── Add To Calendar — Google Calendar ── */}
-              <Button
-                type="button"
-                onClick={handleAddToCalendar}
-                className={cn(
-                  'mt-4 w-full rounded-md border bg-transparent py-4 text-sm transition-all hover:bg-transparent',
-                  calendarAdded
-                    ? 'border-primary/40 text-primary'
-                    : 'border-primary/20 text-primary hover:border-primary/40',
-                )}
-              >
-                {calendarAdded ? '✓ Added to Google Calendar' : 'Add To Calendar'}
-              </Button>
-            </div>
-
-            {/* ── Start Day 1 — disabled until all 3 checked ── */}
-            <Button
-              onClick={handleStartDay}
-              disabled={!allPrepsChecked || isEnrolling}
-              className="btn-styles mt-6"
-            >
-              {allPrepsChecked
-                ? 'Start Day 1'
-                : `Check ${JOURNEY?.preparations.length - checkedPreps.length} item${JOURNEY?.preparations.length - checkedPreps.length === 1 ? '' : 's'} above`}
-            </Button>
-          </div>
-        </motion.section>
+        <BeforeYouBeginStep
+          preparations={JOURNEY?.preparations}
+          checkedPreps={checkedPreps}
+          togglePrep={togglePrep}
+          reminders={JOURNEY?.reminders}
+          selectedReminder={selectedReminder}
+          setSelectedReminder={setSelectedReminder}
+          calendarAdded={calendarAdded}
+          handleAddToCalendar={handleAddToCalendar}
+          handleStartDay={handleStartDay}
+          allPrepsChecked={allPrepsChecked}
+          isEnrolling={isEnrolling}
+          onBack={() => setPhase('landing')}
+        />
       );
     }
 
@@ -620,139 +438,44 @@ export default function JourneyPage() {
     // ─────────────────────────────────────────────────────────────────────────────
     if (activePhase === 'day-checkin') {
       return (
-        <motion.section
-          key="day-checkin"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-          className="mx-auto min-h-screen max-w-3xl px-4 py-12"
-        >
-          <button
-            onClick={() => setPhase(currentDayIndex === 0 ? 'before-begin' : 'overview')}
-            className="text-primary mb-4 flex cursor-pointer items-center gap-1 text-sm transition-opacity hover:opacity-80"
-          >
-            ← Back
-          </button>
-          <StepBar current={currentStep} total={totalSteps} />
-
-          <div>
-            <div className="mb-8 text-center">
-              <p className="text-primary mb-1 text-sm">Day {currentDay.day}</p>
-              <h1 className="text-dark-primary font-serif text-2xl font-semibold md:text-3xl">
-                {currentDay.title}
-              </h1>
-            </div>
-
-            <form onSubmit={checkinForm.handleSubmit(handleBeginExercises)} className="space-y-6">
-              <TextAreaField
-                label={currentDay.checkinPrompt}
-                name="feeling"
-                control={checkinForm.control}
-                placeholder="A word or two is enough"
-                rows={4}
-              />
-              <Button type="submit" disabled={isGenerating} className="btn-styles">
-                {isGenerating ? 'Generating...' : 'Begin Exercises →'}
-              </Button>
-            </form>
-          </div>
-        </motion.section>
+        <DayCheckinStep
+          dayNumber={currentDay?.day}
+          dayTitle={currentDay?.title}
+          checkinPrompt={currentDay?.checkinPrompt}
+          register={checkinForm.register}
+          onSubmit={checkinForm.handleSubmit(handleBeginExercises)}
+          isGenerating={isGenerating}
+          onBack={() => setPhase(currentDayIndex === 0 ? 'before-begin' : 'overview')}
+        />
       );
     }
 
     // SCREEN: EXERCISE
     if (activePhase === 'exercise') {
+      const exerciseType = currentDay?.exercises?.[0]?.type || 'Morning Exercise';
       const title = dayExercisesData?.day_theme || currentDay?.title;
       const greeting = dayExercisesData?.ai_greeting || currentDay?.exercises?.[0]?.quote;
       const rawWhatToDo =
         dayExercisesData?.ai_exercise_text || currentDay?.exercises?.[0]?.whatToDo;
       const rawWhyThis = dayExercisesData?.ai_why_text || currentDay?.exercises?.[0]?.whyThis;
+      const duration = currentDay?.exercises?.[0]?.duration || '2 Min';
 
       return (
-        <motion.section
-          key="exercise"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-          className="mx-auto min-h-screen max-w-3xl px-4 py-12"
-        >
-          <button
-            onClick={() => setPhase('day-checkin')}
-            className="text-primary mb-4 flex cursor-pointer items-center gap-1 text-sm transition-opacity hover:opacity-80"
-          >
-            ← Back
-          </button>
-          <StepBar current={currentStep} total={totalSteps} />
-
-          <div>
-            <ExerciseImage imageUrl={dayExercisesData?.image_url} />
-
-            {title && (
-              <h2 className="text-dark-primary mb-3 font-serif text-xl font-bold">{title}</h2>
-            )}
-
-            {greeting && (
-              <div className="border-primary/10 bg-primary/5 text-primary mb-5 rounded-md border px-4 py-3 text-sm italic">
-                {greeting}
-              </div>
-            )}
-
-            {rawWhatToDo && (
-              <>
-                <h3 className="text-dark-primary mb-2 font-semibold">What to do</h3>
-
-                <div className="mb-8">
-                  <div
-                    className="text-dark-primary space-y-4 text-base leading-relaxed [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
-                    dangerouslySetInnerHTML={{ __html: rawWhatToDo }}
-                  />
-                </div>
-              </>
-            )}
-
-            {rawWhyThis && (
-              <>
-                <h3 className="text-dark-primary mb-2 font-semibold">Why this exercise</h3>
-
-                <div className="mb-8">
-                  <div
-                    className="text-dark-primary space-y-4 text-base leading-relaxed [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
-                    dangerouslySetInnerHTML={{ __html: rawWhyThis }}
-                  />
-                </div>
-              </>
-            )}
-
-            <div className="mb-6 flex items-center justify-between">
-              <span className="text-secondary font-mono text-sm">{formatTime(secondsElapsed)}</span>
-              <Button
-                type="button"
-                onClick={() => {
-                  if (!timerRunning) {
-                    setSecondsElapsed(0);
-                    setTimerRunning(true);
-                  } else {
-                    setTimerRunning(false);
-                  }
-                }}
-                className={cn(
-                  'rounded-md border bg-transparent px-5 py-2 text-sm transition-all hover:bg-transparent',
-                  timerRunning
-                    ? 'border-primary/50 text-primary'
-                    : 'border-primary/20 text-secondary',
-                )}
-              >
-                {timerRunning ? 'Stop' : 'Start Timer'}
-              </Button>
-            </div>
-
-            <Button onClick={handleNextExercise} className="btn-styles">
-              Complete & Reflect
-            </Button>
-          </div>
-        </motion.section>
+        <ExerciseStep
+          exerciseType={exerciseType}
+          imageUrl={dayExercisesData?.image_url}
+          title={title}
+          greeting={greeting}
+          whatToDo={rawWhatToDo}
+          whyThis={rawWhyThis}
+          duration={duration}
+          secondsElapsed={secondsElapsed}
+          timerRunning={timerRunning}
+          setTimerRunning={setTimerRunning}
+          formatTime={formatTime}
+          onNextExercise={handleNextExercise}
+          onBack={() => setPhase('day-checkin')}
+        />
       );
     }
 
@@ -761,59 +484,17 @@ export default function JourneyPage() {
     // ─────────────────────────────────────────────────────────────────────────────
     if (activePhase === 'reflection') {
       return (
-        <motion.section
-          key="reflection"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-          className="mx-auto min-h-screen max-w-3xl px-4 py-12"
-        >
-          <button
-            onClick={() => setPhase('exercise')}
-            className="text-primary mb-8 flex cursor-pointer items-center gap-1 text-sm transition-opacity hover:opacity-80"
-          >
-            ← Back
-          </button>
-          <div>
-            <div className="mb-8 text-center">
-              <p className="text-primary mb-1 text-sm">Day {currentDay.day} Complete</p>
-              <h1 className="text-dark-primary font-serif text-2xl font-semibold md:text-3xl">
-                How did today land?
-              </h1>
-            </div>
-
-            <form onSubmit={handleCompleteDay} className="space-y-6">
-              <GrowthSlider
-                label="Energy Level"
-                value={energyLevel}
-                onChange={(val) =>
-                  reflectionForm.setValue('energyLevel', val, { shouldValidate: true })
-                }
-              />
-
-              <TextAreaField
-                label="What opened today?"
-                name="whatOpened"
-                control={reflectionForm.control}
-                placeholder="A feeling, a realization, a release"
-                rows={4}
-              />
-
-              <TextAreaField
-                label="One key takeaway"
-                name="keyTakeaway"
-                control={reflectionForm.control}
-                placeholder="What will you carry forward"
-                rows={4}
-              />
-
-              <Button type="submit" disabled={isCompleting} className="btn-styles">
-                {isCompleting ? 'Completing...' : `Complete Day ${currentDay.day}`}
-              </Button>
-            </form>
-          </div>
-        </motion.section>
+        <ReflectionStep
+          dayNumber={currentDay?.day}
+          energyLevel={energyLevel}
+          setEnergyLevel={(val) =>
+            reflectionForm.setValue('energyLevel', val, { shouldValidate: true })
+          }
+          register={reflectionForm.register}
+          onSubmit={handleCompleteDay}
+          isCompleting={isCompleting}
+          onBack={() => setPhase('exercise')}
+        />
       );
     }
 
@@ -822,41 +503,12 @@ export default function JourneyPage() {
     // ─────────────────────────────────────────────────────────────────────────────
     if (activePhase === 'day-complete') {
       return (
-        <motion.section
-          key="day-complete"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-          className="mx-auto min-h-screen max-w-3xl px-4 py-12"
-        >
-          <button
-            onClick={() => setPhase('reflection')}
-            className="text-primary mb-4 flex cursor-pointer items-center gap-1 text-sm transition-opacity hover:opacity-80"
-          >
-            ← Back
-          </button>
-          <div className="flex min-h-[calc(100vh-200px)] flex-col items-center justify-center text-center">
-            <div className="mb-8">
-              <Image
-                src={flower2Image}
-                width={400}
-                height={400}
-                alt="Flower"
-                className="h-full w-full max-w-100"
-              />
-            </div>
-            <h1 className="text-dark-primary mb-2 font-serif text-2xl font-semibold md:text-3xl">
-              Day {currentDay.day} Complete
-            </h1>
-            <p className="text-secondary mb-6 max-w-xs text-sm leading-relaxed">
-              You let go of another layer today — beautiful.
-            </p>
-            <Button onClick={handleContinueAfterDay} className="btn-styles w-fit px-6">
-              Continue
-            </Button>
-          </div>
-        </motion.section>
+        <DayCompleteStep
+          dayNumber={currentDay?.day}
+          subtitle="You let go of another layer today — beautiful."
+          onContinue={handleContinueAfterDay}
+          onBack={() => setPhase('reflection')}
+        />
       );
     }
 
@@ -865,94 +517,13 @@ export default function JourneyPage() {
     // ─────────────────────────────────────────────────────────────────────────────
     if (activePhase === 'overview') {
       return (
-        <motion.section
-          key="overview"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-          className="mx-auto h-full max-w-3xl px-4 py-12"
-        >
-          <button
-            onClick={() => router.back()}
-            className="text-primary mb-4 flex cursor-pointer items-center gap-1 text-sm transition-opacity hover:opacity-80"
-          >
-            ← Back
-          </button>
-          <div>
-            <div className="mb-6 flex flex-col items-center text-center">
-              <Image
-                src={flower1Image}
-                width={400}
-                height={400}
-                alt="Flower"
-                className="h-full w-full max-w-100"
-              />
-              <p className="text-secondary mt-4 text-sm">
-                {completedDays.length > 0
-                  ? `${completedDays.length * 7 + 42} others are on this liberation today`
-                  : '42 others are on this liberation today'}
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              {JOURNEY?.days.map((day, i) => {
-                const stepFromApi = journeyStatus?.steps?.find(
-                  (s: any) => s.day_number === day.day,
-                );
-                const apiStatus = stepFromApi?.status;
-
-                const isCompleted = apiStatus
-                  ? apiStatus === 'completed'
-                  : completedDays.includes(i);
-                const isReadyToStart = apiStatus
-                  ? apiStatus === 'available'
-                  : i === 0 || completedDays.includes(i - 1);
-                const isLocked = apiStatus
-                  ? apiStatus === 'locked'
-                  : !isCompleted && !isReadyToStart;
-
-                return (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => !isLocked && !isCompleted && handleStartNextDay(i)}
-                    disabled={isLocked}
-                    className={cn(
-                      'w-full rounded-md border px-5 py-4 text-left transition-all',
-                      isCompleted && 'border-success/30 bg-success/10',
-                      isReadyToStart &&
-                        !isCompleted &&
-                        'border-error/30 bg-error/5 hover:border-error/50 cursor-pointer',
-                      isLocked && 'border-primary/10 cursor-default bg-transparent opacity-60',
-                    )}
-                  >
-                    <p
-                      className={cn(
-                        'font-medium',
-                        isCompleted && 'text-success',
-                        isReadyToStart && !isCompleted && 'text-dark-primary',
-                        isLocked && 'text-secondary',
-                      )}
-                    >
-                      Day {day.day}: {day.title}
-                    </p>
-                    <p
-                      className={cn(
-                        'mt-0.5 text-sm',
-                        isCompleted && 'text-success',
-                        isReadyToStart && !isCompleted && 'text-primary',
-                        isLocked && 'text-secondary',
-                      )}
-                    >
-                      {isCompleted ? 'Completed' : isReadyToStart ? 'Ready to Start' : 'Locked'}
-                    </p>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </motion.section>
+        <JourneyOverviewStep
+          journeyDays={JOURNEY?.days}
+          journeyStatus={journeyStatus}
+          completedDays={completedDays}
+          handleStartNextDay={handleStartNextDay}
+          onBack={() => router.back()}
+        />
       );
     }
 
@@ -961,52 +532,12 @@ export default function JourneyPage() {
     // ─────────────────────────────────────────────────────────────────────────────
     if (activePhase === 'liberation-complete') {
       return (
-        <motion.section
-          key="liberation-complete"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.2 }}
-          className="mx-auto min-h-screen max-w-3xl px-4 py-12"
-        >
-          <button
-            onClick={() => setPhase('overview')}
-            className="text-primary mb-4 flex cursor-pointer items-center gap-1 text-sm transition-opacity hover:opacity-80"
-          >
-            ← Back
-          </button>
-          <div className="flex min-h-[calc(100vh-200px)] flex-col items-center justify-center text-center">
-            <div className="mb-8">
-              <Image
-                src={flower3Image}
-                width={400}
-                height={400}
-                alt="Flower"
-                className="h-full w-full max-w-100"
-              />
-            </div>
-            <h1 className="text-dark-primary mb-3 font-serif text-2xl font-bold md:text-3xl">
-              Your Liberation is Complete 🌸
-            </h1>
-            <p className="text-secondary mb-10 max-w-xs text-sm leading-relaxed">
-              Seven days of showing up for yourself. Seven petals bloomed. This energy is yours to
-              keep.
-            </p>
-            <div className="w-full max-w-sm space-y-3">
-              <Button
-                type="button"
-                onClick={handleRepeatLiberation}
-                disabled={isRepeating}
-                className="border-primary/20 text-primary w-full rounded-md border bg-transparent py-5 text-sm hover:bg-transparent"
-              >
-                {isRepeating ? 'Resetting...' : 'Repeat This Liberation'}
-              </Button>
-              <Button type="button" onClick={() => router.push('/')} className="btn-styles">
-                Explore More Liberations
-              </Button>
-            </div>
-          </div>
-        </motion.section>
+        <LiberationCompleteStep
+          onExploreMore={() => router.push('/journeys')}
+          onRepeatLiberation={handleRepeatLiberation}
+          isRepeating={isRepeating}
+          onBack={() => setPhase('overview')}
+        />
       );
     }
 

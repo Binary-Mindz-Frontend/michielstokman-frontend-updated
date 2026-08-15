@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
+
 import UnifiedStoryFormSkeleton from '@/components/main/Skeletons/UnifiedStoryFormSkeleton';
 import { useCurrentUser } from '@/redux/features/auth/authSlice';
 import { useAppSelector } from '@/redux/hooks';
@@ -24,7 +25,7 @@ export default function CreateFormPage() {
   const createPath = typeParam ? `/create?type=${typeParam}` : '/create';
 
   return (
-    <section className="mx-auto max-w-3xl px-4 py-12">
+    <section className="mx-auto max-w-6xl px-4 py-8">
       <LoginRequiredModal
         isOpen={isAuthModalOpen}
         redirectUrl={`/login?redirect=${encodeURIComponent(createPath)}`}
@@ -32,25 +33,25 @@ export default function CreateFormPage() {
 
       <Suspense fallback={<UnifiedStoryFormSkeleton />}>
         <motion.div initial="hidden" animate="visible" variants={FADE_IN_UP_CONTAINER}>
+          {/* Header Hero Section */}
           <motion.div variants={FADE_IN_UP_ITEM}>
             <CreateFormHeader category={selectedCategory} />
           </motion.div>
 
-          <motion.div variants={FADE_IN_UP_ITEM}>
-            <CreateFormCategoryTabs selected={selectedCategory} />
-          </motion.div>
+          {/* Form Container (No Outer Card Background) */}
+          <div className="mx-auto max-w-3xl py-2">
+            <motion.div variants={FADE_IN_UP_ITEM}>
+              <CreateFormCategoryTabs selected={selectedCategory} />
+            </motion.div>
 
-          {!isAuthModalOpen ? (
-            <UnifiedStoryForm category={selectedCategory} />
-          ) : (
-            <div className="pointer-events-none opacity-40 blur-[2px] select-none">
+            {!isAuthModalOpen ? (
               <UnifiedStoryForm category={selectedCategory} />
-            </div>
-          )}
-
-          <motion.p variants={FADE_IN_UP_ITEM} className="text-secondary mt-4 text-center text-sm">
-            All submissions are reviewed with care.
-          </motion.p>
+            ) : (
+              <div className="pointer-events-none opacity-40 blur-[2px] select-none">
+                <UnifiedStoryForm category={selectedCategory} />
+              </div>
+            )}
+          </div>
         </motion.div>
       </Suspense>
     </section>

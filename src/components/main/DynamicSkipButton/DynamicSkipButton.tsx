@@ -1,0 +1,73 @@
+'use client';
+
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import React from 'react';
+
+export interface DynamicSkipButtonProps {
+  text?: string;
+  href?: string;
+  // eslint-disable-next-line no-unused-vars
+  onClick?: (e?: React.MouseEvent) => void;
+  borderColor?: string;
+  textColor?: string;
+  bgColor?: string;
+  className?: string;
+  fullWidth?: boolean;
+}
+
+const DynamicSkipButton: React.FC<DynamicSkipButtonProps> = ({
+  text = 'Skip',
+  href,
+  onClick,
+  borderColor = '#D22D4C',
+  textColor = '#D22D4C',
+  bgColor = 'white',
+  className = '',
+  fullWidth = true,
+}) => {
+  const router = useRouter();
+
+  const isHexBorder = borderColor.startsWith('#');
+  const borderStyle = isHexBorder ? { borderColor } : {};
+
+  const isHexText = textColor.startsWith('#');
+  const textStyle = isHexText ? { color: textColor } : {};
+
+  const roundedClass = className.includes('rounded-') ? '' : 'rounded-none';
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (onClick) {
+      onClick(e);
+    } else if (!href) {
+      router.back();
+    }
+  };
+
+  const content = (
+    <div
+      style={{ ...borderStyle, ...textStyle, backgroundColor: bgColor }}
+      className={`flex cursor-pointer items-center justify-center border-2 ${roundedClass} px-6 py-2.5 text-center font-sans text-sm font-semibold text-nowrap uppercase transition-all duration-300 hover:bg-[#FFF5F7] active:scale-95 ${
+        fullWidth ? 'w-full' : 'w-auto'
+      } ${className}`}
+    >
+      <span>{text}</span>
+    </div>
+  );
+
+  if (href) {
+    return (
+      <Link href={href} className="block w-full cursor-pointer">
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <button type="button" onClick={handleClick} className="w-full cursor-pointer">
+      {content}
+    </button>
+  );
+};
+
+export default DynamicSkipButton;

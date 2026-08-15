@@ -22,7 +22,7 @@ export const SummaryCard = ({ title, value, subValue, trend, icon: Icon }: Summa
   return (
     <div className="space-y-5 rounded-md bg-[#F5F2F0] p-6 transition-all hover:shadow-sm">
       <div className="flex items-start justify-between">
-        <Icon size={22} strokeWidth={1.5} className="text-dark-primary" />
+        <Icon size={22} strokeWidth={1.5} className="text-secondary" />
         {subValue !== undefined && subValue !== null && (
           <span
             className={`flex items-center gap-0.5 text-sm font-medium capitalize ${trendColor}`}

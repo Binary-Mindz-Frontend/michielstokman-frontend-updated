@@ -1,9 +1,15 @@
-/* eslint-disable @next/next/no-img-element */
-
 'use client';
 
-import InputField from '@/components/dashboard/Fields/InputField/InputField';
-import { Button } from '@/components/ui/button';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { motion } from 'framer-motion';
+import { Lock, Mail } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { z } from 'zod';
+
 import { useGuestLoginMutation, useLoginUserMutation } from '@/redux/features/auth/auth.api';
 import { setAuth } from '@/redux/features/auth/authSlice';
 import { useAppDispatch } from '@/redux/hooks';
@@ -11,25 +17,23 @@ import { setUserProfile } from '@/services/auth/auth.service';
 import { TLoginUser } from '@/types/userRole.types';
 import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
 import { catchAsyncMutation } from '@/utils/apiReqRes.utils';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { motion } from 'framer-motion';
-import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
-import { z } from 'zod';
 import GoogleSignInButton from './_components/GoogleLogin/GoogleLogin';
 
-// Zod Schema for Login
+// Assets from src/assets/account
+import accountHeroImg from '@/assets/shared/account-hero-image.png';
+import buttonBrushBg from '@/assets/shared/brush-button-bg.png';
+import brushTextBg from '@/assets/shared/brush-text-bg.png';
+import guestIcon from '@/assets/shared/guest.png';
+
+// Zod Schema for Login Validation
 const loginSchema = z.object({
-  email: z.string().email('Invalid email address').min(1, 'Email is required'),
+  email: z.string().email('Please enter a valid email address').min(1, 'Email is required'),
   password: z.string().min(1, 'Password is required'),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
-export default function LoginPage() {
-  // Hooks
+export default function SignIn() {
   const [loginUser, { isLoading }] = useLoginUserMutation();
   const [guestLogin, { isLoading: isGuestLoading }] = useGuestLoginMutation();
   const dispatch = useAppDispatch();
@@ -37,10 +41,9 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get('redirect');
 
-  // Form
   const {
+    register,
     handleSubmit,
-    control,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -50,46 +53,42 @@ export default function LoginPage() {
     },
   });
 
-  // Login User
+  // Handle Form Submission
   const onSubmit = async (data: LoginFormData) => {
-    await catchAsyncMutation(
-      loginUser(data).unwrap(),
-      // onSuccess
-      async (res) => {
-        const user: TLoginUser = {
-          id: res?.data?.user?.id,
-          user_id: res?.data?.user_id,
-          email: res?.data?.user?.email,
-          is_admin: res?.data?.user?.is_admin || false,
-        };
-        const defaultRedirect = res?.data?.user?.is_admin ? '/dashboard/overview' : '/';
-        const redirectPath = redirectUrl ? decodeURIComponent(redirectUrl) : defaultRedirect;
+    await catchAsyncMutation(loginUser(data).unwrap(), async (res) => {
+      const user: TLoginUser = {
+        id: res?.data?.user?.id,
+        user_id: res?.data?.user_id,
+        email: res?.data?.user?.email,
+        is_admin: res?.data?.user?.is_admin || false,
+      };
+      const defaultRedirect = res?.data?.user?.is_admin ? '/dashboard/overview' : '/';
+      const redirectPath = redirectUrl ? decodeURIComponent(redirectUrl) : defaultRedirect;
 
-        dispatch(setAuth({ user }));
+      dispatch(setAuth({ user }));
 
-        await setUserProfile(user, res?.data?.access_token);
-        toast.success(res?.message || 'User Logged in Successfully');
-        setTimeout(() => {
-          if (!res?.data?.user?.is_profile_setup) {
-            const stepperPath = redirectUrl
-              ? `/register/stepper?redirect=${encodeURIComponent(redirectUrl)}`
-              : '/register/stepper';
-            router.push(stepperPath);
-          } else {
-            router.push(redirectPath);
-          }
-        }, 1000);
-      },
-    );
+      await setUserProfile(user, res?.data?.access_token);
+      toast.success(res?.message || 'User Logged in Successfully');
+      setTimeout(() => {
+        if (!res?.data?.user?.is_profile_setup) {
+          const stepperPath = redirectUrl
+            ? `/register/stepper?redirect=${encodeURIComponent(redirectUrl)}`
+            : '/register/stepper';
+          router.push(stepperPath);
+        } else {
+          router.push(redirectPath);
+        }
+      }, 1000);
+    });
   };
 
-  // Guest Login
+  // Handle Guest Login
   const handleGuestLogin = async () => {
     await catchAsyncMutation(guestLogin({}).unwrap(), async (res) => {
       const guestUser: TLoginUser = {
         id: res?.data?.guest_id,
         user_id: res?.data?.guest_id,
-        email: '', // No email for guest
+        email: '',
         is_admin: false,
         is_guest: true,
       };
@@ -107,92 +106,156 @@ export default function LoginPage() {
   };
 
   return (
-    <motion.div
-      initial="hidden"
-      animate="visible"
-      variants={FADE_IN_UP_CONTAINER}
-      className="flex min-h-screen flex-col items-center justify-center px-4 py-12"
-    >
-      {/* Title Section */}
-      <Link href="/">
-        <motion.h2
+    <main className="bg-bg-primary text-foreground flex min-h-screen flex-col items-center justify-center px-4 py-12 font-sans md:px-12">
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={FADE_IN_UP_CONTAINER}
+        className="flex w-full max-w-5xl flex-col items-center justify-center gap-8 md:flex-row md:gap-16"
+      >
+        {/* --- IMAGE COLUMN (Desktop Only) --- */}
+        <motion.div
           variants={FADE_IN_UP_ITEM}
-          className="text-primary mb-16 font-serif text-2xl tracking-wide md:text-3xl"
+          className="order-1 hidden w-full justify-center md:order-2 md:mt-0 md:flex md:w-1/2"
         >
-          Transform to Liberation
-        </motion.h2>
-      </Link>
+          {/* Desktop Hero Image */}
+          <div className="relative aspect-square w-full max-w-112.5">
+            <Image
+              src={accountHeroImg}
+              alt="Desktop Reflecting Woman"
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
+        </motion.div>
 
-      <motion.div variants={FADE_IN_UP_ITEM} className="w-full max-w-120 space-y-8 text-center">
-        <div className="space-y-1">
-          <h1 className="text-dark-primary font-serif text-4xl font-semibold">Welcome Back</h1>
-          <p className="text-secondary">Sign in to continue your path.</p>
-        </div>
-
-        {/* Form Section */}
-        <motion.form
+        {/* --- TEXT COLUMN --- */}
+        <motion.div
           variants={FADE_IN_UP_ITEM}
-          onSubmit={handleSubmit(onSubmit)}
-          className="space-y-5 text-left"
+          className="order-2 mt-4 flex w-full max-w-110 flex-col items-center text-center md:order-1 md:w-1/2 md:items-start md:text-left"
         >
-          <InputField
-            label="Your email"
-            name="email"
-            type="email"
-            control={control}
-            placeholder="Enter your email"
-            error={errors.email?.message}
-            required
-          />
+          {/* Title Header (Desktop Only) */}
+          <Link href="/" className="hidden w-full md:block">
+            <div className="font-edo flex w-full flex-col items-start justify-center leading-none font-medium uppercase">
+              <span className="-rotate-3 transform self-start text-[2.75rem] tracking-wider text-[#486221] sm:text-5xl md:text-[3.6rem] lg:text-[4.2rem]">
+                Transform
+              </span>
+              <span className="mt-3.5 -rotate-3 transform self-start text-[2.25rem] tracking-wide text-[#E81A66] sm:mt-4 sm:text-4xl md:text-[3rem] lg:text-[3.5rem]">
+                To
+              </span>
+              <span className="-rotate-3 transform self-start text-[2.35rem] tracking-normal text-[#F3A134] sm:text-[2.75rem] md:text-[3.25rem] lg:text-[3.7rem]">
+                Liberation
+              </span>
+            </div>
+          </Link>
 
-          <InputField
-            label="Password"
-            name="password"
-            type="password"
-            control={control}
-            placeholder="Enter your password"
-            required
-            error={errors.password?.message}
-          />
+          {/* "Join The Journey" Brush Background Section (Shown on Mobile & Desktop) */}
+          <div className="relative flex min-h-35 w-full max-w-105 -rotate-1 transform items-center justify-center sm:mt-10">
+            <div className="absolute inset-0 h-full w-full">
+              <Image src={brushTextBg} alt="Brush background" fill className="object-contain" />
+            </div>
 
-          <Button
+            <div className="relative z-10 mt-1 flex flex-col items-center px-6 pt-2 pb-4 text-white sm:px-8">
+              <h3 className="font-edo mb-1 text-lg font-medium tracking-wider sm:text-xl">
+                Join The Journey
+              </h3>
+              <p className="text-center font-sans text-xs leading-relaxed font-medium text-white">
+                Create An Account To Save Your Reflections,
+                <br />
+                Get Personalized Content, And Share Your
+                <br />
+                Own Stories.
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+
+      {/* ================= FORM SECTION ================= */}
+      <motion.div variants={FADE_IN_UP_ITEM} className="mt-10 flex w-full max-w-lg flex-col gap-6">
+        <form className="flex flex-col gap-5" onSubmit={handleSubmit(onSubmit)}>
+          {/* Email Input */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-foreground text-sm font-semibold">Your Email</label>
+            <div className="border-muted/50 flex items-center gap-3 border-b pb-2">
+              <Mail className="text-muted-foreground h-5 w-5" strokeWidth={1.5} />
+              <input
+                {...register('email')}
+                type="email"
+                placeholder="Enter Your Email"
+                className="text-foreground placeholder:text-muted-foreground w-full bg-transparent text-sm outline-none"
+              />
+            </div>
+            {errors.email && <span className="text-error text-xs">{errors.email.message}</span>}
+          </div>
+
+          {/* Password Input */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-foreground flex items-center gap-1 text-sm font-semibold">
+              Password <span className="text-primary">*</span>
+            </label>
+            <div className="border-muted/50 flex items-center gap-3 border-b pb-2">
+              <Lock className="text-muted-foreground h-5 w-5" strokeWidth={1.5} />
+              <input
+                {...register('password')}
+                type="password"
+                placeholder="Enter Your Password"
+                className="text-foreground placeholder:text-muted-foreground w-full bg-transparent text-sm outline-none"
+              />
+            </div>
+            {errors.password && (
+              <span className="text-error text-xs">{errors.password.message}</span>
+            )}
+          </div>
+
+          {/* Submit Button */}
+          <button
             disabled={isLoading}
             type="submit"
-            className={`btn-styles disabled:bg-primary/50 w-full ${isLoading ? 'cursor-not-allowed' : 'hover:bg-primary/90'}`}
+            className="bg-primary hover:bg-primary/90 mt-2 w-full rounded-md py-3 font-medium text-white transition-colors disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isLoading ? 'Signing in...' : 'Sign In'}
-          </Button>
-        </motion.form>
+            {isLoading ? 'Signing In...' : 'Sign In'}
+          </button>
+        </form>
 
-        {/* Divider */}
-        <motion.div variants={FADE_IN_UP_ITEM} className="relative flex items-center">
-          <div className="border-primary/30 grow border-t"></div>
-          <span className="text-primary mx-4 shrink text-xs tracking-widest uppercase">
-            or continue with
-          </span>
-          <div className="border-primary/30 grow border-t"></div>
-        </motion.div>
+        {/* ================= SOCIAL & FOOTER ================= */}
+        <div className="mx-auto flex w-full max-w-sm flex-col items-center gap-3">
+          {/* Google Sign In Wrapper */}
+          <div className="group relative flex h-13 w-full items-center justify-center transition-opacity hover:opacity-90">
+            <div className="absolute inset-0 h-full w-full">
+              <Image src={buttonBrushBg} fill className="object-contain" alt="brush button bg" />
+            </div>
 
-        {/* Social Buttons */}
-        <motion.div variants={FADE_IN_UP_ITEM} className="space-y-3">
-          <GoogleSignInButton />
+            <div className="relative z-10 flex w-full justify-center">
+              <GoogleSignInButton className="w-full border-none bg-transparent shadow-none hover:bg-transparent" />
+            </div>
+          </div>
 
-          <Button
+          {/* Apple Sign In */}
+          <button
             type="button"
-            className="btn-styles border-primary/20 flex items-center justify-center gap-3 border bg-black hover:bg-gray-900"
+            className="group relative flex h-13 w-full items-center justify-center transition-opacity hover:opacity-90"
           >
-            <img
-              src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg"
-              alt="Apple"
-              className="h-5 w-5 invert"
-            />
-            <span className="font-medium text-white">Sign in with Apple</span>
-          </Button>
-        </motion.div>
+            <div className="absolute inset-0 h-full w-full scale-y-90">
+              <Image src={buttonBrushBg} fill className="object-contain" alt="brush button bg" />
+            </div>
+            <div className="relative z-10 flex items-center gap-3">
+              <div className="flex h-5.5 w-5.5 items-center justify-center">
+                <svg fill="white" viewBox="0 0 384 512" width="100%" height="100%">
+                  <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z" />
+                </svg>
+              </div>
+              <span className="text-sm font-medium tracking-wide text-white">
+                Sign In With Apple
+              </span>
+            </div>
+          </button>
+        </div>
 
-        {/* Footer Links */}
-        <motion.div variants={FADE_IN_UP_ITEM} className="space-y-3">
-          <p className="text-dark-primary text-sm">
+        {/* Sign Up Link */}
+        <div className="text-center">
+          <p className="text-foreground text-sm font-medium">
             New here?{' '}
             <Link
               href={
@@ -200,23 +263,31 @@ export default function LoginPage() {
               }
               className="text-primary font-bold hover:underline"
             >
-              Sign up
+              Sign Up
             </Link>
           </p>
-          <Button
-            type="button"
-            onClick={handleGuestLogin}
-            disabled={isGuestLoading}
-            className={`btn-styles border-primary/20 flex w-full items-center justify-center gap-3 border bg-transparent ${
-              isGuestLoading ? 'cursor-not-allowed opacity-70' : 'hover:bg-[#F5F1EA]'
-            }`}
-          >
-            <span className="text-dark-primary text-sm">
-              Continue as guest — 1 item every other day
-            </span>
-          </Button>
-        </motion.div>
+        </div>
+
+        {/* Guest Button */}
+        <button
+          type="button"
+          onClick={handleGuestLogin}
+          disabled={isGuestLoading}
+          className="hover:bg-muted/15 mx-auto flex w-full max-w-sm items-center justify-center gap-3 rounded-md border border-[#B39B7F] bg-transparent py-3 shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <Image
+            src={guestIcon}
+            alt="Guest star icon"
+            width={22}
+            height={22}
+            className="object-contain"
+          />
+          <span className="text-foreground text-sm font-semibold tracking-wide sm:text-[15px]">
+            Continue As <span className="font-bold text-[#6D4CBB]">Guest</span> | Flow Every Other
+            Day
+          </span>
+        </button>
       </motion.div>
-    </motion.div>
+    </main>
   );
 }

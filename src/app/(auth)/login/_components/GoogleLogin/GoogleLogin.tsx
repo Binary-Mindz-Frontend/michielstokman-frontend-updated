@@ -1,8 +1,8 @@
-/* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 'use client';
 
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useSocialLoginMutation } from '@/redux/features/auth/auth.api';
 import { setAuth } from '@/redux/features/auth/authSlice';
@@ -13,9 +13,10 @@ import { TLoginUser } from '@/types/userRole.types';
 import { catchAsyncMutation } from '@/utils/apiReqRes.utils';
 import { signInWithPopup } from 'firebase/auth';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { FcGoogle } from 'react-icons/fc';
 import { toast } from 'sonner';
 
-export default function GoogleSignInButton() {
+export default function GoogleSignInButton({ className }: { className?: string } = {}) {
   const [socialLogin, { isLoading }] = useSocialLoginMutation();
   const dispatch = useAppDispatch();
   const router = useRouter();
@@ -68,13 +69,17 @@ export default function GoogleSignInButton() {
       type="button"
       disabled={isLoading}
       onClick={handleGoogleSignIn}
-      className={`btn-styles border-primary/20 flex items-center justify-center gap-3 border bg-transparent ${
-        isLoading ? 'cursor-not-allowed opacity-70' : 'hover:bg-[#F5F1EA]'
-      }`}
+      className={cn(
+        'border-primary/20 flex items-center justify-center gap-3 border bg-transparent font-medium text-white shadow-none hover:bg-transparent',
+        isLoading && 'cursor-not-allowed opacity-70',
+        className,
+      )}
     >
-      <img src="https://www.google.com/favicon.ico" alt="Google" className="h-5 w-5" />
-      <span className="text-dark-primary font-medium">
-        {isLoading ? 'Signing in...' : 'Sign in with Google'}
+      <div className="flex h-[22px] w-[22px] items-center justify-center">
+        <FcGoogle className="h-full w-full" />
+      </div>
+      <span className="text-sm font-medium tracking-wide text-white">
+        {isLoading ? 'Signing in...' : 'Sign In With Google'}
       </span>
     </Button>
   );

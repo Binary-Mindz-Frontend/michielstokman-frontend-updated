@@ -27,7 +27,7 @@ const TopResonanceContent = ({
         <div className="mb-4 rounded-full bg-gray-200/50 p-4">
           <BarChart2 className="h-8 w-8 text-gray-400" />
         </div>
-        <h3 className="text-dark-primary text-lg font-semibold">No Data Found</h3>
+        <h3 className="text-secondary text-lg font-semibold">No Data Found</h3>
         <p className="text-secondary mt-1 max-w-xs text-sm sm:text-base">{`We couldn't find any resonance data for the selected period.`}</p>
       </div>
     );
@@ -35,7 +35,7 @@ const TopResonanceContent = ({
 
   return (
     <div className="rounded-md bg-[#F5F2F0] p-6">
-      <h2 className="text-dark-primary mb-0.5 text-xl font-semibold md:text-2xl">
+      <h2 className="text-secondary mb-0.5 text-xl font-semibold md:text-2xl">
         Top Resonance Content
       </h2>
       <p className="text-secondary text-sm sm:text-base">Highest pulse scores this month</p>
@@ -50,7 +50,7 @@ const TopResonanceContent = ({
               {/* <span className="text-secondary mt-1 text-xl">{content?.id}.</span> */}
 
               <div>
-                <h4 className="text-dark-primary text-lg font-semibold sm:text-xl">
+                <h4 className="text-secondary text-lg font-semibold sm:text-xl">
                   {content?.title}
                 </h4>
                 <p className="text-secondary text-base sm:text-lg md:mt-1">
