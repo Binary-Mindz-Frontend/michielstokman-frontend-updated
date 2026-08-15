@@ -2,7 +2,7 @@
 /* eslint-disable no-unused-vars */
 'use client';
 
-import { Suspense, useEffect } from 'react';
+import { Suspense, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -40,10 +40,16 @@ function RegistrationStepperContent() {
     router.push(`?${params.toString()}`);
   };
 
-  const { data: profileResponse, isLoading: isFetchingProfile } = useGetProfileQuery(undefined, {
+  const {
+    data: profileResponse,
+    isLoading: isFetchingProfile,
+    isFetching,
+  } = useGetProfileQuery(undefined, {
     refetchOnMountOrArgChange: true,
   });
   const [updateUserProfile, { isLoading }] = useUpdateUserProfileMutation();
+
+  const hasResetRef = useRef(false);
 
   const {
     register,
@@ -85,7 +91,7 @@ function RegistrationStepperContent() {
   };
 
   useEffect(() => {
-    if (isFetchingProfile) return;
+    if (isFetchingProfile || isFetching) return;
 
     const p = profileResponse?.data?.data || profileResponse?.data;
     const hasServerProfile =
@@ -132,19 +138,23 @@ function RegistrationStepperContent() {
           Enlightenment: p.slider_enlightenment ?? 5,
         },
       });
+      hasResetRef.current = true;
       return;
     }
 
-    const savedData = localStorage.getItem(STORAGE_KEY);
-    if (savedData) {
-      try {
-        const parsedData = JSON.parse(savedData);
-        reset(parsedData);
-      } catch (e) {
-        console.error('Error parsing localStorage data', e);
+    if (!hasResetRef.current) {
+      const savedData = localStorage.getItem(STORAGE_KEY);
+      if (savedData) {
+        try {
+          const parsedData = JSON.parse(savedData);
+          reset(parsedData);
+          hasResetRef.current = true;
+        } catch (e) {
+          console.error('Error parsing localStorage data', e);
+        }
       }
     }
-  }, [profileResponse, isFetchingProfile, reset]);
+  }, [profileResponse, isFetchingProfile, isFetching, reset]);
 
   const allFormValues = watch();
   useEffect(() => {
@@ -173,14 +183,14 @@ function RegistrationStepperContent() {
       gender: data?.gender,
       sexual_orientation: data?.isSexualOrientationEnabled ? data?.sexualOrientation : '',
       life_phase: data?.lifePhase,
-      slider_desire_relationship: data?.growthFocus['Desire & Relationship'] || 0,
-      slider_life_purpose: data?.growthFocus['Life & Purpose'] || 0,
-      slider_career_money: data?.growthFocus['Career & Money'] || 0,
-      slider_true_self: data?.growthFocus['Show Your True Self'] || 0,
-      slider_sexuality_life_energy: data?.growthFocus['Sexuality & Life Energy'] || 0,
-      slider_fear_freedom: data?.growthFocus['Fear & Freedom'] || 0,
-      slider_health_body: data?.growthFocus['Health & Body'] || 0,
-      slider_enlightenment: data?.growthFocus['Enlightenment'] || 0,
+      slider_desire_relationship: data?.growthFocus['Desire & Relationship'] ?? 0,
+      slider_life_purpose: data?.growthFocus['Life & Purpose'] ?? 0,
+      slider_career_money: data?.growthFocus['Career & Money'] ?? 0,
+      slider_true_self: data?.growthFocus['Show Your True Self'] ?? 0,
+      slider_sexuality_life_energy: data?.growthFocus['Sexuality & Life Energy'] ?? 0,
+      slider_fear_freedom: data?.growthFocus['Fear & Freedom'] ?? 0,
+      slider_health_body: data?.growthFocus['Health & Body'] ?? 0,
+      slider_enlightenment: data?.growthFocus['Enlightenment'] ?? 0,
     };
 
     await catchAsyncMutation(updateUserProfile(transformedData).unwrap(), (res) => {
@@ -192,7 +202,7 @@ function RegistrationStepperContent() {
     });
   };
 
-  if (isFetchingProfile) {
+  if (isFetchingProfile || isFetching) {
     return <StepperSkeleton step={step} />;
   }
 
