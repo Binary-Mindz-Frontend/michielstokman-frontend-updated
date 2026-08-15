@@ -87,15 +87,18 @@ function RegistrationStepperContent() {
 
     const p = profileResponse?.data?.data || profileResponse?.data;
     const hasServerProfile =
-      p &&
-      (p.true_name ||
+      Boolean(p) &&
+      Boolean(
+        p.true_name ||
         p.name ||
         p.country ||
         p.city ||
         p.gender ||
-        p.age !== null ||
-        p.life_phase ||
-        p.slider_desire_relationship !== null);
+        p.sexual_orientation ||
+        (typeof p.age === 'number' && p.age > 0) ||
+        (typeof p.age === 'string' && p.age.trim() !== '') ||
+        p.life_phase,
+      );
 
     if (hasServerProfile) {
       const genderVal = p.gender || '';
@@ -113,7 +116,7 @@ function RegistrationStepperContent() {
         education: p.education || '',
         income: p.annual_income || p.income || '',
         gender: matchedGender,
-        isSexualOrientationEnabled: !!p.sexual_orientation,
+        isSexualOrientationEnabled: Boolean(p.sexual_orientation),
         sexualOrientation: p.sexual_orientation || '',
         lifePhase: p.life_phase || 'Discovering',
         growthFocus: {
