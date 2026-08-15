@@ -40,7 +40,9 @@ function RegistrationStepperContent() {
     router.push(`?${params.toString()}`);
   };
 
-  const { data: profileResponse, isLoading: isFetchingProfile } = useGetProfileQuery(undefined);
+  const { data: profileResponse, isLoading: isFetchingProfile } = useGetProfileQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
   const [updateUserProfile, { isLoading }] = useUpdateUserProfileMutation();
 
   const {
@@ -50,7 +52,7 @@ function RegistrationStepperContent() {
     handleSubmit,
     reset,
     trigger,
-    formState: { errors },
+    formState: { errors, isSubmitting, isSubmitSuccessful },
   } = useForm<StepperFormData>({
     resolver: zodResolver(stepperSchema),
     mode: 'onChange',
@@ -146,10 +148,14 @@ function RegistrationStepperContent() {
 
   const allFormValues = watch();
   useEffect(() => {
+    if (isSubmitting || isSubmitSuccessful) {
+      localStorage.removeItem(STORAGE_KEY);
+      return;
+    }
     if (allFormValues.name || allFormValues.gender || allFormValues.country) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(allFormValues));
     }
-  }, [allFormValues]);
+  }, [allFormValues, isSubmitting, isSubmitSuccessful]);
 
   const isOrientationEnabled = watch('isSexualOrientationEnabled');
   const selectedLifePhase = watch('lifePhase');
