@@ -2,7 +2,7 @@
 /* eslint-disable no-unused-vars */
 'use client';
 
-import { Suspense, useEffect } from 'react';
+import { Suspense, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -13,8 +13,10 @@ import { toast } from 'sonner';
 import buttonArrow from '@/assets/shared/button-arrow.png';
 
 import { cn } from '@/lib/utils';
-import { useUpdateUserProfileMutation } from '@/redux/features/auth/auth.api';
-import { useGetProfileQuery } from '@/redux/features/userProfile/userProfile.api';
+import {
+  useGetProfileQuery,
+  useUpdateProfileMutation,
+} from '@/redux/features/userProfile/userProfile.api';
 import { catchAsyncMutation } from '@/utils/apiReqRes.utils';
 import { StepperSkeleton } from './RegistrationStepperSkeletons';
 
@@ -40,8 +42,16 @@ function RegistrationStepperContent() {
     router.push(`?${params.toString()}`);
   };
 
-  const { data: profileResponse, isLoading: isFetchingProfile } = useGetProfileQuery(undefined);
-  const [updateUserProfile, { isLoading }] = useUpdateUserProfileMutation();
+  const {
+    data: profileResponse,
+    isLoading: isFetchingProfile,
+    isFetching,
+  } = useGetProfileQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
+  const [updateProfile, { isLoading }] = useUpdateProfileMutation();
+
+  const lastProfileRef = useRef<string | null>(null);
 
   const {
     register,
@@ -50,7 +60,7 @@ function RegistrationStepperContent() {
     handleSubmit,
     reset,
     trigger,
-    formState: { errors },
+    formState: { errors, isSubmitting, isSubmitSuccessful },
   } = useForm<StepperFormData>({
     resolver: zodResolver(stepperSchema),
     mode: 'onChange',
@@ -83,70 +93,83 @@ function RegistrationStepperContent() {
   };
 
   useEffect(() => {
-    if (isFetchingProfile) return;
+    if (isFetchingProfile || isFetching) return;
 
     const p = profileResponse?.data?.data || profileResponse?.data;
     const hasServerProfile =
-      p &&
-      (p.true_name ||
+      Boolean(p) &&
+      Boolean(
+        p.true_name ||
         p.name ||
         p.country ||
         p.city ||
         p.gender ||
-        p.age !== null ||
-        p.life_phase ||
-        p.slider_desire_relationship !== null);
+        p.sexual_orientation ||
+        (typeof p.age === 'number' && p.age > 0) ||
+        (typeof p.age === 'string' && p.age.trim() !== '') ||
+        p.life_phase,
+      );
 
     if (hasServerProfile) {
-      const genderVal = p.gender || '';
-      const matchedGender =
-        ['Male', 'Female', 'Non-binary', 'Prefer not to say'].find(
-          (g) => g.toLowerCase() === genderVal.toLowerCase(),
-        ) || genderVal;
+      const profileString = JSON.stringify(p);
+      if (lastProfileRef.current !== profileString) {
+        lastProfileRef.current = profileString;
+        const genderVal = p.gender || '';
+        const matchedGender =
+          ['Male', 'Female', 'Non-binary', 'Prefer not to say'].find(
+            (g) => g.toLowerCase() === genderVal.toLowerCase(),
+          ) || genderVal;
 
-      reset({
-        name: p.true_name || p.name || '',
-        age: p.age !== undefined && p.age !== null ? String(p.age) : '',
-        country: p.country || '',
-        city: p.city || '',
-        height: p.height || '',
-        education: p.education || '',
-        income: p.annual_income || p.income || '',
-        gender: matchedGender,
-        isSexualOrientationEnabled: !!p.sexual_orientation,
-        sexualOrientation: p.sexual_orientation || '',
-        lifePhase: p.life_phase || 'Discovering',
-        growthFocus: {
-          'Desire & Relationship': p.slider_desire_relationship ?? 5,
-          'Life & Purpose': p.slider_life_purpose ?? 5,
-          'Career & Money': p.slider_career_money ?? 5,
-          'Show Your True Self': p.slider_true_self ?? 5,
-          'Sexuality & Life Energy': p.slider_sexuality_life_energy ?? 5,
-          'Fear & Freedom': p.slider_fear_freedom ?? 5,
-          'Health & Body': p.slider_health_body ?? 5,
-          Enlightenment: p.slider_enlightenment ?? 5,
-        },
-      });
+        reset({
+          name: p.true_name || p.name || '',
+          age: p.age !== undefined && p.age !== null ? String(p.age) : '',
+          country: p.country || '',
+          city: p.city || '',
+          height: p.height || '',
+          education: p.education || '',
+          income: p.annual_income || p.income || '',
+          gender: matchedGender,
+          isSexualOrientationEnabled: Boolean(p.sexual_orientation),
+          sexualOrientation: p.sexual_orientation || '',
+          lifePhase: p.life_phase || 'Discovering',
+          growthFocus: {
+            'Desire & Relationship': p.slider_desire_relationship ?? 5,
+            'Life & Purpose': p.slider_life_purpose ?? 5,
+            'Career & Money': p.slider_career_money ?? 5,
+            'Show Your True Self': p.slider_true_self ?? 5,
+            'Sexuality & Life Energy': p.slider_sexuality_life_energy ?? 5,
+            'Fear & Freedom': p.slider_fear_freedom ?? 5,
+            'Health & Body': p.slider_health_body ?? 5,
+            Enlightenment: p.slider_enlightenment ?? 5,
+          },
+        });
+      }
       return;
     }
 
-    const savedData = localStorage.getItem(STORAGE_KEY);
-    if (savedData) {
-      try {
-        const parsedData = JSON.parse(savedData);
-        reset(parsedData);
-      } catch (e) {
-        console.error('Error parsing localStorage data', e);
+    if (!lastProfileRef.current) {
+      const savedData = localStorage.getItem(STORAGE_KEY);
+      if (savedData) {
+        try {
+          const parsedData = JSON.parse(savedData);
+          reset(parsedData);
+        } catch (e) {
+          console.error('Error parsing localStorage data', e);
+        }
       }
     }
-  }, [profileResponse, isFetchingProfile, reset]);
+  }, [profileResponse, isFetchingProfile, isFetching, reset]);
 
   const allFormValues = watch();
   useEffect(() => {
+    if (isSubmitting || isSubmitSuccessful) {
+      localStorage.removeItem(STORAGE_KEY);
+      return;
+    }
     if (allFormValues.name || allFormValues.gender || allFormValues.country) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(allFormValues));
     }
-  }, [allFormValues]);
+  }, [allFormValues, isSubmitting, isSubmitSuccessful]);
 
   const isOrientationEnabled = watch('isSexualOrientationEnabled');
   const selectedLifePhase = watch('lifePhase');
@@ -164,17 +187,17 @@ function RegistrationStepperContent() {
       gender: data?.gender,
       sexual_orientation: data?.isSexualOrientationEnabled ? data?.sexualOrientation : '',
       life_phase: data?.lifePhase,
-      slider_desire_relationship: data?.growthFocus['Desire & Relationship'] || 0,
-      slider_life_purpose: data?.growthFocus['Life & Purpose'] || 0,
-      slider_career_money: data?.growthFocus['Career & Money'] || 0,
-      slider_true_self: data?.growthFocus['Show Your True Self'] || 0,
-      slider_sexuality_life_energy: data?.growthFocus['Sexuality & Life Energy'] || 0,
-      slider_fear_freedom: data?.growthFocus['Fear & Freedom'] || 0,
-      slider_health_body: data?.growthFocus['Health & Body'] || 0,
-      slider_enlightenment: data?.growthFocus['Enlightenment'] || 0,
+      slider_desire_relationship: data?.growthFocus['Desire & Relationship'] ?? 0,
+      slider_life_purpose: data?.growthFocus['Life & Purpose'] ?? 0,
+      slider_career_money: data?.growthFocus['Career & Money'] ?? 0,
+      slider_true_self: data?.growthFocus['Show Your True Self'] ?? 0,
+      slider_sexuality_life_energy: data?.growthFocus['Sexuality & Life Energy'] ?? 0,
+      slider_fear_freedom: data?.growthFocus['Fear & Freedom'] ?? 0,
+      slider_health_body: data?.growthFocus['Health & Body'] ?? 0,
+      slider_enlightenment: data?.growthFocus['Enlightenment'] ?? 0,
     };
 
-    await catchAsyncMutation(updateUserProfile(transformedData).unwrap(), (res) => {
+    await catchAsyncMutation(updateProfile(transformedData).unwrap(), (res) => {
       toast.success(res?.message || 'Profile Updated Successfully');
       localStorage.removeItem(STORAGE_KEY);
       const redirectUrl = searchParams.get('redirect');
@@ -183,7 +206,7 @@ function RegistrationStepperContent() {
     });
   };
 
-  if (isFetchingProfile) {
+  if (isFetchingProfile || isFetching) {
     return <StepperSkeleton step={step} />;
   }
 
