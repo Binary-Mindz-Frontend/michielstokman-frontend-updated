@@ -406,7 +406,7 @@ export default function JourneyPage() {
           subtitle={JOURNEY?.subtitle}
           stats={JOURNEY?.stats}
           onBeginLiberation={handleBeginLiberation}
-          onBack={() => router.back()}
+          onBack={() => router.push(`/journeys/${journeyId}`)}
         />
       );
     }
@@ -522,7 +522,7 @@ export default function JourneyPage() {
           journeyStatus={journeyStatus}
           completedDays={completedDays}
           handleStartNextDay={handleStartNextDay}
-          onBack={() => router.back()}
+          onBack={() => router.push(`/journeys/${journeyId}`)}
         />
       );
     }
@@ -533,7 +533,7 @@ export default function JourneyPage() {
     if (activePhase === 'liberation-complete') {
       return (
         <LiberationCompleteStep
-          onExploreMore={() => router.push('/journeys')}
+          onExploreMore={() => router.push('/liberations')}
           onRepeatLiberation={handleRepeatLiberation}
           isRepeating={isRepeating}
           onBack={() => setPhase('overview')}

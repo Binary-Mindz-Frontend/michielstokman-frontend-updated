@@ -83,44 +83,63 @@ function RegistrationStepperContent() {
   };
 
   useEffect(() => {
+    if (isFetchingProfile) return;
+
+    const p = profileResponse?.data?.data || profileResponse?.data;
+    const hasServerProfile =
+      p &&
+      (p.true_name ||
+        p.name ||
+        p.country ||
+        p.city ||
+        p.gender ||
+        p.age !== null ||
+        p.life_phase ||
+        p.slider_desire_relationship !== null);
+
+    if (hasServerProfile) {
+      const genderVal = p.gender || '';
+      const matchedGender =
+        ['Male', 'Female', 'Non-binary', 'Prefer not to say'].find(
+          (g) => g.toLowerCase() === genderVal.toLowerCase(),
+        ) || genderVal;
+
+      reset({
+        name: p.true_name || p.name || '',
+        age: p.age !== undefined && p.age !== null ? String(p.age) : '',
+        country: p.country || '',
+        city: p.city || '',
+        height: p.height || '',
+        education: p.education || '',
+        income: p.annual_income || p.income || '',
+        gender: matchedGender,
+        isSexualOrientationEnabled: !!p.sexual_orientation,
+        sexualOrientation: p.sexual_orientation || '',
+        lifePhase: p.life_phase || 'Discovering',
+        growthFocus: {
+          'Desire & Relationship': p.slider_desire_relationship ?? 5,
+          'Life & Purpose': p.slider_life_purpose ?? 5,
+          'Career & Money': p.slider_career_money ?? 5,
+          'Show Your True Self': p.slider_true_self ?? 5,
+          'Sexuality & Life Energy': p.slider_sexuality_life_energy ?? 5,
+          'Fear & Freedom': p.slider_fear_freedom ?? 5,
+          'Health & Body': p.slider_health_body ?? 5,
+          Enlightenment: p.slider_enlightenment ?? 5,
+        },
+      });
+      return;
+    }
+
     const savedData = localStorage.getItem(STORAGE_KEY);
     if (savedData) {
       try {
         const parsedData = JSON.parse(savedData);
         reset(parsedData);
-        return;
       } catch (e) {
         console.error('Error parsing localStorage data', e);
       }
     }
-
-    if (profileResponse?.data) {
-      const p = profileResponse.data;
-      reset({
-        name: p.true_name || '',
-        age: p.age?.toString() || '',
-        country: p.country || '',
-        city: p.city || '',
-        height: p.height || '',
-        education: p.education || '',
-        income: p.annual_income || '',
-        gender: p.gender || '',
-        isSexualOrientationEnabled: !!p.sexual_orientation,
-        sexualOrientation: p.sexual_orientation || '',
-        lifePhase: p.life_phase || 'Discovering',
-        growthFocus: {
-          'Desire & Relationship': p.slider_desire_relationship || 5,
-          'Life & Purpose': p.slider_life_purpose || 5,
-          'Career & Money': p.slider_career_money || 5,
-          'Show Your True Self': p.slider_true_self || 5,
-          'Sexuality & Life Energy': p.slider_sexuality_life_energy || 5,
-          'Fear & Freedom': p.slider_fear_freedom || 5,
-          'Health & Body': p.slider_health_body || 5,
-          Enlightenment: p.slider_enlightenment || 5,
-        },
-      });
-    }
-  }, [profileResponse, reset]);
+  }, [profileResponse, isFetchingProfile, reset]);
 
   const allFormValues = watch();
   useEffect(() => {
