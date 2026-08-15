@@ -372,7 +372,10 @@ export default function StoryDetailPage() {
       {/* Brand Hero Section */}
       <div className="mx-auto w-full max-w-350 px-4 pt-4 pb-8">
         <div className="mb-6 sm:mb-8">
-          <DynamicBackButton href="/" bgColor={themeColor} />
+          <DynamicBackButton
+            href={isMeditation ? '/meditations' : '/confessions'}
+            bgColor={themeColor}
+          />
         </div>
 
         <motion.div
