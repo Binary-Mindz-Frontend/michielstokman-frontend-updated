@@ -163,22 +163,36 @@ function MainNavigationBar() {
 
           {/* ================= DESKTOP AUTH (SIGN IN / USER ICON) ================= */}
           <div className="hidden min-w-25 items-center justify-end md:flex">
-            <Link
-              href={redirectPath}
-              className="group relative flex items-center justify-center transition-transform hover:scale-105"
-            >
-              {user ? (
-                // User Profile Icon (Logged In)
-                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#F3F4F6] text-black shadow-sm transition-colors group-hover:bg-[#E5E7EB]">
-                  <User size={22} strokeWidth={2} />
-                </div>
-              ) : (
-                // Sign In Text (Logged Out)
-                <span className="font-playpen text-[15px] font-semibold tracking-wider text-black transition-colors group-hover:text-gray-600">
+            {user ? (
+              // User Profile Icon (Logged In)
+              <Link
+                href={redirectPath}
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-[#F3F4F6] text-black shadow-sm transition-colors hover:bg-[#E5E7EB]"
+              >
+                <User size={22} strokeWidth={2} />
+              </Link>
+            ) : (
+              // Sign In Text (Logged Out)
+              <div className="relative">
+                <Link
+                  href={redirectPath}
+                  className={`font-playpen font-semibold tracking-wider whitespace-nowrap transition-colors duration-300 md:text-xs lg:text-sm xl:text-base ${
+                    pathname === '/login' ? 'text-black' : 'text-black hover:text-gray-600'
+                  }`}
+                >
                   SIGN IN
-                </span>
-              )}
-            </Link>
+                </Link>
+
+                {/* Active Brush SVG */}
+                <div
+                  className={`absolute -bottom-3 left-1/2 h-3 w-full -translate-x-1/2 transition-opacity duration-300 ${
+                    pathname === '/login' ? 'opacity-100' : 'opacity-0'
+                  }`}
+                >
+                  <Image src={activeBrush} alt="active indicator" fill className="object-contain" />
+                </div>
+              </div>
+            )}
           </div>
         </nav>
       </header>
