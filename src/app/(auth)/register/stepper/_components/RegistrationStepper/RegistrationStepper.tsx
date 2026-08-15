@@ -13,8 +13,10 @@ import { toast } from 'sonner';
 import buttonArrow from '@/assets/shared/button-arrow.png';
 
 import { cn } from '@/lib/utils';
-import { useUpdateUserProfileMutation } from '@/redux/features/auth/auth.api';
-import { useGetProfileQuery } from '@/redux/features/userProfile/userProfile.api';
+import {
+  useGetProfileQuery,
+  useUpdateProfileMutation,
+} from '@/redux/features/userProfile/userProfile.api';
 import { catchAsyncMutation } from '@/utils/apiReqRes.utils';
 import { StepperSkeleton } from './RegistrationStepperSkeletons';
 
@@ -47,9 +49,9 @@ function RegistrationStepperContent() {
   } = useGetProfileQuery(undefined, {
     refetchOnMountOrArgChange: true,
   });
-  const [updateUserProfile, { isLoading }] = useUpdateUserProfileMutation();
+  const [updateProfile, { isLoading }] = useUpdateProfileMutation();
 
-  const hasResetRef = useRef(false);
+  const lastProfileRef = useRef<string | null>(null);
 
   const {
     register,
@@ -109,46 +111,48 @@ function RegistrationStepperContent() {
       );
 
     if (hasServerProfile) {
-      const genderVal = p.gender || '';
-      const matchedGender =
-        ['Male', 'Female', 'Non-binary', 'Prefer not to say'].find(
-          (g) => g.toLowerCase() === genderVal.toLowerCase(),
-        ) || genderVal;
+      const profileString = JSON.stringify(p);
+      if (lastProfileRef.current !== profileString) {
+        lastProfileRef.current = profileString;
+        const genderVal = p.gender || '';
+        const matchedGender =
+          ['Male', 'Female', 'Non-binary', 'Prefer not to say'].find(
+            (g) => g.toLowerCase() === genderVal.toLowerCase(),
+          ) || genderVal;
 
-      reset({
-        name: p.true_name || p.name || '',
-        age: p.age !== undefined && p.age !== null ? String(p.age) : '',
-        country: p.country || '',
-        city: p.city || '',
-        height: p.height || '',
-        education: p.education || '',
-        income: p.annual_income || p.income || '',
-        gender: matchedGender,
-        isSexualOrientationEnabled: Boolean(p.sexual_orientation),
-        sexualOrientation: p.sexual_orientation || '',
-        lifePhase: p.life_phase || 'Discovering',
-        growthFocus: {
-          'Desire & Relationship': p.slider_desire_relationship ?? 5,
-          'Life & Purpose': p.slider_life_purpose ?? 5,
-          'Career & Money': p.slider_career_money ?? 5,
-          'Show Your True Self': p.slider_true_self ?? 5,
-          'Sexuality & Life Energy': p.slider_sexuality_life_energy ?? 5,
-          'Fear & Freedom': p.slider_fear_freedom ?? 5,
-          'Health & Body': p.slider_health_body ?? 5,
-          Enlightenment: p.slider_enlightenment ?? 5,
-        },
-      });
-      hasResetRef.current = true;
+        reset({
+          name: p.true_name || p.name || '',
+          age: p.age !== undefined && p.age !== null ? String(p.age) : '',
+          country: p.country || '',
+          city: p.city || '',
+          height: p.height || '',
+          education: p.education || '',
+          income: p.annual_income || p.income || '',
+          gender: matchedGender,
+          isSexualOrientationEnabled: Boolean(p.sexual_orientation),
+          sexualOrientation: p.sexual_orientation || '',
+          lifePhase: p.life_phase || 'Discovering',
+          growthFocus: {
+            'Desire & Relationship': p.slider_desire_relationship ?? 5,
+            'Life & Purpose': p.slider_life_purpose ?? 5,
+            'Career & Money': p.slider_career_money ?? 5,
+            'Show Your True Self': p.slider_true_self ?? 5,
+            'Sexuality & Life Energy': p.slider_sexuality_life_energy ?? 5,
+            'Fear & Freedom': p.slider_fear_freedom ?? 5,
+            'Health & Body': p.slider_health_body ?? 5,
+            Enlightenment: p.slider_enlightenment ?? 5,
+          },
+        });
+      }
       return;
     }
 
-    if (!hasResetRef.current) {
+    if (!lastProfileRef.current) {
       const savedData = localStorage.getItem(STORAGE_KEY);
       if (savedData) {
         try {
           const parsedData = JSON.parse(savedData);
           reset(parsedData);
-          hasResetRef.current = true;
         } catch (e) {
           console.error('Error parsing localStorage data', e);
         }
@@ -193,7 +197,7 @@ function RegistrationStepperContent() {
       slider_enlightenment: data?.growthFocus['Enlightenment'] ?? 0,
     };
 
-    await catchAsyncMutation(updateUserProfile(transformedData).unwrap(), (res) => {
+    await catchAsyncMutation(updateProfile(transformedData).unwrap(), (res) => {
       toast.success(res?.message || 'Profile Updated Successfully');
       localStorage.removeItem(STORAGE_KEY);
       const redirectUrl = searchParams.get('redirect');
