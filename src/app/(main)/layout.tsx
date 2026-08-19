@@ -17,6 +17,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     '/confessions',
     '/meditations',
     '/liberations',
+    '/user-dashboard',
   ];
   const shouldShowLayout = allowedPaths.includes(pathname);
 

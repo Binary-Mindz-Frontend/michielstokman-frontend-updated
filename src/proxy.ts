@@ -8,10 +8,9 @@ export async function proxy(req: NextRequest) {
   const isAdmin = userInfo?.is_admin;
 
   const { pathname } = req.nextUrl;
-  console.log('pathname', pathname);
 
   /* ===========================================================================
-    IF LOGGED IN & TRYING TO ACCESS LOGIN PAGE REDIRECT TO DASHBOARD BASED ON ROLE
+    IF LOGGED IN & TRYING TO ACCESS LOGIN/REGISTER REDIRECT TO HOME
     =========================================================================== */
   if (token && (pathname.startsWith('/login') || pathname.startsWith('/register'))) {
     return NextResponse.redirect(new URL('/', req.url));
@@ -20,23 +19,20 @@ export async function proxy(req: NextRequest) {
   /* ============================
      NOT LOGGED IN & TRYING TO ACCESS DASHBOARD REDIRECT TO HOME
      ============================ */
-  if (!token && pathname.startsWith('/dashboard')) {
+  if (!token && (pathname.startsWith('/dashboard') || pathname.startsWith('/user-dashboard'))) {
     return NextResponse.redirect(new URL('/', req.url));
   }
 
   /* ============================
-    BLOCK WRONG DASHBOARD ACCESS
-    ============================ */
-  if (token && pathname.startsWith('/dashboard')) {
-    // ADMIN AREA
-    if (!isAdmin) {
-      return NextResponse.redirect(new URL('/', req.url));
-    }
+     REDIRECT REGULAR USER AWAY FROM ADMIN DASHBOARD TO USER DASHBOARD
+     ============================ */
+  if (token && pathname.startsWith('/dashboard') && !isAdmin) {
+    return NextResponse.redirect(new URL('/user-dashboard', req.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/login', '/register'],
+  matcher: ['/dashboard/:path*', '/user-dashboard/:path*', '/login', '/register'],
 };
