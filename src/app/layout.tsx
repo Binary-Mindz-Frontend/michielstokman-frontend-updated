@@ -40,6 +40,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="apple-mobile-web-app-title" content="TTL" />
+        <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
       </head>
       <body className="max-w-screen overflow-x-hidden antialiased" suppressHydrationWarning>
         <Providers>

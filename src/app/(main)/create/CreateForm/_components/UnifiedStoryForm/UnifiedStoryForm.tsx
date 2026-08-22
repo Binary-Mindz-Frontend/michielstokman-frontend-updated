@@ -7,14 +7,16 @@ import TextAreaField from '@/components/dashboard/Fields/TextAreaField/TextAreaF
 import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicActionButton';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
-import { useGenerateStoryMutation } from '@/redux/features/aiStory/aiStory.api';
+import { useGenerateStoryMutation, useGetVoicesQuery } from '@/redux/features/aiStory/aiStory.api';
 import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
+import StoryCoverPicker from '../StoryCoverPicker/StoryCoverPicker';
+import StoryVoicePicker from '../StoryVoicePicker/StoryVoicePicker';
 import SuccessModal from '../SuccessModal/SuccessModal';
 
 const GROWTH_AREAS = [
@@ -39,12 +41,17 @@ const schema = z.object({
   lifePhase: z.string().min(1, 'Select a life phase'),
   tags: z.string().optional(),
   sensitiveContent: z.boolean().default(false),
+  voiceName: z.string().optional(),
+  useCustomVoice: z.boolean().default(false),
 });
 
 export default function UnifiedStoryForm({ category }: { category: string }) {
   const [isSuccess, setIsSuccess] = useState(false);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
   const [generateStory, { isLoading: isGenerating }] = useGenerateStoryMutation();
+  const { data: voicesCatalog, isLoading: isVoicesLoading } = useGetVoicesQuery();
   const isConfession = category === 'Confessions';
+  const voices = voicesCatalog?.voices ?? [];
 
   const {
     control,
@@ -64,31 +71,73 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
       lifePhase: 'Deepening',
       sensitiveContent: false,
       tags: '',
+      voiceName: '',
+      useCustomVoice: false,
     },
   });
 
   const contentValue = watch('content') || '';
   const selectedGrowthAreas = watch('growthAreas') || [];
   const selectedLifePhase = watch('lifePhase');
+  const selectedVoiceName = watch('voiceName');
+
+  useEffect(() => {
+    if (!voicesCatalog?.voices.length) return;
+    const isKnownVoice = voicesCatalog.voices.some((voice) => voice.name === selectedVoiceName);
+    if (!isKnownVoice) {
+      const fallback =
+        voicesCatalog.voices.find((voice) => voice.name === voicesCatalog.default_voice) ||
+        voicesCatalog.voices[0];
+      setValue('voiceName', fallback.name);
+      setValue('useCustomVoice', fallback.is_custom);
+    }
+  }, [voicesCatalog, selectedVoiceName, setValue]);
 
   const onSubmit = async (data: any) => {
     try {
-      const formattedData = {
+      const formattedData: Record<string, unknown> = {
         story_type: isConfession ? 'confession' : 'meditation',
         title: data?.title,
         first_name: data?.firstName,
         story_input: data?.content,
         growth_areas: data?.growthAreas,
         life_phase: data?.lifePhase,
-        tags: data?.tags ? data?.tags.split(',').map((tag: string) => tag.trim()) : [],
+        tags: data?.tags
+          ? data.tags
+              .split(',')
+              .map((tag: string) => tag.trim())
+              .filter(Boolean)
+          : [],
         high_intensity: data?.sensitiveContent,
+        image_mode: coverFile ? 'user_uploaded' : 'ai_generated',
       };
 
-      const res = await generateStory(formattedData).unwrap();
+      if (data?.useCustomVoice) {
+        formattedData.use_custom_voice = true;
+      } else if (data?.voiceName) {
+        formattedData.voice_name = data.voiceName;
+      }
+
+      let res;
+      if (coverFile) {
+        const formData = new FormData();
+        Object.entries(formattedData).forEach(([key, value]) => {
+          if (value === undefined || value === null) return;
+          if (Array.isArray(value)) {
+            formData.append(key, JSON.stringify(value));
+          } else {
+            formData.append(key, String(value));
+          }
+        });
+        formData.append('image', coverFile);
+        res = await generateStory(formData).unwrap();
+      } else {
+        res = await generateStory(formattedData).unwrap();
+      }
 
       if (res.success) {
         setIsSuccess(true);
-
+        setCoverFile(null);
         reset({
           content: '',
           title: '',
@@ -97,6 +146,8 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
           lifePhase: 'Deepening',
           sensitiveContent: false,
           tags: '',
+          voiceName: voicesCatalog?.default_voice || voices[0]?.name || '',
+          useCustomVoice: false,
         });
       }
     } catch (error: any) {
@@ -159,6 +210,24 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
           >
             {contentValue.length}/8000
           </div>
+        </motion.div>
+
+        <motion.div variants={FADE_IN_UP_ITEM}>
+          <StoryVoicePicker
+            voices={voices}
+            selectedName={selectedVoiceName || ''}
+            onSelect={(voice) => {
+              setValue('voiceName', voice.name);
+              setValue('useCustomVoice', voice.is_custom);
+              trigger('voiceName');
+            }}
+            error={errors.voiceName?.message}
+            isLoading={isVoicesLoading}
+          />
+        </motion.div>
+
+        <motion.div variants={FADE_IN_UP_ITEM}>
+          <StoryCoverPicker coverFile={coverFile} onFileChange={setCoverFile} />
         </motion.div>
 
         {/* Growth Areas Pills */}
