@@ -4,13 +4,14 @@ import { cn } from '@/lib/utils';
 import { Upload } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useMemo, useRef } from 'react';
-import { toast } from 'sonner';
+import { appToast } from '@/utils/appToast';
 
 const MAX_COVER_BYTES = 8 * 1024 * 1024;
 const ACCEPTED_COVER_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 interface StoryCoverPickerProps {
   coverFile: File | null;
+  // eslint-disable-next-line no-unused-vars
   onFileChange: (file: File | null) => void;
   error?: string;
 }
@@ -42,12 +43,12 @@ export default function StoryCoverPicker({
     if (!file) return;
 
     if (!ACCEPTED_COVER_TYPES.includes(file.type)) {
-      toast.error('Cover must be a JPEG, PNG, or WebP image.');
+      appToast.error('Cover must be a JPEG, PNG, or WebP image.');
       return;
     }
 
     if (file.size > MAX_COVER_BYTES) {
-      toast.error('Cover image must be 8 MB or smaller.');
+      appToast.error('Cover image must be 8 MB or smaller.');
       return;
     }
 
@@ -56,16 +57,19 @@ export default function StoryCoverPicker({
 
   return (
     <div className="space-y-3">
-      <label className="block font-sans text-sm font-semibold">Choose A Cover Image</label>
+      <label className="block font-sans text-sm font-semibold">Choose a cover image</label>
 
       <div className="flex flex-wrap items-center gap-[19px]">
-        {uploadPreview && (
-          <button
-            type="button"
-            onClick={handleUploadClick}
-            className="relative h-[257px] w-[220px] shrink-0 cursor-pointer overflow-hidden rounded-lg"
-            aria-label="Replace cover image"
-          >
+        <button
+          type="button"
+          onClick={handleUploadClick}
+          className={cn(
+            'relative flex h-[257px] w-[220px] shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-solid transition-colors',
+            uploadPreview ? 'border-[#B39B7F]' : 'border-[#EEA13D] bg-[#F5F2F0]',
+          )}
+          aria-label={uploadPreview ? 'Replace cover image' : 'Upload cover image'}
+        >
+          {uploadPreview ? (
             <Image
               src={uploadPreview}
               alt="Uploaded cover preview"
@@ -73,19 +77,9 @@ export default function StoryCoverPicker({
               className="object-cover"
               unoptimized
             />
-          </button>
-        )}
-
-        <button
-          type="button"
-          onClick={handleUploadClick}
-          className={cn(
-            'relative flex h-[257px] w-[220px] shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-solid bg-[#F5F2F0] transition-colors',
-            uploadPreview ? 'border-[#B39B7F]' : 'border-[#EEA13D]',
+          ) : (
+            <Upload className="size-[53px] text-[#1A1A1A]" strokeWidth={1.75} />
           )}
-          aria-label="Upload cover image"
-        >
-          <Upload className="size-[53px] text-[#1A1A1A]" strokeWidth={1.75} />
         </button>
 
         <input

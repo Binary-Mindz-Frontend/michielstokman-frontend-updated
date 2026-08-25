@@ -8,6 +8,8 @@ export type StoryVoiceOption = {
   language: string;
   description: string;
   is_custom: boolean;
+  preview_url: string | null;
+  preview_text?: string;
 };
 
 /** Matches GET /v1/voices → data */
@@ -21,6 +23,13 @@ const mapVoice = (voice: Record<string, unknown>): StoryVoiceOption | null => {
   const name = String(voice.name ?? '').trim();
   if (!name) return null;
 
+  const previewRaw = voice.preview_url;
+  const preview_url =
+    typeof previewRaw === 'string' && previewRaw.trim() ? previewRaw.trim() : null;
+  const previewTextRaw = voice.preview_text;
+  const preview_text =
+    typeof previewTextRaw === 'string' && previewTextRaw.trim() ? previewTextRaw.trim() : undefined;
+
   return {
     name,
     label: String(voice.label ?? name),
@@ -28,6 +37,8 @@ const mapVoice = (voice: Record<string, unknown>): StoryVoiceOption | null => {
     language: String(voice.language ?? ''),
     description: String(voice.description ?? ''),
     is_custom: Boolean(voice.is_custom),
+    preview_url,
+    preview_text,
   };
 };
 
@@ -61,8 +72,7 @@ const normalizeVoices = (response: unknown): StoryVoicesCatalog => {
     .filter((voice): voice is StoryVoiceOption => voice !== null);
 
   const customRaw = catalog?.custom_voice;
-  const custom_voice =
-    customRaw && typeof customRaw === 'object' ? mapVoice(customRaw) : null;
+  const custom_voice = customRaw && typeof customRaw === 'object' ? mapVoice(customRaw) : null;
 
   if (custom_voice && !voices.some((voice) => voice.name === custom_voice.name)) {
     voices.push({ ...custom_voice, is_custom: true });
