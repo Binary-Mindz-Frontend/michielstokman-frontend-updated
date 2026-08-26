@@ -1,93 +1,153 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import UserDashboardHero from '@/components/main/userDashboard/UserDashboardHero/UserDashboardHero';
 import UserDashboardToolbar, {
   TCategory,
-  TStatus,
 } from '@/components/main/userDashboard/UserDashboardToolbar/UserDashboardToolbar';
 import UserDashboardCard, {
   UserDashboardItem,
 } from '@/components/main/userDashboard/UserDashboardCard/UserDashboardCard';
 import EditConfessionModal from '@/components/main/userDashboard/EditConfessionModal/EditConfessionModal';
 import DeleteConfessionModal from '@/components/main/userDashboard/DeleteConfessionModal/DeleteConfessionModal';
+import ShareStoryModal from '@/components/main/userDashboard/ShareStoryModal/ShareStoryModal';
+import ChangeVoiceModal from '@/components/main/userDashboard/ChangeVoiceModal/ChangeVoiceModal';
+import ArtworkModal from '@/components/main/userDashboard/ArtworkModal/ArtworkModal';
+import WithdrawStoryModal from '@/components/main/userDashboard/WithdrawStoryModal/WithdrawStoryModal';
 import ProductCardSkeleton from '@/components/main/Skeletons/ProductCardSkeleton';
 
 import { useGetProfileQuery } from '@/redux/features/userProfile/userProfile.api';
-import { useGetDiscoveryFeedQuery } from '@/redux/features/discoveryFeed/discoveryFeed.api';
+import {
+  useDeleteMyStoryMutation,
+  useGetMyStoriesQuery,
+  useResubmitMyStoryMutation,
+  useWithdrawMyStoryMutation,
+} from '@/redux/features/memberStory/memberStory.api';
 import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
+import { hasProcessingStories, type SubmissionTab } from '@/utils/memberStory.utils';
+import type { MemberStoryListItem, StoryType } from '@/types/memberStory.types';
 
 import fallbackCardImage from '@/assets/shared/confession-card-1.png';
+
+function mapStoryToCardItem(story: MemberStoryListItem): UserDashboardItem {
+  const storyType = story.story_type;
+  const isMeditation = storyType === 'meditation';
+
+  return {
+    id: story.id,
+    story_reference: story.story_reference,
+    category: isMeditation
+      ? 'MEDITATION'
+      : storyType === 'transformation'
+        ? 'TRANSFORMATION'
+        : 'STORY',
+    title: story.title || 'Untitled story',
+    description: story.excerpt || story.title || '',
+    image: story.cover_image_url || fallbackCardImage,
+    story_type: storyType,
+    generation_status: story.generation_status,
+    moderation_status: story.moderation_status,
+    submission_status: story.submission_status,
+    has_social_intros: story.has_social_intros,
+    audio_duration_seconds: story.audio_duration_seconds,
+    voice_name: story.voice_name,
+  };
+}
 
 export default function UserDashboardPage() {
   const { data: profileResponse } = useGetProfileQuery(undefined);
   const profileData = profileResponse?.data;
 
-  const { data: feedResponse, isLoading } = useGetDiscoveryFeedQuery(['confession', 'meditation']);
-
   const [selectedCategory, setSelectedCategory] = useState<TCategory>('CONFESSION');
-  const [selectedStatus, setSelectedStatus] = useState<TStatus>('Published');
+  const [selectedSubmissionTab, setSelectedSubmissionTab] = useState<SubmissionTab>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [page, setPage] = useState(1);
 
-  // Modals state
-  const [editingItem, setEditingItem] = useState<UserDashboardItem | null>(null);
-  const [deletingItem, setDeletingItem] = useState<UserDashboardItem | null>(null);
-  const [userItems, setUserItems] = useState<UserDashboardItem[] | null>(null);
+  const storyTypeFilter: StoryType | undefined =
+    selectedCategory === 'CONFESSION' ? 'confession' : 'meditation';
 
-  const rawItems = feedResponse?.data?.items || [];
+  const submissionFilter = selectedSubmissionTab === 'all' ? undefined : selectedSubmissionTab;
 
-  // Initial load mapping from feed / backend
-  const mappedItems: UserDashboardItem[] = rawItems.map((item: any) => ({
-    id: item.id,
-    category: 'STORY',
-    title: item.title || 'CONTACT WITH THE TREES',
-    description:
-      item.description || 'The First Tinae I Really Felt A Tree Was When I Was Ten................',
-    image: item.cover_image_url || fallbackCardImage,
-    rating: item.rating ? item.rating.toString() : '4.8',
-    listenedCount: item.listened_count ?? 0,
-    isExplicit: item.is_explicit ?? false,
-    story_type: item.story_type === 'meditation' ? 'meditation' : 'confession',
-    status: item.status || 'Published',
-  }));
-
-  const activeItems = userItems !== null ? userItems : mappedItems;
-
-  // Filter items based on Category, Status, and Search Query
-  const filteredItems = activeItems.filter((item) => {
-    const matchesCategory =
-      selectedCategory === 'CONFESSION'
-        ? item.story_type === 'confession'
-        : item.story_type === 'meditation';
-
-    const matchesStatus = selectedStatus
-      ? item.status === selectedStatus || selectedStatus === 'Published'
-      : true;
-
-    const matchesSearch = searchQuery
-      ? item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchQuery.toLowerCase())
-      : true;
-
-    return matchesCategory && matchesStatus && matchesSearch;
+  const {
+    data: storiesResponse,
+    isLoading,
+    isFetching,
+    refetch,
+  } = useGetMyStoriesQuery({
+    story_type: storyTypeFilter,
+    submission_status: submissionFilter,
+    page,
+    limit: 12,
   });
 
-  const handleEditSave = (updatedItem: UserDashboardItem) => {
-    const updated = (userItems !== null ? userItems : mappedItems).map((i) =>
-      i.id === updatedItem.id ? updatedItem : i,
+  const stories = storiesResponse?.data?.stories ?? [];
+  const shouldPollList = hasProcessingStories(stories);
+
+  useEffect(() => {
+    if (!shouldPollList) return undefined;
+    const timer = setInterval(() => {
+      refetch();
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [shouldPollList, refetch]);
+
+  const [deleteStory] = useDeleteMyStoryMutation();
+  const [withdrawStory, { isLoading: isWithdrawing }] = useWithdrawMyStoryMutation();
+  const [resubmitStory] = useResubmitMyStoryMutation();
+
+  const [editingItem, setEditingItem] = useState<UserDashboardItem | null>(null);
+  const [deletingItem, setDeletingItem] = useState<UserDashboardItem | null>(null);
+  const [sharingItem, setSharingItem] = useState<UserDashboardItem | null>(null);
+  const [voiceItem, setVoiceItem] = useState<UserDashboardItem | null>(null);
+  const [artworkItem, setArtworkItem] = useState<UserDashboardItem | null>(null);
+  const [withdrawingItem, setWithdrawingItem] = useState<UserDashboardItem | null>(null);
+
+  const mappedItems = useMemo(() => {
+    const stories = storiesResponse?.data?.stories ?? [];
+    return stories.map(mapStoryToCardItem);
+  }, [storiesResponse]);
+
+  const filteredItems = mappedItems.filter((item) => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      item.title.toLowerCase().includes(q) ||
+      item.description.toLowerCase().includes(q) ||
+      (item.story_reference?.toLowerCase().includes(q) ?? false)
     );
-    setUserItems(updated);
+  });
+
+  const submissionCounts = storiesResponse?.data?.counts;
+  const meta = storiesResponse?.data?.meta;
+  const totalPages = meta?.totalPages ?? 1;
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingItem) return;
+    try {
+      await deleteStory(String(deletingItem.id)).unwrap();
+    } catch (error) {
+      console.error('Failed to delete story:', error);
+    }
+    setDeletingItem(null);
   };
 
-  const handleDeleteConfirm = () => {
-    if (!deletingItem) return;
-    const updated = (userItems !== null ? userItems : mappedItems).filter(
-      (i) => i.id !== deletingItem.id,
-    );
-    setUserItems(updated);
-    setDeletingItem(null);
+  const handleWithdrawConfirm = async () => {
+    if (!withdrawingItem) return;
+    try {
+      await withdrawStory(String(withdrawingItem.id)).unwrap();
+    } catch (error) {
+      console.error('Failed to withdraw story:', error);
+    }
+    setWithdrawingItem(null);
+  };
+
+  const handleResubmit = async (item: UserDashboardItem) => {
+    try {
+      await resubmitStory(String(item.id)).unwrap();
+    } catch (error) {
+      console.error('Failed to resubmit story:', error);
+    }
   };
 
   return (
@@ -98,35 +158,38 @@ export default function UserDashboardPage() {
         variants={FADE_IN_UP_CONTAINER}
         className="mx-auto flex w-full max-w-350 flex-col items-center px-4"
       >
-        {/* Page Title */}
         <motion.h1
           variants={FADE_IN_UP_ITEM}
           className="font-edo mb-10 text-center text-3xl font-bold tracking-wider text-[#D98755] md:text-4xl"
         >
-          MY DASHBOARD
+          MY STORIES
         </motion.h1>
 
-        {/* User Dashboard Hero Section */}
         <motion.div variants={FADE_IN_UP_ITEM} className="w-full">
           <UserDashboardHero
-            confessionsCount={profileData?.reflections_count || 7}
-            meditationsCount={profileData?.meditations_count || 8}
+            confessionsCount={profileData?.reflections_count ?? 0}
+            meditationsCount={profileData?.meditations_count ?? 0}
           />
         </motion.div>
 
-        {/* Filter Toolbar Section */}
         <motion.div variants={FADE_IN_UP_ITEM} className="w-full">
           <UserDashboardToolbar
             selectedCategory={selectedCategory}
-            onCategoryChange={setSelectedCategory}
-            selectedStatus={selectedStatus}
-            onStatusChange={setSelectedStatus}
+            onCategoryChange={(category) => {
+              setSelectedCategory(category);
+              setPage(1);
+            }}
+            selectedSubmissionTab={selectedSubmissionTab}
+            onSubmissionTabChange={(tab) => {
+              setSelectedSubmissionTab(tab);
+              setPage(1);
+            }}
+            submissionCounts={submissionCounts}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
           />
         </motion.div>
 
-        {/* Cards Grid Section */}
         <motion.div variants={FADE_IN_UP_ITEM} className="w-full">
           {isLoading ? (
             <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
@@ -137,16 +200,47 @@ export default function UserDashboardPage() {
                 ))}
             </div>
           ) : filteredItems.length > 0 ? (
-            <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-              {filteredItems.map((item) => (
-                <UserDashboardCard
-                  key={item.id}
-                  item={item}
-                  onEdit={setEditingItem}
-                  onDelete={setDeletingItem}
-                />
-              ))}
-            </div>
+            <>
+              <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                {filteredItems.map((item) => (
+                  <UserDashboardCard
+                    key={item.id}
+                    item={item}
+                    onEdit={setEditingItem}
+                    onChangeVoice={setVoiceItem}
+                    onArtwork={setArtworkItem}
+                    onShare={setSharingItem}
+                    onWithdraw={setWithdrawingItem}
+                    onResubmit={handleResubmit}
+                    onDelete={setDeletingItem}
+                  />
+                ))}
+              </div>
+
+              {totalPages > 1 ? (
+                <div className="mt-8 flex items-center justify-center gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page <= 1 || isFetching}
+                    className="font-playpen rounded-xl border border-[#EBE4D5] bg-white px-4 py-2 text-xs font-semibold text-gray-700 disabled:opacity-40"
+                  >
+                    Previous
+                  </button>
+                  <span className="font-sans text-xs text-gray-600">
+                    Page {page} of {totalPages}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page >= totalPages || isFetching}
+                    className="font-playpen rounded-xl border border-[#EBE4D5] bg-white px-4 py-2 text-xs font-semibold text-gray-700 disabled:opacity-40"
+                  >
+                    Next
+                  </button>
+                </div>
+              ) : null}
+            </>
           ) : (
             <div className="w-full rounded-2xl border border-dashed border-[#EBE4D5] bg-[#FAF7F2] py-16 text-center">
               <p className="font-playpen text-base font-bold text-gray-800">
@@ -159,20 +253,44 @@ export default function UserDashboardPage() {
           )}
         </motion.div>
 
-        {/* Edit Modal */}
         <EditConfessionModal
           isOpen={!!editingItem}
           item={editingItem}
           onClose={() => setEditingItem(null)}
-          onSave={handleEditSave}
         />
 
-        {/* Delete Confirmation Modal */}
         <DeleteConfessionModal
           isOpen={!!deletingItem}
           item={deletingItem}
           onClose={() => setDeletingItem(null)}
           onConfirm={handleDeleteConfirm}
+        />
+
+        <ShareStoryModal
+          isOpen={!!sharingItem}
+          storyId={sharingItem ? String(sharingItem.id) : null}
+          storyTitle={sharingItem?.title}
+          onClose={() => setSharingItem(null)}
+        />
+
+        <ChangeVoiceModal
+          isOpen={!!voiceItem}
+          item={voiceItem}
+          onClose={() => setVoiceItem(null)}
+        />
+
+        <ArtworkModal
+          isOpen={!!artworkItem}
+          item={artworkItem}
+          onClose={() => setArtworkItem(null)}
+        />
+
+        <WithdrawStoryModal
+          isOpen={!!withdrawingItem}
+          item={withdrawingItem}
+          onClose={() => setWithdrawingItem(null)}
+          onConfirm={handleWithdrawConfirm}
+          isLoading={isWithdrawing}
         />
       </motion.div>
     </main>

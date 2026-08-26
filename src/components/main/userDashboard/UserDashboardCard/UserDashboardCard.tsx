@@ -1,22 +1,42 @@
 'use client';
 
-import ratingBadge from '@/assets/shared/rating-badge.png';
 import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicActionButton';
-import { Trash2 } from 'lucide-react';
+import {
+  canChangeArtwork,
+  canChangeVoice,
+  canEditStory,
+  canResubmitStory,
+  canShareStory,
+  canWithdrawStory,
+  formatAudioDuration,
+  getGenerationStatusLabel,
+  getModerationStatusLabel,
+  getSubmissionStatusLabel,
+} from '@/utils/memberStory.utils';
+import type {
+  GenerationStatus,
+  ModerationStatus,
+  SubmissionStatus,
+  StoryType,
+} from '@/types/memberStory.types';
 import Image, { StaticImageData } from 'next/image';
 import React from 'react';
 
 export interface UserDashboardItem {
-  id: string | number;
+  id: string;
+  story_reference?: string | null;
   category: string;
   title: string;
   description: string;
   image: string | StaticImageData;
-  rating?: string;
-  listenedCount: number;
-  isExplicit?: boolean;
-  story_type?: 'confession' | 'meditation';
-  status?: 'Pending' | 'Flagged' | 'Published' | 'Rejected';
+  story_type: StoryType;
+  generation_status: GenerationStatus;
+  moderation_status: ModerationStatus;
+  submission_status: SubmissionStatus;
+  has_social_intros: boolean;
+  moderation_notes?: string | null;
+  audio_duration_seconds?: number | null;
+  voice_name?: string | null;
 }
 
 interface UserDashboardCardProps {
@@ -24,18 +44,84 @@ interface UserDashboardCardProps {
   // eslint-disable-next-line no-unused-vars
   onEdit: (item: UserDashboardItem) => void;
   // eslint-disable-next-line no-unused-vars
+  onChangeVoice: (item: UserDashboardItem) => void;
+  // eslint-disable-next-line no-unused-vars
+  onArtwork: (item: UserDashboardItem) => void;
+  // eslint-disable-next-line no-unused-vars
+  onShare: (item: UserDashboardItem) => void;
+  // eslint-disable-next-line no-unused-vars
+  onWithdraw: (item: UserDashboardItem) => void;
+  // eslint-disable-next-line no-unused-vars
+  onResubmit: (item: UserDashboardItem) => void;
+  // eslint-disable-next-line no-unused-vars
   onDelete: (item: UserDashboardItem) => void;
 }
 
-const UserDashboardCard: React.FC<UserDashboardCardProps> = ({ item, onEdit, onDelete }) => {
-  const isConfession = item.story_type !== 'meditation';
-  const primaryColor = isConfession ? '#EB2874' : '#EEA13D';
-  const buttonBgColor = isConfession ? '#D22D4C' : '#EEA13D';
+const GENERATION_COLORS: Record<GenerationStatus, string> = {
+  processing: 'bg-blue-100 text-blue-800',
+  completed: 'bg-emerald-100 text-emerald-800',
+  failed: 'bg-red-100 text-red-800',
+};
+
+const MODERATION_COLORS: Record<ModerationStatus, string> = {
+  pending: 'bg-amber-100 text-amber-800',
+  approved: 'bg-green-100 text-green-800',
+  rejected: 'bg-red-100 text-red-800',
+  flagged: 'bg-orange-100 text-orange-800',
+};
+
+const SUBMISSION_COLORS: Record<SubmissionStatus, string> = {
+  submitted: 'bg-teal-100 text-teal-800',
+  withdrawn: 'bg-gray-100 text-gray-700',
+  draft: 'bg-slate-100 text-slate-700',
+};
+
+function ActionButton({
+  label,
+  onClick,
+  disabled,
+  variant = 'default',
+}: {
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+  variant?: 'default' | 'danger';
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`font-playpen rounded-md px-2 py-1 text-[10px] font-bold tracking-wide uppercase transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+        variant === 'danger'
+          ? 'text-red-600 hover:bg-red-50'
+          : 'text-[#301C05] hover:bg-[#EBE4D5]/60'
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
+const UserDashboardCard: React.FC<UserDashboardCardProps> = ({
+  item,
+  onEdit,
+  onChangeVoice,
+  onArtwork,
+  onShare,
+  onWithdraw,
+  onResubmit,
+  onDelete,
+}) => {
+  const isConfession = item.story_type === 'confession';
+  const isMeditation = item.story_type === 'meditation';
+  const primaryColor = isMeditation ? '#EEA13D' : '#EB2874';
+  const buttonBgColor = isMeditation ? '#EEA13D' : '#D22D4C';
+  const duration = formatAudioDuration(item.audio_duration_seconds);
 
   return (
     <div className="relative flex flex-col justify-between rounded-md bg-[#F8F3ED] p-4 transition-all hover:shadow-xs">
       <div>
-        {/* Top Image Box with Edit Badge & Delete Action */}
         <div className="relative mb-4 h-60 w-full overflow-hidden rounded-md sm:h-64">
           <Image
             src={item.image}
@@ -46,39 +132,40 @@ const UserDashboardCard: React.FC<UserDashboardCardProps> = ({ item, onEdit, onD
             priority
           />
 
-          {/* Edit & Delete Action Badges at Top-Right Corner */}
-          <div className="absolute top-3 right-4 z-20 flex items-center gap-2.5 sm:right-5">
-            {/* Edit Badge (Paper/brush style matching user screenshot) */}
-            <button
-              type="button"
-              onClick={() => onEdit(item)}
-              className="relative flex h-7 w-12 cursor-pointer items-center justify-center transition-transform hover:scale-105"
-              title="Edit"
+          <div className="absolute top-3 left-3 z-20 flex max-w-[70%] flex-col gap-1">
+            <span
+              className={`w-fit rounded-full px-2 py-0.5 font-sans text-[9px] font-bold tracking-wide uppercase ${GENERATION_COLORS[item.generation_status]}`}
             >
-              <div className="absolute inset-0 h-full w-full">
-                <Image src={ratingBadge} alt="Edit" fill className="object-fill" />
-              </div>
-              <span className="relative z-10 font-sans text-xs font-bold text-[#EB2874]">Edit</span>
-            </button>
-
-            {/* Delete Button */}
-            <button
-              type="button"
-              onClick={() => onDelete(item)}
-              className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-white/90 text-red-600 shadow-md transition-all hover:bg-red-600 hover:text-white"
-              title="Delete"
+              {getGenerationStatusLabel(item.generation_status)}
+            </span>
+            <span
+              className={`w-fit rounded-full px-2 py-0.5 font-sans text-[9px] font-bold tracking-wide uppercase ${MODERATION_COLORS[item.moderation_status]}`}
             >
-              <Trash2 size={14} />
-            </button>
+              {getModerationStatusLabel(item.moderation_status)}
+            </span>
+            <span
+              className={`w-fit rounded-full px-2 py-0.5 font-sans text-[9px] font-bold tracking-wide uppercase ${SUBMISSION_COLORS[item.submission_status]}`}
+            >
+              {getSubmissionStatusLabel(item.submission_status)}
+            </span>
+            {item.has_social_intros ? (
+              <span className="w-fit rounded-full bg-[#D98755]/15 px-2 py-0.5 font-sans text-[9px] font-bold tracking-wide text-[#D98755] uppercase">
+                Ready to share
+              </span>
+            ) : null}
           </div>
         </div>
 
-        {/* Category Label */}
+        {item.story_reference ? (
+          <span className="font-sans text-[10px] font-semibold tracking-widest text-gray-500 uppercase">
+            {item.story_reference}
+          </span>
+        ) : null}
+
         <span className="font-sans text-xs font-semibold tracking-widest text-[#301C05] uppercase">
           {item.category || (isConfession ? 'STORY' : 'MEDITATION')}
         </span>
 
-        {/* Title */}
         <h3
           style={{ color: primaryColor }}
           className="font-edo mt-1 text-lg font-medium tracking-wide capitalize sm:text-xl"
@@ -86,22 +173,56 @@ const UserDashboardCard: React.FC<UserDashboardCardProps> = ({ item, onEdit, onD
           {item.title}
         </h3>
 
-        {/* Description Excerpt */}
         <p className="mt-2 line-clamp-3 font-sans text-sm leading-relaxed font-medium text-black">
           {item.description}
         </p>
 
-        {/* Audio Meta Information */}
+        {item.moderation_status === 'rejected' && item.moderation_notes ? (
+          <p className="mt-2 rounded-md border border-red-200 bg-red-50 px-2 py-1.5 font-sans text-xs text-red-700">
+            {item.moderation_notes}
+          </p>
+        ) : null}
+
         <p className="my-2 font-sans text-xs font-medium text-[#301C05]">
-          Listened To {item.listenedCount} Times {item.isExplicit ? '• Explicit' : ''}
+          {[
+            duration ? `${duration} listen` : null,
+            item.voice_name ? `Voice: ${item.voice_name}` : null,
+          ]
+            .filter(Boolean)
+            .join(' · ')}
         </p>
+
+        <div className="flex flex-wrap gap-1 border-t border-[#EBE4D5]/80 pt-2">
+          <ActionButton label="Edit" onClick={() => onEdit(item)} disabled={!canEditStory(item)} />
+          <ActionButton
+            label="Voice"
+            onClick={() => onChangeVoice(item)}
+            disabled={!canChangeVoice(item)}
+          />
+          <ActionButton
+            label="Artwork"
+            onClick={() => onArtwork(item)}
+            disabled={!canChangeArtwork(item)}
+          />
+          <ActionButton
+            label="Share"
+            onClick={() => onShare(item)}
+            disabled={!canShareStory(item)}
+          />
+          {canWithdrawStory(item) ? (
+            <ActionButton label="Withdraw" onClick={() => onWithdraw(item)} />
+          ) : null}
+          {canResubmitStory(item) ? (
+            <ActionButton label="Resubmit" onClick={() => onResubmit(item)} />
+          ) : null}
+          <ActionButton label="Delete" onClick={() => onDelete(item)} variant="danger" />
+        </div>
       </div>
 
-      {/* Start Listening Action Button */}
-      <div className="mt-2">
+      <div className="mt-3">
         <DynamicActionButton
-          text="Start Listening"
-          href={`/details/${item.id}`}
+          text="Open story"
+          href={`/user-dashboard/stories/${item.id}`}
           bgColor={buttonBgColor}
           textColor="white"
         />

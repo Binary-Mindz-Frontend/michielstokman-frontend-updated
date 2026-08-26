@@ -17,7 +17,12 @@ import { FieldErrors, useForm } from 'react-hook-form';
 import * as z from 'zod';
 import StoryCoverPicker from '../StoryCoverPicker/StoryCoverPicker';
 import StoryVoicePicker from '../StoryVoicePicker/StoryVoicePicker';
+import CustomVoicePanel from '../CustomVoicePanel/CustomVoicePanel';
 import SuccessModal from '../SuccessModal/SuccessModal';
+import {
+  appendStoryPayloadToFormData,
+  buildStoryGeneratePayload,
+} from '@/utils/storyGenerate.utils';
 
 const GROWTH_AREAS = [
   'Fear & Freedom',
@@ -51,7 +56,6 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
   const [generateStory, { isLoading: isGenerating }] = useGenerateStoryMutation();
   const { data: voicesCatalog, isLoading: isVoicesLoading } = useGetVoicesQuery();
   const isConfession = category === 'Confessions';
-  const voices = voicesCatalog?.voices ?? [];
 
   const {
     control,
@@ -80,9 +84,15 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
   const selectedGrowthAreas = watch('growthAreas') || [];
   const selectedLifePhase = watch('lifePhase');
   const selectedVoiceName = watch('voiceName');
+  const selectedUseCustomVoice = watch('useCustomVoice');
+  const voices = voicesCatalog?.voices ?? [];
 
   useEffect(() => {
     if (!voicesCatalog?.voices.length) return;
+    if (selectedUseCustomVoice && voicesCatalog.custom_voice) {
+      setValue('voiceName', voicesCatalog.custom_voice.name);
+      return;
+    }
     const isKnownVoice = voicesCatalog.voices.some((voice) => voice.name === selectedVoiceName);
     if (!isKnownVoice) {
       const fallback =
@@ -91,11 +101,16 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
       setValue('voiceName', fallback.name);
       setValue('useCustomVoice', fallback.is_custom);
     }
-  }, [voicesCatalog, selectedVoiceName, setValue]);
+  }, [voicesCatalog, selectedVoiceName, selectedUseCustomVoice, setValue]);
 
   const onSubmit = async (data: any) => {
+    if (data?.useCustomVoice && !voicesCatalog?.custom_voice) {
+      appToast.error('Clone your voice first using the panel above, or pick a preset voice.');
+      return;
+    }
+
     try {
-      const formattedData: Record<string, unknown> = {
+      const payload = buildStoryGeneratePayload({
         story_type: isConfession ? 'confession' : 'meditation',
         title: data?.title,
         first_name: data?.firstName,
@@ -109,30 +124,19 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
               .filter(Boolean)
           : [],
         high_intensity: data?.sensitiveContent,
-        image_mode: coverFile ? 'user_uploaded' : 'ai_generated',
-      };
-
-      if (data?.useCustomVoice) {
-        formattedData.use_custom_voice = true;
-      } else if (data?.voiceName) {
-        formattedData.voice_name = data.voiceName;
-      }
+        voice_name: data?.useCustomVoice ? undefined : data?.voiceName,
+        use_custom_voice: Boolean(data?.useCustomVoice),
+        has_cover_file: Boolean(coverFile),
+      });
 
       let res;
       if (coverFile) {
         const formData = new FormData();
-        Object.entries(formattedData).forEach(([key, value]) => {
-          if (value === undefined || value === null) return;
-          if (Array.isArray(value)) {
-            formData.append(key, JSON.stringify(value));
-          } else {
-            formData.append(key, String(value));
-          }
-        });
+        appendStoryPayloadToFormData(formData, payload);
         formData.append('image', coverFile);
         res = await generateStory(formData).unwrap();
       } else {
-        res = await generateStory(formattedData).unwrap();
+        res = await generateStory(payload).unwrap();
       }
 
       if (res.success) {
@@ -225,6 +229,15 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
         </motion.div>
 
         <motion.div variants={FADE_IN_UP_ITEM}>
+          <CustomVoicePanel
+            onVoiceReady={(voicePickerName) => {
+              setValue('voiceName', voicePickerName);
+              setValue('useCustomVoice', true);
+            }}
+          />
+        </motion.div>
+
+        <motion.div variants={FADE_IN_UP_ITEM}>
           <StoryVoicePicker
             voices={voices}
             selectedName={selectedVoiceName || ''}
@@ -236,6 +249,12 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
             error={errors.voiceName?.message}
             isLoading={isVoicesLoading}
           />
+          {selectedUseCustomVoice ? (
+            <p className="mt-2 font-sans text-xs text-[#666]">
+              Your cloned voice will narrate this story — with AI-generated artwork or your uploaded
+              cover.
+            </p>
+          ) : null}
         </motion.div>
 
         <motion.div variants={FADE_IN_UP_ITEM}>
