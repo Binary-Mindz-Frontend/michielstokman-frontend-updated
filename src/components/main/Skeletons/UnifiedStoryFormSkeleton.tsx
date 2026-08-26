@@ -27,6 +27,24 @@ export default function UnifiedStoryFormSkeleton() {
         </div>
       </div>
 
+      {/* Voice & Cover pickers */}
+      <div className="space-y-6">
+        <div className="space-y-3">
+          <Skeleton className="h-4 w-56" />
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {[...Array(4)].map((_, i) => (
+              <Skeleton key={i} className="h-22 w-full rounded-md" />
+            ))}
+          </div>
+        </div>
+        <div className="space-y-3">
+          <Skeleton className="h-4 w-48" />
+          <div className="flex gap-4">
+            <Skeleton className="h-[257px] w-[220px] rounded-lg" />
+          </div>
+        </div>
+      </div>
+
       {/* Selection Areas Section */}
       <div className="space-y-6">
         {/* Growth Areas Chips Skeleton */}

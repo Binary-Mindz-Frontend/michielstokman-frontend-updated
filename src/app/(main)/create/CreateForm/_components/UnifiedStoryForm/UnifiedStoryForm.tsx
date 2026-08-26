@@ -7,15 +7,22 @@ import TextAreaField from '@/components/dashboard/Fields/TextAreaField/TextAreaF
 import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicActionButton';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
-import { useGenerateStoryMutation } from '@/redux/features/aiStory/aiStory.api';
+import { useGenerateStoryMutation, useGetVoicesQuery } from '@/redux/features/aiStory/aiStory.api';
 import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
+import { appToast } from '@/utils/appToast';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
+import { useEffect, useState } from 'react';
+import { FieldErrors, useForm } from 'react-hook-form';
 import * as z from 'zod';
+import StoryCoverPicker from '../StoryCoverPicker/StoryCoverPicker';
+import StoryVoicePicker from '../StoryVoicePicker/StoryVoicePicker';
+import CustomVoicePanel from '../CustomVoicePanel/CustomVoicePanel';
 import SuccessModal from '../SuccessModal/SuccessModal';
+import {
+  appendStoryPayloadToFormData,
+  buildStoryGeneratePayload,
+} from '@/utils/storyGenerate.utils';
 
 const GROWTH_AREAS = [
   'Fear & Freedom',
@@ -39,11 +46,15 @@ const schema = z.object({
   lifePhase: z.string().min(1, 'Select a life phase'),
   tags: z.string().optional(),
   sensitiveContent: z.boolean().default(false),
+  voiceName: z.string().optional(),
+  useCustomVoice: z.boolean().default(false),
 });
 
 export default function UnifiedStoryForm({ category }: { category: string }) {
   const [isSuccess, setIsSuccess] = useState(false);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
   const [generateStory, { isLoading: isGenerating }] = useGenerateStoryMutation();
+  const { data: voicesCatalog, isLoading: isVoicesLoading } = useGetVoicesQuery();
   const isConfession = category === 'Confessions';
 
   const {
@@ -64,31 +75,73 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
       lifePhase: 'Deepening',
       sensitiveContent: false,
       tags: '',
+      voiceName: '',
+      useCustomVoice: false,
     },
   });
 
   const contentValue = watch('content') || '';
   const selectedGrowthAreas = watch('growthAreas') || [];
   const selectedLifePhase = watch('lifePhase');
+  const selectedVoiceName = watch('voiceName');
+  const selectedUseCustomVoice = watch('useCustomVoice');
+  const voices = voicesCatalog?.voices ?? [];
+
+  useEffect(() => {
+    if (!voicesCatalog?.voices.length) return;
+    if (selectedUseCustomVoice && voicesCatalog.custom_voice) {
+      setValue('voiceName', voicesCatalog.custom_voice.name);
+      return;
+    }
+    const isKnownVoice = voicesCatalog.voices.some((voice) => voice.name === selectedVoiceName);
+    if (!isKnownVoice) {
+      const fallback =
+        voicesCatalog.voices.find((voice) => voice.name === voicesCatalog.default_voice) ||
+        voicesCatalog.voices[0];
+      setValue('voiceName', fallback.name);
+      setValue('useCustomVoice', fallback.is_custom);
+    }
+  }, [voicesCatalog, selectedVoiceName, selectedUseCustomVoice, setValue]);
 
   const onSubmit = async (data: any) => {
+    if (data?.useCustomVoice && !voicesCatalog?.custom_voice) {
+      appToast.error('Clone your voice first using the panel above, or pick a preset voice.');
+      return;
+    }
+
     try {
-      const formattedData = {
+      const payload = buildStoryGeneratePayload({
         story_type: isConfession ? 'confession' : 'meditation',
         title: data?.title,
         first_name: data?.firstName,
         story_input: data?.content,
         growth_areas: data?.growthAreas,
         life_phase: data?.lifePhase,
-        tags: data?.tags ? data?.tags.split(',').map((tag: string) => tag.trim()) : [],
+        tags: data?.tags
+          ? data.tags
+              .split(',')
+              .map((tag: string) => tag.trim())
+              .filter(Boolean)
+          : [],
         high_intensity: data?.sensitiveContent,
-      };
+        voice_name: data?.useCustomVoice ? undefined : data?.voiceName,
+        use_custom_voice: Boolean(data?.useCustomVoice),
+        has_cover_file: Boolean(coverFile),
+      });
 
-      const res = await generateStory(formattedData).unwrap();
+      let res;
+      if (coverFile) {
+        const formData = new FormData();
+        appendStoryPayloadToFormData(formData, payload);
+        formData.append('image', coverFile);
+        res = await generateStory(formData).unwrap();
+      } else {
+        res = await generateStory(payload).unwrap();
+      }
 
       if (res.success) {
         setIsSuccess(true);
-
+        setCoverFile(null);
         reset({
           content: '',
           title: '',
@@ -97,12 +150,25 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
           lifePhase: 'Deepening',
           sensitiveContent: false,
           tags: '',
+          voiceName: voicesCatalog?.default_voice || voices[0]?.name || '',
+          useCustomVoice: false,
         });
       }
     } catch (error: any) {
-      toast.error(error?.data?.message || 'Something went wrong!');
+      appToast.error(error?.data?.message || 'Something went wrong!');
     }
   };
+
+  const onInvalid = (formErrors: FieldErrors) => {
+    const order = ['title', 'firstName', 'content', 'growthAreas', 'lifePhase'] as const;
+    const firstKey = order.find((key) => formErrors[key]);
+    const firstMessage = firstKey ? formErrors[firstKey]?.message : undefined;
+    appToast.error(
+      typeof firstMessage === 'string' ? firstMessage : 'Please fill in the required fields.',
+    );
+  };
+
+  const submitStory = handleSubmit(onSubmit, onInvalid);
 
   return (
     <>
@@ -110,7 +176,7 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
         initial="hidden"
         animate="visible"
         variants={FADE_IN_UP_CONTAINER}
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={submitStory}
         className="space-y-6"
       >
         {/* Title Input using custom InputField */}
@@ -118,7 +184,7 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
           <InputField
             label="Title"
             name="title"
-            placeholder="Give Your Story A Name..."
+            placeholder="Give your story a name..."
             control={control}
             error={errors.title?.message}
             required
@@ -128,9 +194,9 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
         {/* First Name Input using custom InputField */}
         <motion.div variants={FADE_IN_UP_ITEM}>
           <InputField
-            label="Your First Name"
+            label="Your first name"
             name="firstName"
-            placeholder="Give Your Story A Name..."
+            placeholder="Your first name..."
             control={control}
             error={errors.firstName?.message}
             required
@@ -140,15 +206,16 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
         {/* Content Textarea using custom TextAreaField */}
         <motion.div variants={FADE_IN_UP_ITEM}>
           <TextAreaField
-            label={isConfession ? 'Your Story' : 'Meditation Script'}
+            label={isConfession ? 'Your story' : 'Meditation script'}
             name="content"
             placeholder={
               isConfession
-                ? 'Start Where It Hurts. Or Where It Healed.'
+                ? 'Start where it hurts. Or where it healed.'
                 : 'Write in second person (you)...'
             }
             control={control}
             error={errors.content?.message}
+            required
             rows={5}
           />
           <div
@@ -161,10 +228,43 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
           </div>
         </motion.div>
 
+        <motion.div variants={FADE_IN_UP_ITEM}>
+          <CustomVoicePanel
+            onVoiceReady={(voicePickerName) => {
+              setValue('voiceName', voicePickerName);
+              setValue('useCustomVoice', true);
+            }}
+          />
+        </motion.div>
+
+        <motion.div variants={FADE_IN_UP_ITEM}>
+          <StoryVoicePicker
+            voices={voices}
+            selectedName={selectedVoiceName || ''}
+            onSelect={(voice) => {
+              setValue('voiceName', voice.name);
+              setValue('useCustomVoice', voice.is_custom);
+              trigger('voiceName');
+            }}
+            error={errors.voiceName?.message}
+            isLoading={isVoicesLoading}
+          />
+          {selectedUseCustomVoice ? (
+            <p className="mt-2 font-sans text-xs text-[#666]">
+              Your cloned voice will narrate this story — with AI-generated artwork or your uploaded
+              cover.
+            </p>
+          ) : null}
+        </motion.div>
+
+        <motion.div variants={FADE_IN_UP_ITEM}>
+          <StoryCoverPicker coverFile={coverFile} onFileChange={setCoverFile} />
+        </motion.div>
+
         {/* Growth Areas Pills */}
         <motion.div variants={FADE_IN_UP_ITEM} className="space-y-3">
           <label className="block font-sans text-sm font-semibold">
-            Growth Areas (Choose All That Resonate)
+            Growth areas (choose all that resonate)
           </label>
           <div className="flex flex-wrap gap-2.5">
             {GROWTH_AREAS.map((area) => {
@@ -202,7 +302,7 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
         {/* Life Phase Pills */}
         <motion.div variants={FADE_IN_UP_ITEM} className="space-y-3">
           <label className="block font-sans text-sm font-semibold text-[#1A1A1A]">
-            Life Phase This Speaks To
+            Life phase this speaks to
           </label>
           <div className="flex flex-wrap gap-2.5">
             {LIFE_PHASES.map((phase) => {
@@ -237,23 +337,23 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
         {/* Tags Input using custom InputField */}
         <motion.div variants={FADE_IN_UP_ITEM} className="space-y-1">
           <InputField
-            label="Tags (Optional)"
+            label="Tags (optional)"
             name="tags"
-            placeholder="Add Words That Describe Your Story..."
+            placeholder="Add words that describe your story..."
             control={control}
             error={errors.tags?.message}
           />
           <p className="font-sans text-xs text-[#888]">
-            Examples: Vulnerability, Courage, Healing, Letting Go...
+            Examples: vulnerability, courage, healing, letting go...
           </p>
         </motion.div>
 
         {/* Sensitive Content Toggle Switch */}
         <motion.div variants={FADE_IN_UP_ITEM} className="flex items-center justify-between py-2">
           <div>
-            <p className="font-sans text-sm font-bold text-[#1A1A1A]">Contains Sensitive Content</p>
+            <p className="font-sans text-sm font-bold text-[#1A1A1A]">Contains sensitive content</p>
             <p className="font-sans text-xs text-[#777]">
-              Some Truths Are Heavy. That&apos;s Okay.
+              Some truths are heavy. That&apos;s okay.
             </p>
           </div>
           <Switch
@@ -271,7 +371,7 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
                 ? 'Submitting...'
                 : `Submit ${isConfession ? 'Confession' : 'Meditation'}`
             }
-            onClick={handleSubmit(onSubmit)}
+            onClick={submitStory}
             bgColor="#D22D4C"
             textColor="white"
             fullWidth

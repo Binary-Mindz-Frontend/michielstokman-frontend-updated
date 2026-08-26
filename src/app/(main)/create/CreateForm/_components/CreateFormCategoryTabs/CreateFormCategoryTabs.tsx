@@ -21,7 +21,7 @@ export default function CreateFormCategoryTabs({ selected }: { selected: string 
   return (
     <div className="mb-6 space-y-3">
       <label className="font-playpen block text-sm font-semibold text-[#1A1A1A]">
-        What Are You Sharing?
+        What are you sharing?
       </label>
       <div className="flex flex-wrap gap-4">
         {/* CONFESSION TAB */}

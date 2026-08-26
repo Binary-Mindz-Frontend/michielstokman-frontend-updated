@@ -5,6 +5,7 @@ export type IStoryItemType = {
   id: string;
   title: string;
   description: string;
+  excerpt?: string | null;
   story_type: 'confession' | 'meditation';
   cover_image_url: string | null;
   audio_path: string;

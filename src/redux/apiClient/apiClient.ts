@@ -114,5 +114,8 @@ export const apiClient = createApi({
     'Orders_History',
     'Photos_Management',
     'Voice_Review',
+    'Voices',
+    'MemberStories',
+    'CustomVoice',
   ],
 });
