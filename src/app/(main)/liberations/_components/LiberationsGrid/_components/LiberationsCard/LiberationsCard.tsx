@@ -14,8 +14,7 @@ export interface LiberationItem {
   description: string;
   image: string | StaticImageData;
   price: string;
-  listenedCount: number;
-  isExplicit?: boolean;
+  totalDays: number | null;
 }
 
 interface LiberationsCardProps {
@@ -63,10 +62,11 @@ const LiberationsCard: React.FC<LiberationsCardProps> = ({ item }) => {
           {item.description}
         </p>
 
-        {/* Audio Meta Information */}
-        <p className="my-2 font-sans text-xs font-medium text-[#301C05]">
-          Listened To {item.listenedCount} Times {item.isExplicit ? '• Explicit' : ''}
-        </p>
+        {item.totalDays ? (
+          <p className="my-2 font-sans text-xs font-medium text-[#301C05]">
+            {item.totalDays} Day{item.totalDays === 1 ? '' : 's'}
+          </p>
+        ) : null}
       </div>
 
       {/* Start Liberations Action Button */}
