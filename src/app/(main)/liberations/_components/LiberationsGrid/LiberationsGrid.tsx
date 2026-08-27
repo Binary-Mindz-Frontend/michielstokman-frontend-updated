@@ -38,8 +38,7 @@ export default function LiberationsGrid() {
       : item.rating
         ? item.rating.toString()
         : '€47',
-    listenedCount: item.listened_count ?? 277,
-    isExplicit: item.is_explicit ?? false,
+    totalDays: item.total_days ?? null,
   }));
 
   const visibleLiberations = liberationsData.slice(0, visibleCount);
