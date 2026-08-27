@@ -26,9 +26,8 @@ import {
 } from '@/redux/features/memberStory/memberStory.api';
 import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
 import { hasProcessingStories, type SubmissionTab } from '@/utils/memberStory.utils';
+import { resolveStoryCoverSrc } from '@/utils/storyCover.utils';
 import type { MemberStoryListItem, StoryType } from '@/types/memberStory.types';
-
-import fallbackCardImage from '@/assets/shared/confession-card-1.png';
 
 function mapStoryToCardItem(story: MemberStoryListItem): UserDashboardItem {
   const storyType = story.story_type;
@@ -44,7 +43,7 @@ function mapStoryToCardItem(story: MemberStoryListItem): UserDashboardItem {
         : 'STORY',
     title: story.title || 'Untitled story',
     description: story.excerpt || story.title || '',
-    image: story.cover_image_url || fallbackCardImage,
+    image: resolveStoryCoverSrc(story.cover_image_url, storyType),
     story_type: storyType,
     generation_status: story.generation_status,
     moderation_status: story.moderation_status,
@@ -284,6 +283,7 @@ export default function UserDashboardPage() {
           isOpen={!!artworkItem}
           item={artworkItem}
           onClose={() => setArtworkItem(null)}
+          onUpdated={() => refetch()}
         />
 
         <WithdrawStoryModal

@@ -1,6 +1,8 @@
 'use client';
 
 import ShareStoryModal from '@/components/main/userDashboard/ShareStoryModal/ShareStoryModal';
+import ArtworkModal from '@/components/main/userDashboard/ArtworkModal/ArtworkModal';
+import type { UserDashboardItem } from '@/components/main/userDashboard/UserDashboardCard/UserDashboardCard';
 import StoryPlayer from '@/app/(main)/details/StoryPlayer/StoryPlayer';
 import { useGetMyStoryQuery } from '@/redux/features/memberStory/memberStory.api';
 import {
@@ -9,13 +11,16 @@ import {
   getModerationStatusLabel,
   getSubmissionStatusLabel,
 } from '@/utils/memberStory.utils';
-import { ArrowLeft, Loader2, Share2 } from 'lucide-react';
+import {
+  getStoryCoverFallback,
+  hasStoryCover,
+  resolveStoryCoverSrc,
+} from '@/utils/storyCover.utils';
+import { ArrowLeft, Loader2, Share2, Sparkles } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
-
-import fallbackCardImage from '@/assets/shared/confession-card-1.png';
+import { useEffect, useMemo, useState } from 'react';
 
 type ContentTab = 'listen' | 'read' | 'original';
 
@@ -24,6 +29,8 @@ export default function MemberStoryDetailPage() {
   const storyId = String(params.id ?? '');
   const [activeTab, setActiveTab] = useState<ContentTab>('listen');
   const [shareOpen, setShareOpen] = useState(false);
+  const [artworkOpen, setArtworkOpen] = useState(false);
+  const [brokenCoverKey, setBrokenCoverKey] = useState<string | null>(null);
 
   const {
     data: response,
@@ -45,6 +52,40 @@ export default function MemberStoryDetailPage() {
   }, [isProcessing, refetch]);
 
   const story = response?.data;
+  const coverKey = story?.cover_image_url ?? 'missing';
+
+  const coverSrc = useMemo(() => {
+    if (!story) return '';
+    if (brokenCoverKey === coverKey) {
+      return getStoryCoverFallback(story.story_type);
+    }
+    return resolveStoryCoverSrc(story.cover_image_url, story.story_type);
+  }, [brokenCoverKey, coverKey, story]);
+
+  const artworkItem = useMemo<UserDashboardItem | null>(() => {
+    if (!story) return null;
+    return {
+      id: story.id,
+      story_reference: story.story_reference,
+      category:
+        story.story_type === 'meditation'
+          ? 'MEDITATION'
+          : story.story_type === 'transformation'
+            ? 'TRANSFORMATION'
+            : 'STORY',
+      title: story.title || 'Untitled story',
+      description: story.excerpt || story.title || '',
+      image: resolveStoryCoverSrc(story.cover_image_url, story.story_type),
+      story_type: story.story_type,
+      generation_status: story.generation_status,
+      moderation_status: story.moderation_status,
+      submission_status: story.submission_status,
+      has_social_intros: story.has_social_intros,
+      moderation_notes: story.moderation_notes,
+      audio_duration_seconds: story.audio_duration_seconds,
+      voice_name: story.voice_name,
+    };
+  }, [story]);
 
   if (isLoading) {
     return (
@@ -68,7 +109,7 @@ export default function MemberStoryDetailPage() {
     );
   }
 
-  const cover = story.cover_image_url || fallbackCardImage;
+  const showCoverPlaceholder = !hasStoryCover(story.cover_image_url);
   const duration = formatAudioDuration(story.audio_duration_seconds);
   const isConfession = story.story_type === 'confession';
   const accent = isConfession ? '#EB2874' : '#EEA13D';
@@ -91,13 +132,38 @@ export default function MemberStoryDetailPage() {
 
         <div className="overflow-hidden rounded-2xl border border-[#EBE4D5] bg-[#FAF7F2]">
           <div className="relative h-56 w-full sm:h-72">
-            <Image
-              src={cover}
-              alt={story.title || 'Story cover'}
-              fill
-              unoptimized={typeof cover === 'string'}
-              className="object-cover"
-            />
+            {coverSrc ? (
+              <Image
+                key={typeof coverSrc === 'string' ? coverSrc : 'fallback-cover'}
+                src={coverSrc}
+                alt={story.title || 'Story cover'}
+                fill
+                unoptimized={typeof coverSrc === 'string'}
+                className="object-cover"
+                onError={() => {
+                  setBrokenCoverKey(coverKey);
+                }}
+              />
+            ) : null}
+            {showCoverPlaceholder ? (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/35 px-6 text-center">
+                <p className="font-sans text-sm font-semibold text-white">No cover artwork yet</p>
+                {story.generation_status === 'completed' ? (
+                  <button
+                    type="button"
+                    onClick={() => setArtworkOpen(true)}
+                    className="font-playpen inline-flex items-center gap-2 rounded-xl bg-white/95 px-4 py-2 text-xs font-bold text-gray-900"
+                  >
+                    <Sparkles size={14} />
+                    Generate or upload cover
+                  </button>
+                ) : (
+                  <p className="font-sans text-xs text-white/90">
+                    Artwork can be added after your story finishes generating.
+                  </p>
+                )}
+              </div>
+            ) : null}
           </div>
 
           <div className="space-y-4 p-6">
@@ -212,6 +278,13 @@ export default function MemberStoryDetailPage() {
         storyId={storyId}
         storyTitle={story.title || undefined}
         onClose={() => setShareOpen(false)}
+      />
+
+      <ArtworkModal
+        isOpen={artworkOpen}
+        item={artworkItem}
+        onClose={() => setArtworkOpen(false)}
+        onUpdated={() => refetch()}
       />
     </main>
   );
