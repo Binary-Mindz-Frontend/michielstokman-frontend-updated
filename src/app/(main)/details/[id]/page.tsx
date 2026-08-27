@@ -26,8 +26,8 @@ import StoryPlayer from '../StoryPlayer/StoryPlayer';
 import brushTextBg from '@/assets/shared/brush-text-bg.png';
 import confessionsHero from '@/assets/shared/confessions-hero.png';
 import pinkHeartDrawn from '@/assets/shared/pink-heart-drawn.png';
-import meditationsHero from '@/assets/shared/meditations-hero.png';
 import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
+import { resolveStoryCoverSrc } from '@/utils/storyCover.utils';
 
 export default function StoryDetailPage() {
   const params = useParams();
@@ -100,8 +100,11 @@ export default function StoryDetailPage() {
     const sorted = [...items].sort((a, b) => {
       return (b.has_access ? 1 : 0) - (a.has_access ? 1 : 0);
     });
-    return sorted.filter((item: any) => item?.card_type !== 'liberation_journey');
-  }, [feedResponse]);
+    const storyItems = sorted.filter((item: any) => item?.card_type !== 'liberation_journey');
+    const currentType = feedData?.story_type;
+    if (!currentType) return storyItems;
+    return storyItems.filter((item: any) => item?.story_type === currentType);
+  }, [feedResponse, feedData?.story_type]);
 
   const currentIndex = useMemo(() => {
     return stories.findIndex((item: any) => item?.id === storyId);
@@ -335,10 +338,13 @@ export default function StoryDetailPage() {
 
   const isMeditation = feedData?.story_type === 'meditation';
   const themeColor = isMeditation ? '#E9A139' : '#D22D4C';
-  const heroImageSrc = feedData?.cover_image_url
-    ? feedData?.cover_image_url
-    : isMeditation
-      ? meditationsHero
+  const heroImageSrc = feedData?.story_type
+    ? resolveStoryCoverSrc(
+        feedData.cover_image_url,
+        feedData.story_type as 'confession' | 'meditation' | 'transformation',
+      )
+    : feedData?.cover_image_url
+      ? feedData.cover_image_url
       : confessionsHero;
 
   return (

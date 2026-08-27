@@ -22,6 +22,7 @@ import SuccessModal from '../SuccessModal/SuccessModal';
 import {
   appendStoryPayloadToFormData,
   buildStoryGeneratePayload,
+  type CoverImageMode,
 } from '@/utils/storyGenerate.utils';
 
 const GROWTH_AREAS = [
@@ -52,7 +53,9 @@ const schema = z.object({
 
 export default function UnifiedStoryForm({ category }: { category: string }) {
   const [isSuccess, setIsSuccess] = useState(false);
+  const [coverMode, setCoverMode] = useState<CoverImageMode>('ai_generated');
   const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverError, setCoverError] = useState<string | null>(null);
   const [generateStory, { isLoading: isGenerating }] = useGenerateStoryMutation();
   const { data: voicesCatalog, isLoading: isVoicesLoading } = useGetVoicesQuery();
   const isConfession = category === 'Confessions';
@@ -109,6 +112,14 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
       return;
     }
 
+    if (coverMode === 'user_uploaded' && !coverFile) {
+      setCoverError('Upload a cover image or switch to Generate for me.');
+      appToast.error('Upload a cover image or switch to Generate for me.');
+      return;
+    }
+
+    setCoverError(null);
+
     try {
       const payload = buildStoryGeneratePayload({
         story_type: isConfession ? 'confession' : 'meditation',
@@ -126,11 +137,11 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
         high_intensity: data?.sensitiveContent,
         voice_name: data?.useCustomVoice ? undefined : data?.voiceName,
         use_custom_voice: Boolean(data?.useCustomVoice),
-        has_cover_file: Boolean(coverFile),
+        cover_mode: coverMode,
       });
 
       let res;
-      if (coverFile) {
+      if (coverMode === 'user_uploaded' && coverFile) {
         const formData = new FormData();
         appendStoryPayloadToFormData(formData, payload);
         formData.append('image', coverFile);
@@ -142,6 +153,7 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
       if (res.success) {
         setIsSuccess(true);
         setCoverFile(null);
+        setCoverMode('ai_generated');
         reset({
           content: '',
           title: '',
@@ -258,7 +270,13 @@ export default function UnifiedStoryForm({ category }: { category: string }) {
         </motion.div>
 
         <motion.div variants={FADE_IN_UP_ITEM}>
-          <StoryCoverPicker coverFile={coverFile} onFileChange={setCoverFile} />
+          <StoryCoverPicker
+            mode={coverMode}
+            onModeChange={setCoverMode}
+            coverFile={coverFile}
+            onFileChange={setCoverFile}
+            error={coverError ?? undefined}
+          />
         </motion.div>
 
         {/* Growth Areas Pills */}

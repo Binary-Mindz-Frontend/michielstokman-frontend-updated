@@ -1,3 +1,5 @@
+export type CoverImageMode = 'ai_generated' | 'user_uploaded';
+
 /**
  * Build create-story payload for JSON or multipart submission.
  * Custom voice and cover image mode are independent — any combination works.
@@ -13,7 +15,7 @@ export function buildStoryGeneratePayload(form: {
   high_intensity: boolean;
   voice_name?: string;
   use_custom_voice?: boolean;
-  has_cover_file: boolean;
+  cover_mode: CoverImageMode;
 }): Record<string, unknown> {
   const payload: Record<string, unknown> = {
     story_type: form.story_type,
@@ -24,7 +26,7 @@ export function buildStoryGeneratePayload(form: {
     life_phase: form.life_phase,
     tags: form.tags,
     high_intensity: form.high_intensity,
-    image_mode: form.has_cover_file ? 'user_uploaded' : 'ai_generated',
+    image_mode: form.cover_mode,
   };
 
   if (form.use_custom_voice) {

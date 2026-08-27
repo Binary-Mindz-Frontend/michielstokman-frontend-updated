@@ -5,7 +5,9 @@ import {
   useGenerateStoryImageMutation,
   useUploadStoryImageMutation,
 } from '@/redux/features/memberStory/memberStory.api';
+import { hasStoryCover } from '@/utils/storyCover.utils';
 import { Loader2, Sparkles, X } from 'lucide-react';
+import Image from 'next/image';
 import React, { useState } from 'react';
 import { UserDashboardItem } from '../UserDashboardCard/UserDashboardCard';
 
@@ -13,9 +15,10 @@ interface ArtworkModalProps {
   isOpen: boolean;
   item: UserDashboardItem | null;
   onClose: () => void;
+  onUpdated?: () => void;
 }
 
-export default function ArtworkModal({ isOpen, item, onClose }: ArtworkModalProps) {
+export default function ArtworkModal({ isOpen, item, onClose, onUpdated }: ArtworkModalProps) {
   const storyId = item ? String(item.id) : '';
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [uploadImage, { isLoading: isUploading }] = useUploadStoryImageMutation();
@@ -26,6 +29,8 @@ export default function ArtworkModal({ isOpen, item, onClose }: ArtworkModalProp
   if (!isOpen || !item) return null;
 
   const isBusy = isUploading || isGenerating;
+  const currentCover =
+    typeof item.image === 'string' && hasStoryCover(item.image) ? item.image : null;
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +46,7 @@ export default function ArtworkModal({ isOpen, item, onClose }: ArtworkModalProp
       const result = await uploadImage({ storyId, file: coverFile }).unwrap();
       setSuccessMessage(result.data?.message || 'Cover image updated.');
       setCoverFile(null);
+      onUpdated?.();
     } catch (error) {
       console.error('Failed to upload cover:', error);
       setErrorMessage('Upload failed. Use JPEG, PNG, or WebP up to 8 MB.');
@@ -54,6 +60,7 @@ export default function ArtworkModal({ isOpen, item, onClose }: ArtworkModalProp
     try {
       const result = await generateImage(storyId).unwrap();
       setSuccessMessage(result.data?.message || 'Cover image generated.');
+      onUpdated?.();
     } catch (error) {
       console.error('Failed to generate cover:', error);
       setErrorMessage('Generation failed. Try again or upload your own image.');
@@ -78,8 +85,29 @@ export default function ArtworkModal({ isOpen, item, onClose }: ArtworkModalProp
         </div>
 
         <div className="mt-4 space-y-5">
+          {currentCover ? (
+            <div className="space-y-2">
+              <p className="font-playpen text-xs font-bold text-gray-800">Current cover</p>
+              <div className="relative mx-auto h-40 w-32 overflow-hidden rounded-lg border border-[#EBE4D5]">
+                <Image
+                  src={currentCover}
+                  alt="Current story cover"
+                  fill
+                  unoptimized
+                  className="object-cover"
+                />
+              </div>
+            </div>
+          ) : null}
+
           <form onSubmit={handleUpload} className="space-y-4">
-            <StoryCoverPicker coverFile={coverFile} onFileChange={setCoverFile} />
+            <StoryCoverPicker
+              mode="user_uploaded"
+              onModeChange={() => {}}
+              coverFile={coverFile}
+              onFileChange={setCoverFile}
+              showModeToggle={false}
+            />
 
             <button
               type="submit"
@@ -123,7 +151,8 @@ export default function ArtworkModal({ isOpen, item, onClose }: ArtworkModalProp
           </button>
 
           <p className="font-sans text-xs text-gray-500">
-            AI generation can take 30–60 seconds. Your own upload is kept across regenerations.
+            Upload or generate anytime. Either action replaces the current cover. AI generation can
+            take 30–60 seconds.
           </p>
 
           {errorMessage ? (

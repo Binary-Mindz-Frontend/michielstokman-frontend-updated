@@ -5,12 +5,10 @@ import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicAc
 import ProductCardSkeleton from '@/components/main/Skeletons/ProductCardSkeleton';
 import { useGetDiscoveryFeedQuery } from '@/redux/features/discoveryFeed/discoveryFeed.api';
 import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
+import { resolveStoryCoverSrc } from '@/utils/storyCover.utils';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import MeditationsCard, { MeditationItem } from './_components/MeditationsCard/MeditationsCard';
-
-// Fallback Asset
-import fallbackCardImage from '@/assets/meditations/meditation-card-1.png';
 
 export default function MeditationsGrid() {
   const [visibleCount, setVisibleCount] = useState(8);
@@ -31,7 +29,7 @@ export default function MeditationsGrid() {
     category: 'STORY',
     title: item.title,
     description: item.description,
-    image: item.cover_image_url || fallbackCardImage,
+    image: resolveStoryCoverSrc(item.cover_image_url, 'meditation'),
     rating: item.rating ? item.rating.toString() : '4.8',
     listenedCount: item.listened_count ?? 0,
     isExplicit: item.is_explicit ?? false,
