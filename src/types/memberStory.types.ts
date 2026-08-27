@@ -24,10 +24,14 @@ export type MemberStoryListItem = {
   moderation_status: ModerationStatus;
   submission_status: SubmissionStatus;
   has_social_intros: boolean;
+  moderation_notes?: string | null;
   created_at: string;
 };
 
 export type MemberStoryDetail = MemberStoryListItem & {
+  member_title: string | null;
+  ai_generated_title: string | null;
+  use_ai_title: boolean;
   story_text: string | null;
   story_input: string | null;
   first_name: string | null;
