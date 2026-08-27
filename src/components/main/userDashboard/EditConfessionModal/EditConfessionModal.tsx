@@ -19,7 +19,7 @@ interface EditConfessionModalProps {
 
 export default function EditConfessionModal({ isOpen, item, onClose }: EditConfessionModalProps) {
   const storyId = item ? String(item.id) : '';
-  const { data: detailResponse, isLoading: isLoadingDetail } = useGetMyStoryQuery(storyId, {
+  const { data: detail, isLoading: isLoadingDetail } = useGetMyStoryQuery(storyId, {
     skip: !isOpen || !storyId,
   });
   const { data: voicesCatalog, isLoading: isLoadingVoices } = useGetVoicesQuery(undefined, {
@@ -33,7 +33,6 @@ export default function EditConfessionModal({ isOpen, item, onClose }: EditConfe
   const [useCustomVoice, setUseCustomVoice] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const detail = detailResponse?.data;
   const voices = useMemo(() => voicesCatalog?.voices ?? [], [voicesCatalog?.voices]);
 
   useEffect(() => {
