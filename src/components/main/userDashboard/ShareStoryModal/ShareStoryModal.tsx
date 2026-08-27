@@ -4,7 +4,7 @@ import {
   useGetSharePackageQuery,
   useRegenerateSocialIntrosMutation,
 } from '@/redux/features/memberStory/memberStory.api';
-import { Check, Copy, Loader2, RefreshCw, X } from 'lucide-react';
+import { Check, Copy, Download, Loader2, RefreshCw, X } from 'lucide-react';
 import Image from 'next/image';
 import React, { useCallback, useState } from 'react';
 
@@ -39,6 +39,60 @@ function formatDuration(seconds: number | null | undefined): string | null {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
+function extensionFromUrl(url: string): string {
+  try {
+    const pathname = new URL(url).pathname;
+    const match = pathname.match(/\.(jpe?g|png|webp|gif)$/i);
+    return match ? match[1].toLowerCase() : 'jpg';
+  } catch {
+    return 'jpg';
+  }
+}
+
+function buildCoverFilename(
+  coverUrl: string,
+  storyReference?: string | null,
+  title?: string | null,
+): string {
+  const ext = extensionFromUrl(coverUrl);
+  const base =
+    storyReference?.trim() ||
+    title
+      ?.trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') ||
+    'story-cover';
+  return `${base}-cover.${ext}`;
+}
+
+async function downloadCoverImage(url: string, filename: string): Promise<void> {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error('Failed to fetch cover image');
+    }
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(blobUrl);
+  } catch {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  }
+}
+
 export default function ShareStoryModal({
   isOpen,
   storyId,
@@ -57,6 +111,7 @@ export default function ShareStoryModal({
 
   const [regenerate, { isLoading: isRegenerating }] = useRegenerateSocialIntrosMutation();
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [isDownloadingCover, setIsDownloadingCover] = useState(false);
 
   const share = shareResponse?.data;
 
@@ -73,6 +128,19 @@ export default function ShareStoryModal({
     await regenerate(storyId).unwrap();
     refetch();
   };
+
+  const handleDownloadCover = useCallback(async () => {
+    if (!share?.cover_image_url || isDownloadingCover) return;
+    setIsDownloadingCover(true);
+    try {
+      await downloadCoverImage(
+        share.cover_image_url,
+        buildCoverFilename(share.cover_image_url, share.story_reference, share.title),
+      );
+    } finally {
+      setIsDownloadingCover(false);
+    }
+  }, [isDownloadingCover, share]);
 
   if (!isOpen || !storyId) return null;
 
@@ -171,6 +239,14 @@ export default function ShareStoryModal({
                     onCopy={handleCopy}
                   />
                 ) : null}
+                {share.cover_image_url ? (
+                  <DownloadCoverRow
+                    label="Cover artwork"
+                    url={share.cover_image_url}
+                    isDownloading={isDownloadingCover}
+                    onDownload={handleDownloadCover}
+                  />
+                ) : null}
               </div>
 
               <div className="space-y-3">
@@ -221,6 +297,36 @@ export default function ShareStoryModal({
 
 // eslint-disable-next-line no-unused-vars -- callback signature
 type OnCopyHandler = (copyKey: string, value: string) => void;
+
+function DownloadCoverRow({
+  label,
+  url,
+  isDownloading,
+  onDownload,
+}: {
+  label: string;
+  url: string;
+  isDownloading: boolean;
+  onDownload: () => void;
+}) {
+  return (
+    <div className="rounded-xl border border-[#EBE4D5] bg-white p-3 sm:col-span-2">
+      <div className="flex items-center justify-between gap-2">
+        <span className="font-playpen text-xs font-semibold text-gray-800">{label}</span>
+        <button
+          type="button"
+          onClick={onDownload}
+          disabled={isDownloading}
+          className="flex items-center gap-1 rounded-md px-2 py-1 font-sans text-xs font-semibold text-[#D98755] hover:bg-[#FAF7F2] disabled:opacity-50"
+        >
+          {isDownloading ? <Loader2 size={12} className="animate-spin" /> : <Download size={12} />}
+          {isDownloading ? 'Downloading…' : 'Download cover'}
+        </button>
+      </div>
+      <p className="mt-1 truncate font-sans text-xs text-gray-500">{url}</p>
+    </div>
+  );
+}
 
 function CopyLinkRow({
   label,

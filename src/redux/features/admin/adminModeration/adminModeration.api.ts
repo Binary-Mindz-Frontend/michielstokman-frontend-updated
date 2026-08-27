@@ -38,9 +38,10 @@ const adminModerationApi = apiClient.injectEndpoints({
         method: 'PUT',
         body: patch, // This will now be { title, story_type, story_text }
       }),
-      invalidatesTags: (result, error, { storyId }) => [
+      invalidatesTags: (_result, _error, { storyId }) => [
         { type: 'Story', id: storyId },
         'ModerationQueue',
+        'MemberStories',
       ],
     }),
 
@@ -50,7 +51,7 @@ const adminModerationApi = apiClient.injectEndpoints({
         url: `/admin/moderation/story/${storyId}`,
         method: 'DELETE',
       }),
-      invalidatesTags: ['ModerationQueue', 'Story'],
+      invalidatesTags: ['ModerationQueue', 'Story', 'MemberStories'],
     }),
 
     // Approve Story
@@ -59,7 +60,11 @@ const adminModerationApi = apiClient.injectEndpoints({
         url: `/admin/moderation/story/${storyId}/approve`,
         method: 'POST',
       }),
-      invalidatesTags: (storyId) => [{ type: 'Story', id: storyId }, 'ModerationQueue'],
+      invalidatesTags: (_result, _error, storyId) => [
+        { type: 'Story', id: storyId },
+        'ModerationQueue',
+        'MemberStories',
+      ],
     }),
 
     // Reject Story
@@ -69,7 +74,11 @@ const adminModerationApi = apiClient.injectEndpoints({
         method: 'POST',
         body: data,
       }),
-      invalidatesTags: (storyId) => [{ type: 'Story', id: storyId }, 'ModerationQueue'],
+      invalidatesTags: (_result, _error, { storyId }) => [
+        { type: 'Story', id: storyId },
+        'ModerationQueue',
+        'MemberStories',
+      ],
     }),
   }),
 });
