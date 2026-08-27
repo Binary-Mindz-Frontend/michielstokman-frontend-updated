@@ -19,7 +19,7 @@ interface ChangeVoiceModalProps {
 
 export default function ChangeVoiceModal({ isOpen, item, onClose }: ChangeVoiceModalProps) {
   const storyId = item ? String(item.id) : '';
-  const { data: detailResponse } = useGetMyStoryQuery(storyId, {
+  const { data: detail } = useGetMyStoryQuery(storyId, {
     skip: !isOpen || !storyId,
   });
   const { data: voicesResponse, isLoading: isLoadingVoices } = useGetVoicesQuery(undefined, {
@@ -31,7 +31,6 @@ export default function ChangeVoiceModal({ isOpen, item, onClose }: ChangeVoiceM
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const voices = useMemo(() => voicesResponse?.voices ?? [], [voicesResponse?.voices]);
-  const detail = detailResponse?.data;
 
   /* eslint-disable react-hooks/set-state-in-effect -- prefill voice from story detail */
   useEffect(() => {

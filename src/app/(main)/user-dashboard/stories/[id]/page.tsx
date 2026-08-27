@@ -11,6 +11,7 @@ import {
   getModerationStatusLabel,
   getSubmissionStatusLabel,
 } from '@/utils/memberStory.utils';
+import { getMemberStoryQueryErrorMessage } from '@/utils/memberStoryQuery.utils';
 import {
   getStoryCoverFallback,
   hasStoryCover,
@@ -26,22 +27,27 @@ type ContentTab = 'listen' | 'read' | 'original';
 
 export default function MemberStoryDetailPage() {
   const params = useParams();
-  const storyId = String(params.id ?? '');
+  const storyId = String(params.id ?? '').trim();
   const [activeTab, setActiveTab] = useState<ContentTab>('listen');
   const [shareOpen, setShareOpen] = useState(false);
   const [artworkOpen, setArtworkOpen] = useState(false);
   const [brokenCoverKey, setBrokenCoverKey] = useState<string | null>(null);
 
   const {
-    data: response,
+    data: story,
     isLoading,
+    isFetching,
+    isError,
     error,
     refetch,
   } = useGetMyStoryQuery(storyId, {
     skip: !storyId,
+    refetchOnMountOrArgChange: true,
   });
 
-  const isProcessing = response?.data?.generation_status === 'processing';
+  const isInitialLoading = Boolean(storyId) && (isLoading || (isFetching && !story));
+
+  const isProcessing = story?.generation_status === 'processing';
 
   useEffect(() => {
     if (!isProcessing) return undefined;
@@ -51,7 +57,6 @@ export default function MemberStoryDetailPage() {
     return () => clearInterval(timer);
   }, [isProcessing, refetch]);
 
-  const story = response?.data;
   const coverKey = story?.cover_image_url ?? 'missing';
 
   const coverSrc = useMemo(() => {
@@ -87,7 +92,21 @@ export default function MemberStoryDetailPage() {
     };
   }, [story]);
 
-  if (isLoading) {
+  if (!storyId) {
+    return (
+      <main className="bg-bg-primary min-h-screen px-4 py-16 text-center">
+        <p className="font-sans text-sm text-gray-700">Invalid story link.</p>
+        <Link
+          href="/user-dashboard"
+          className="font-playpen mt-4 inline-block text-sm font-bold text-[#D98755]"
+        >
+          Back to My Stories
+        </Link>
+      </main>
+    );
+  }
+
+  if (isInitialLoading) {
     return (
       <main className="bg-bg-primary flex min-h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-[#D98755]" />
@@ -95,16 +114,24 @@ export default function MemberStoryDetailPage() {
     );
   }
 
-  if (error || !story) {
+  if (isError || !story) {
     return (
       <main className="bg-bg-primary min-h-screen px-4 py-16 text-center">
-        <p className="font-sans text-sm text-gray-700">Story not found.</p>
-        <Link
-          href="/user-dashboard"
-          className="font-playpen mt-4 inline-block text-sm font-bold text-[#D98755]"
-        >
-          Back to My Stories
-        </Link>
+        <p className="font-sans text-sm text-gray-700">
+          {isError ? getMemberStoryQueryErrorMessage(error) : 'Story not found.'}
+        </p>
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-4">
+          <button
+            type="button"
+            onClick={() => refetch()}
+            className="font-playpen text-sm font-bold text-[#D98755]"
+          >
+            Try again
+          </button>
+          <Link href="/user-dashboard" className="font-playpen text-sm font-bold text-[#D98755]">
+            Back to My Stories
+          </Link>
+        </div>
       </main>
     );
   }

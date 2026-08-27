@@ -48,11 +48,13 @@ const memberStoryApi = apiClient.injectEndpoints({
           : [{ type: 'MemberStories', id: 'LIST' }],
     }),
 
-    getMyStory: builder.query<{ data: MemberStoryDetail }, string>({
+    getMyStory: builder.query<MemberStoryDetail, string>({
       query: (storyId) => ({
-        url: `/me/stories/${storyId}`,
+        url: `/me/stories/${encodeURIComponent(storyId.trim())}`,
         method: 'GET',
       }),
+      transformResponse: (response: { data?: MemberStoryDetail }) =>
+        response.data as MemberStoryDetail,
       providesTags: (result, error, id) => [{ type: 'MemberStories', id }],
     }),
 
