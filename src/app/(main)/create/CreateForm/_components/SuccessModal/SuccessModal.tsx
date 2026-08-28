@@ -28,9 +28,7 @@ export default function SuccessModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-135 border-none bg-transparent p-0 shadow-none focus:outline-none [&>button]:hidden">
-        {/* Main Torn Paper Container */}
         <div className="relative flex min-h-55 w-full flex-col items-center justify-center p-6 text-center">
-          {/* Torn Paper Graphic Background */}
           <div className="absolute inset-0 h-full w-full">
             <Image
               src={submitSuccessBg}
@@ -41,14 +39,12 @@ export default function SuccessModal({
             />
           </div>
 
-          {/* Content inside Torn Paper */}
           <div className="relative z-10 flex max-w-xs flex-col items-center justify-center px-2 sm:max-w-sm sm:px-4">
-            {/* Submission Message */}
             <p className="font-sans text-sm leading-snug font-bold text-[#503225] sm:text-base">
-              Your submission will be reviewed within 1-4 months. We&apos;ll notify you via email.
+              Publication can take up to two months. We&apos;ll email you. Submission does not
+              guarantee publication.
             </p>
 
-            {/* READ CONFESSIONS / MEDITATIONS Button */}
             <button
               type="button"
               onClick={handleRedirect}
@@ -60,6 +56,17 @@ export default function SuccessModal({
               <span className="relative z-10 font-sans text-xs font-black tracking-widest text-[#503225] uppercase sm:text-sm">
                 {isConfession ? 'READ CONFESSIONS —>' : 'READ MEDITATIONS —>'}
               </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                router.push('/user-dashboard');
+              }}
+              className="mt-3 font-sans text-xs font-semibold tracking-wider text-[#777] underline underline-offset-2 hover:text-[#503225]"
+            >
+              Go to My Stories
             </button>
           </div>
         </div>
