@@ -45,11 +45,11 @@ export default function LiberationsHero() {
           </p>
         </div>
 
-        {/* Start Your Journey Button */}
+        {/* Start with existing journeys — create is not a liberation */}
         <div className="mt-6 ml-4 w-56 sm:mt-8 sm:ml-8 sm:w-64 lg:ml-20">
           <DynamicActionButton
-            text="Start Your Journey"
-            href="/create?type=Liberations"
+            text="Browse Journeys"
+            href="#journeys"
             bgColor="#4A229D"
             textColor="white"
           />

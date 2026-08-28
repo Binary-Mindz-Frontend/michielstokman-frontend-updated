@@ -44,11 +44,11 @@ export default function ConfessionsHero() {
           </p>
         </div>
 
-        {/* Share Your Story Button */}
+        {/* Listen first — share lives on /create and after playback */}
         <div className="mt-6 ml-4 w-56 sm:mt-8 sm:ml-8 sm:w-64 lg:ml-20">
           <DynamicActionButton
-            text="Share Your Story"
-            href="/create?type=Confessions"
+            text="Start Listening"
+            href="#stories"
             bgColor="#D22D4C"
             textColor="white"
           />

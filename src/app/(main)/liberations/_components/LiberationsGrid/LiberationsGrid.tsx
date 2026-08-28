@@ -61,7 +61,13 @@ export default function LiberationsGrid() {
   }
 
   return (
-    <motion.section initial="hidden" animate="visible" variants={FADE_IN_UP_CONTAINER}>
+    <motion.section
+      id="journeys"
+      initial="hidden"
+      animate="visible"
+      variants={FADE_IN_UP_CONTAINER}
+      className="scroll-mt-24"
+    >
       {/* 3 Column Grid */}
       <motion.div
         variants={FADE_IN_UP_ITEM}
