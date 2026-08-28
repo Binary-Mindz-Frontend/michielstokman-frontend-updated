@@ -30,21 +30,8 @@ export const adminPhotoApi = apiClient.injectEndpoints({
       }),
       invalidatesTags: ['Photos_Management', 'Discovery_Feed', 'Story'],
     }),
-
-    regenerateStoryCovers: builder.mutation({
-      query: (body: { limit?: number; only_missing_or_default?: boolean } = {}) => ({
-        url: '/admin/stories/regenerate-covers',
-        method: 'POST',
-        body,
-      }),
-      invalidatesTags: ['Photos_Management', 'Discovery_Feed', 'Story', 'MemberStories'],
-    }),
   }),
 });
 
-export const {
-  useGetAllPhotosQuery,
-  useUploadPhotoMutation,
-  useUpdatePhotoMutation,
-  useRegenerateStoryCoversMutation,
-} = adminPhotoApi;
+export const { useGetAllPhotosQuery, useUploadPhotoMutation, useUpdatePhotoMutation } =
+  adminPhotoApi;

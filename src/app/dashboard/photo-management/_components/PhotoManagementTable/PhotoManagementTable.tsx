@@ -6,7 +6,6 @@ import {
   useGetAllPhotosQuery,
   useUpdatePhotoMutation,
   useUploadPhotoMutation,
-  useRegenerateStoryCoversMutation,
 } from '@/redux/features/admin/photoManagement/photoManagement.api';
 import { TColumn } from '@/types/custom-table.types';
 import { IPhotoManagementData } from '@/types/PhotoManagementData.type';
@@ -24,7 +23,6 @@ function PhotoManagementTable() {
   const { data: photosResponse, isLoading: isPhotosLoading } = useGetAllPhotosQuery(undefined);
   const [uploadPhoto, { isLoading: isUploading }] = useUploadPhotoMutation();
   const [updatePhoto, { isLoading: isUpdating }] = useUpdatePhotoMutation();
-  const [regenerateCovers, { isLoading: isRegenerating }] = useRegenerateStoryCoversMutation();
   // ---
   const apiPhotos: IPhotoManagementData[] = photosResponse?.data?.items || [];
   // default types to be added (Fixed)
@@ -80,24 +78,6 @@ function PhotoManagementTable() {
     } finally {
       setEditingPhotoId(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
-    }
-  };
-
-  const handleRegenerateCovers = async () => {
-    try {
-      const res = await regenerateCovers({
-        limit: 25,
-        only_missing_or_default: false,
-      }).unwrap();
-      const queued = res?.data?.queued ?? 0;
-      toast.success(
-        res?.data?.message ||
-          (queued
-            ? `Queued ${queued} unique cover${queued === 1 ? '' : 's'}. Refresh the feed in a few minutes.`
-            : 'No eligible stories found.'),
-      );
-    } catch (error: any) {
-      toast.error(error?.data?.message || 'Could not start cover regeneration.');
     }
   };
 
@@ -179,23 +159,6 @@ function PhotoManagementTable() {
       )}
 
       <CustomTable columns={tableConfig} data={photoList} />
-
-      <div className="flex flex-col gap-2 border-t border-[#EBE4D5] pt-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-secondary max-w-xl text-sm">
-          Fallback images above are used only when AI cover generation fails. Use this to rebuild a
-          unique collage cover for each existing story. Member uploads are left alone. Takes several
-          minutes.
-        </p>
-        <button
-          type="button"
-          onClick={handleRegenerateCovers}
-          disabled={isRegenerating}
-          className="bg-primary hover:bg-primary/90 inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {isRegenerating ? <Loader2 size={14} className="animate-spin" /> : null}
-          {isRegenerating ? 'Queuing covers…' : 'Regenerate unique story covers'}
-        </button>
-      </div>
     </div>
   );
 }
