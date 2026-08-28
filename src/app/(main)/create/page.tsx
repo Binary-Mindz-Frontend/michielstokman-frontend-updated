@@ -8,22 +8,28 @@ import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils'
 import { motion } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect } from 'react';
-import CreateFormCategoryTabs from './CreateForm/_components/CreateFormCategoryTabs/CreateFormCategoryTabs';
 import CreateFormHeader from './CreateForm/_components/CreateFormHeader/CreateFormHeader';
-
 import LoginRequiredModal from './CreateForm/_components/LoginRequiredModal/LoginRequiredModal';
-import UnifiedStoryForm from './CreateForm/_components/UnifiedStoryForm/UnifiedStoryForm';
+import SubmitTypeChoice from './CreateForm/_components/SubmitTypeChoice/SubmitTypeChoice';
+import SubmitWizard from './CreateForm/_components/SubmitWizard/SubmitWizard';
 
 export default function CreateFormPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const selectedCategory = searchParams.get('type') || 'Confessions';
+  const typeParam = searchParams.get('type');
+  const selectedCategory = typeParam || '';
 
   const user = useAppSelector(useCurrentUser) as any;
-
   const isAuthModalOpen = !user || user?.is_guest;
-  const typeParam = searchParams.get('type');
   const createPath = typeParam ? `/create?type=${typeParam}` : '/create';
+  const hasType =
+    selectedCategory === 'Confessions' ||
+    selectedCategory === 'Meditation' ||
+    selectedCategory === 'Meditations';
+  const wizardCategory =
+    selectedCategory === 'Meditation' || selectedCategory === 'Meditations'
+      ? 'Meditation'
+      : 'Confessions';
 
   useEffect(() => {
     const type = (typeParam || '').toLowerCase();
@@ -41,23 +47,21 @@ export default function CreateFormPage() {
 
       <Suspense fallback={<UnifiedStoryFormSkeleton />}>
         <motion.div initial="hidden" animate="visible" variants={FADE_IN_UP_CONTAINER}>
-          {/* Header Hero Section */}
           <motion.div variants={FADE_IN_UP_ITEM}>
-            <CreateFormHeader category={selectedCategory} />
+            {hasType ? <CreateFormHeader category={wizardCategory} /> : null}
           </motion.div>
 
-          {/* Form Container (No Outer Card Background) */}
           <div className="mx-auto max-w-3xl py-2">
-            <motion.div variants={FADE_IN_UP_ITEM}>
-              <CreateFormCategoryTabs selected={selectedCategory} />
-            </motion.div>
-
-            {!isAuthModalOpen ? (
-              <UnifiedStoryForm category={selectedCategory} />
-            ) : (
+            {isAuthModalOpen ? (
               <div className="pointer-events-none opacity-40 blur-[2px] select-none">
-                <UnifiedStoryForm category={selectedCategory} />
+                <SubmitTypeChoice />
               </div>
+            ) : hasType ? (
+              <SubmitWizard
+                category={wizardCategory === 'Meditation' ? 'Meditation' : 'Confessions'}
+              />
+            ) : (
+              <SubmitTypeChoice />
             )}
           </div>
         </motion.div>
