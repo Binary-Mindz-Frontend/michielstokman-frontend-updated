@@ -6,8 +6,8 @@ import { useCurrentUser } from '@/redux/features/auth/authSlice';
 import { useAppSelector } from '@/redux/hooks';
 import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
 import { motion } from 'framer-motion';
-import { useSearchParams } from 'next/navigation';
-import { Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect } from 'react';
 import CreateFormCategoryTabs from './CreateForm/_components/CreateFormCategoryTabs/CreateFormCategoryTabs';
 import CreateFormHeader from './CreateForm/_components/CreateFormHeader/CreateFormHeader';
 
@@ -16,6 +16,7 @@ import UnifiedStoryForm from './CreateForm/_components/UnifiedStoryForm/UnifiedS
 
 export default function CreateFormPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const selectedCategory = searchParams.get('type') || 'Confessions';
 
   const user = useAppSelector(useCurrentUser) as any;
@@ -23,6 +24,13 @@ export default function CreateFormPage() {
   const isAuthModalOpen = !user || user?.is_guest;
   const typeParam = searchParams.get('type');
   const createPath = typeParam ? `/create?type=${typeParam}` : '/create';
+
+  useEffect(() => {
+    const type = (typeParam || '').toLowerCase();
+    if (type === 'liberations' || type === 'liberation' || type === 'journeys') {
+      router.replace('/liberations');
+    }
+  }, [typeParam, router]);
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-8">

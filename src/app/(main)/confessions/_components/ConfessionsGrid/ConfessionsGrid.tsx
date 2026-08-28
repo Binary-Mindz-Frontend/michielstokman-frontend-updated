@@ -55,7 +55,13 @@ export default function ConfessionsGrid() {
   }
 
   return (
-    <motion.section initial="hidden" animate="visible" variants={FADE_IN_UP_CONTAINER}>
+    <motion.section
+      id="stories"
+      initial="hidden"
+      animate="visible"
+      variants={FADE_IN_UP_CONTAINER}
+      className="scroll-mt-24"
+    >
       {/* 3 Column Grid */}
       <motion.div
         variants={FADE_IN_UP_ITEM}
