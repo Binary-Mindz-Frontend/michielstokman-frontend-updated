@@ -6,11 +6,7 @@ import InputField from '@/components/dashboard/Fields/InputField/InputField';
 import TextAreaField from '@/components/dashboard/Fields/TextAreaField/TextAreaField';
 import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicActionButton';
 import { cn } from '@/lib/utils';
-import {
-  useGenerateCoverPreviewMutation,
-  useGenerateStoryMutation,
-  useGetVoicesQuery,
-} from '@/redux/features/aiStory/aiStory.api';
+import { useGenerateStoryMutation, useGetVoicesQuery } from '@/redux/features/aiStory/aiStory.api';
 import { appToast } from '@/utils/appToast';
 import { appendStoryPayloadToFormData, type CoverImageMode } from '@/utils/storyGenerate.utils';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -26,7 +22,6 @@ import { countWords } from '../submitStory.utils';
 const CONFESSION_MIN_WORDS = 1000;
 const CONFESSION_MAX_WORDS = 1800;
 const MEDITATION_MAX_WORDS = 1800;
-const MAX_AUDIO_BYTES = 10 * 1024 * 1024;
 
 const schema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -43,8 +38,7 @@ const schema = z.object({
       const parsed = Number(value);
       return Number.isInteger(parsed) && parsed >= 1 && parsed <= 120;
     }, 'Enter a valid age'),
-  voiceMode: z.enum(['our_voice', 'own_narration']),
-  voiceName: z.string().optional(),
+  voiceName: z.string().min(1, 'Choose a voice'),
   editorialConsent: z.boolean(),
 });
 
@@ -57,16 +51,12 @@ export default function SubmitWizard({ category }: { category: string }) {
   const isConfession = category === 'Confessions';
   const [step, setStep] = useState(0);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [audioFile, setAudioFile] = useState<File | null>(null);
   const [coverMode, setCoverMode] = useState<CoverImageMode>('ai_generated');
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverError, setCoverError] = useState<string | null>(null);
-  const [previewCover, setPreviewCover] = useState<{ url: string; key: string } | null>(null);
   const [playingName, setPlayingName] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [generateStory, { isLoading: isGenerating }] = useGenerateStoryMutation();
-  const [generateCoverPreview, { isLoading: isGeneratingPreview }] =
-    useGenerateCoverPreviewMutation();
   const { data: voicesCatalog, isLoading: isVoicesLoading } = useGetVoicesQuery();
 
   const voices = useMemo(
@@ -91,28 +81,15 @@ export default function SubmitWizard({ category }: { category: string }) {
       gender: '',
       occupation: '',
       age: '',
-      voiceMode: 'our_voice',
       voiceName: '',
       editorialConsent: false,
     },
   });
 
   const bodyValue = watch('body') || '';
-  const titleValue = watch('title') || '';
-  const nameValue = watch('name') || '';
-  const locationValue = watch('location') || '';
-  const genderValue = watch('gender') || '';
-  const occupationValue = watch('occupation') || '';
-  const ageValue = watch('age') || '';
-  const voiceMode = watch('voiceMode');
   const voiceName = watch('voiceName');
   const editorialConsent = watch('editorialConsent');
   const wordCount = countWords(bodyValue);
-
-  useEffect(() => {
-    setPreviewCover(null);
-    setCoverError(null);
-  }, [titleValue, bodyValue, nameValue, locationValue, genderValue, occupationValue, ageValue]);
 
   useEffect(() => {
     if (!voices.length || voiceName) return;
@@ -157,12 +134,8 @@ export default function SubmitWizard({ category }: { category: string }) {
       return true;
     }
     if (index === 2) {
-      if (voiceMode === 'our_voice' && !voiceName) {
-        appToast.error('Choose one of our voices, or upload your own narration.');
-        return false;
-      }
-      if (voiceMode === 'own_narration' && !audioFile) {
-        appToast.error('Upload your finished audio recording, or choose one of our voices.');
+      if (!voiceName) {
+        appToast.error('Choose a voice for the finished piece.');
         return false;
       }
       return true;
@@ -171,11 +144,6 @@ export default function SubmitWizard({ category }: { category: string }) {
       if (coverMode === 'user_uploaded' && !coverFile) {
         setCoverError('Upload a cover image or switch to Generate for me.');
         appToast.error('Upload a cover image or switch to Generate for me.');
-        return false;
-      }
-      if (coverMode === 'ai_generated' && !previewCover) {
-        setCoverError('Generate a cover first, or switch to Upload my own.');
-        appToast.error('Generate a cover first, or switch to Upload my own.');
         return false;
       }
       setCoverError(null);
@@ -218,29 +186,18 @@ export default function SubmitWizard({ category }: { category: string }) {
       image_mode: coverMode,
     };
 
-    if (coverMode === 'ai_generated' && previewCover) {
-      payload.preview_cover_key = previewCover.key;
-    }
-
-    if (data.voiceMode === 'own_narration' && audioFile) {
-      payload.skip_narration = true;
-    } else if (data.voiceName) {
+    if (data.voiceName) {
       payload.voice_name = data.voiceName;
     }
 
-    const needsMultipart =
-      (data.voiceMode === 'own_narration' && audioFile) ||
-      (coverMode === 'user_uploaded' && coverFile);
+    const needsMultipart = coverMode === 'user_uploaded' && coverFile;
 
     try {
       let res;
       if (needsMultipart) {
         const formData = new FormData();
         appendStoryPayloadToFormData(formData, payload);
-        if (data.voiceMode === 'own_narration' && audioFile) {
-          formData.append('audio', audioFile);
-        }
-        if (coverMode === 'user_uploaded' && coverFile) {
+        if (coverFile) {
           formData.append('image', coverFile);
         }
         res = await generateStory(formData).unwrap();
@@ -274,65 +231,6 @@ export default function SubmitWizard({ category }: { category: string }) {
         setPlayingName(null);
         appToast.error('Voice preview could not be played.');
       });
-  };
-
-  const handleGeneratePreview = async () => {
-    const title = titleValue.trim();
-    const body = bodyValue.trim();
-    if (!title || !body) {
-      appToast.error('Complete your piece first, then generate a cover.');
-      setStep(0);
-      return;
-    }
-
-    const identityOk = await trigger(['name', 'location', 'gender', 'occupation', 'age']);
-    if (!identityOk) {
-      appToast.error('Complete who this piece is about first.');
-      setStep(1);
-      return;
-    }
-
-    try {
-      const res = await generateCoverPreview({
-        story_type: isConfession ? 'confession' : 'meditation',
-        title,
-        first_name: nameValue.trim(),
-        location: locationValue.trim(),
-        gender: genderValue.trim(),
-        occupation: occupationValue.trim(),
-        age: Number(ageValue),
-        story_input: body,
-      }).unwrap();
-
-      const url = res.data?.cover_image_url;
-      const key = res.data?.cover_image_key;
-      if (!url || !key) {
-        appToast.error('Cover was generated but could not be shown. Try again.');
-        return;
-      }
-
-      setPreviewCover({ url, key });
-      setCoverError(null);
-      appToast.success('Cover generated. Continue when you are happy with it.');
-    } catch (error: any) {
-      appToast.error(
-        error?.data?.message ||
-          error?.data?.detail ||
-          'Cover generation failed. Try again or upload your own.',
-      );
-    }
-  };
-
-  const handleAudioFile = (file: File | null) => {
-    if (!file) {
-      setAudioFile(null);
-      return;
-    }
-    if (file.size > MAX_AUDIO_BYTES) {
-      appToast.error('Audio must be 10 MB or smaller.');
-      return;
-    }
-    setAudioFile(file);
   };
 
   const stepTitle = isConfession
@@ -464,119 +362,73 @@ export default function SubmitWizard({ category }: { category: string }) {
 
         {step === 2 ? (
           <div className="space-y-5">
-            <p className="font-sans text-sm font-bold text-[#1A1A1A]">Choose one</p>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <button
-                type="button"
-                onClick={() => setValue('voiceMode', 'our_voice')}
-                className={cn(
-                  'rounded-lg border-2 px-4 py-3 text-left font-sans text-sm font-semibold',
-                  voiceMode === 'our_voice'
-                    ? 'border-[#EEA13D] text-[#1A1A1A]'
-                    : 'border-[#EBE4D5] text-[#666]',
-                )}
-              >
-                Our voice
-              </button>
-              <button
-                type="button"
-                onClick={() => setValue('voiceMode', 'own_narration')}
-                className={cn(
-                  'rounded-lg border-2 px-4 py-3 text-left font-sans text-sm font-semibold',
-                  voiceMode === 'own_narration'
-                    ? 'border-[#EEA13D] text-[#1A1A1A]'
-                    : 'border-[#EBE4D5] text-[#666]',
-                )}
-              >
-                My own narration
-              </button>
+            <div className="space-y-2">
+              <h3 className="font-sans text-sm font-bold text-[#1A1A1A]">Who reads this</h3>
+              <p className="font-sans text-sm leading-relaxed text-[#666]">
+                After editorial rewrite, we narrate the finished piece in one of our voices. Choose
+                one and listen first.
+              </p>
             </div>
-
-            {voiceMode === 'our_voice' ? (
-              <div className="space-y-3">
-                <label className="block font-sans text-sm font-semibold">Select a voice</label>
-                {isVoicesLoading ? (
-                  <p className="font-sans text-xs text-[#888]">Loading voices…</p>
-                ) : (
-                  <div className="space-y-2">
-                    {voices.map((voice) => {
-                      const selected = voiceName === voice.name;
-                      const playing = playingName === voice.name;
-                      return (
-                        <div
-                          key={voice.name}
-                          className="flex items-center gap-3 rounded-md border border-[#B39B7F] px-4 py-3"
-                        >
-                          <button
-                            type="button"
-                            onClick={() => setValue('voiceName', voice.name)}
-                            className="flex min-w-0 flex-1 items-center gap-3 text-left"
-                          >
-                            <span
-                              className={cn(
-                                'size-5 rounded-full border-2 border-[#EEA13D]',
-                                selected && 'bg-[#EEA13D]',
-                              )}
-                            />
-                            <span>
-                              <span className="block font-sans text-sm font-bold">
-                                {voice.label}
-                              </span>
-                              <span className="block font-sans text-xs text-[#666]">
-                                {voice.description}
-                              </span>
-                            </span>
-                          </button>
-                          {voice.preview_url ? (
-                            <button
-                              type="button"
-                              onClick={() => handlePreview(voice.name, voice.preview_url)}
-                              className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#E8DFD4]"
-                              aria-label={
-                                playing ? `Pause ${voice.label}` : `Listen to ${voice.label}`
-                              }
-                            >
-                              {playing ? <Pause className="size-4" /> : <Play className="size-4" />}
-                            </button>
-                          ) : null}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-                <p className="font-sans text-xs text-[#888]">Every voice has a Listen button.</p>
-              </div>
+            {isVoicesLoading ? (
+              <p className="font-sans text-xs text-[#888]">Loading voices…</p>
             ) : (
-              <div className="space-y-3">
-                <p className="font-sans text-sm text-[#666]">
-                  Upload your finished audio recording. We will not generate a new narration.
-                </p>
-                <input
-                  type="file"
-                  accept="audio/mpeg,audio/wav,audio/mp4,audio/x-m4a,audio/ogg,audio/webm,.mp3,.wav,.m4a,.ogg,.webm"
-                  onChange={(event) => handleAudioFile(event.target.files?.[0] || null)}
-                  className="block w-full font-sans text-sm"
-                />
-                {audioFile ? (
-                  <p className="font-sans text-xs text-[#666]">Selected: {audioFile.name}</p>
-                ) : null}
+              <div className="space-y-2">
+                {voices.map((voice) => {
+                  const selected = voiceName === voice.name;
+                  const playing = playingName === voice.name;
+                  return (
+                    <div
+                      key={voice.name}
+                      className="flex items-center gap-3 rounded-md border border-[#B39B7F] px-4 py-3"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setValue('voiceName', voice.name)}
+                        className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                      >
+                        <span
+                          className={cn(
+                            'size-5 rounded-full border-2 border-[#EEA13D]',
+                            selected && 'bg-[#EEA13D]',
+                          )}
+                        />
+                        <span>
+                          <span className="block font-sans text-sm font-bold">{voice.label}</span>
+                          <span className="block font-sans text-xs text-[#666]">
+                            {voice.description}
+                          </span>
+                        </span>
+                      </button>
+                      {voice.preview_url ? (
+                        <button
+                          type="button"
+                          onClick={() => handlePreview(voice.name, voice.preview_url)}
+                          className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#E8DFD4]"
+                          aria-label={playing ? `Pause ${voice.label}` : `Listen to ${voice.label}`}
+                        >
+                          {playing ? <Pause className="size-4" /> : <Play className="size-4" />}
+                        </button>
+                      ) : null}
+                    </div>
+                  );
+                })}
               </div>
             )}
+            <p className="font-sans text-xs text-[#888]">Every voice has a Listen button.</p>
           </div>
         ) : null}
 
         {step === 3 ? (
           <div className="space-y-4">
             <p className="font-sans text-sm leading-relaxed text-[#666]">
-              Generate artwork from what you wrote, or upload your own cover. You can change it
-              later from My Stories.
+              Generate artwork after your story is written, or upload your own cover now. You can
+              change it later from My Stories.
             </p>
             <StoryCoverPicker
               mode={coverMode}
               onModeChange={(mode) => {
                 setCoverMode(mode);
                 setCoverError(null);
-                if (mode === 'user_uploaded') setPreviewCover(null);
               }}
               coverFile={coverFile}
               onFileChange={(file) => {
@@ -584,9 +436,6 @@ export default function SubmitWizard({ category }: { category: string }) {
                 setCoverError(null);
               }}
               error={coverError ?? undefined}
-              aiPreviewUrl={previewCover?.url}
-              isGeneratingPreview={isGeneratingPreview}
-              onGeneratePreview={handleGeneratePreview}
             />
           </div>
         ) : null}
@@ -633,7 +482,11 @@ export default function SubmitWizard({ category }: { category: string }) {
                 <span className="block">
                   {coverMode === 'user_uploaded'
                     ? 'Your uploaded image will be the cover. You can replace it later from My Stories.'
-                    : 'The cover you generated will be used. You can replace it later from My Stories.'}
+                    : 'We create the cover artwork from your story and the identity you provided. You can upload a different image later from My Stories.'}
+                </span>
+                <span className="block">
+                  We narrate the edited piece in the voice you chose. You can change the voice later
+                  from My Stories.
                 </span>
               </span>
             </label>
@@ -645,20 +498,14 @@ export default function SubmitWizard({ category }: { category: string }) {
             <button
               type="button"
               onClick={() => setStep((current) => current - 1)}
-              disabled={isGeneratingPreview}
-              className="flex-1 rounded-none border-2 border-[#B39B7F] py-2.5 font-sans text-sm font-semibold text-[#503225] uppercase disabled:opacity-50"
+              className="flex-1 rounded-none border-2 border-[#B39B7F] py-2.5 font-sans text-sm font-semibold text-[#503225] uppercase"
             >
               Back
             </button>
           ) : null}
           {step < STEP_LABELS.length - 1 ? (
             <div className="flex-1">
-              <DynamicActionButton
-                text="Continue"
-                onClick={goNext}
-                fullWidth
-                disabled={isGeneratingPreview}
-              />
+              <DynamicActionButton text="Continue" onClick={goNext} fullWidth />
             </div>
           ) : (
             <div className="flex-1">
