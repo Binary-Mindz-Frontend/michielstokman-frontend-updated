@@ -6,7 +6,11 @@ import InputField from '@/components/dashboard/Fields/InputField/InputField';
 import TextAreaField from '@/components/dashboard/Fields/TextAreaField/TextAreaField';
 import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicActionButton';
 import { cn } from '@/lib/utils';
-import { useGenerateStoryMutation, useGetVoicesQuery } from '@/redux/features/aiStory/aiStory.api';
+import {
+  useGenerateCoverPreviewMutation,
+  useGenerateStoryMutation,
+  useGetVoicesQuery,
+} from '@/redux/features/aiStory/aiStory.api';
 import { appToast } from '@/utils/appToast';
 import { appendStoryPayloadToFormData, type CoverImageMode } from '@/utils/storyGenerate.utils';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -31,7 +35,14 @@ const schema = z.object({
   location: z.string().min(1, 'Location is required'),
   gender: z.string().min(1, 'Gender is required'),
   occupation: z.string().min(1, 'Occupation is required'),
-  age: z.coerce.number().int().min(1, 'Age is required').max(120, 'Enter a valid age'),
+  age: z
+    .string()
+    .trim()
+    .min(1, 'Age is required')
+    .refine((value) => {
+      const parsed = Number(value);
+      return Number.isInteger(parsed) && parsed >= 1 && parsed <= 120;
+    }, 'Enter a valid age'),
   voiceMode: z.enum(['our_voice', 'own_narration']),
   voiceName: z.string().optional(),
   editorialConsent: z.boolean(),
@@ -50,9 +61,12 @@ export default function SubmitWizard({ category }: { category: string }) {
   const [coverMode, setCoverMode] = useState<CoverImageMode>('ai_generated');
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverError, setCoverError] = useState<string | null>(null);
+  const [previewCover, setPreviewCover] = useState<{ url: string; key: string } | null>(null);
   const [playingName, setPlayingName] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [generateStory, { isLoading: isGenerating }] = useGenerateStoryMutation();
+  const [generateCoverPreview, { isLoading: isGeneratingPreview }] =
+    useGenerateCoverPreviewMutation();
   const { data: voicesCatalog, isLoading: isVoicesLoading } = useGetVoicesQuery();
 
   const voices = useMemo(
@@ -76,7 +90,7 @@ export default function SubmitWizard({ category }: { category: string }) {
       location: '',
       gender: '',
       occupation: '',
-      age: undefined as unknown as number,
+      age: '',
       voiceMode: 'our_voice',
       voiceName: '',
       editorialConsent: false,
@@ -84,10 +98,21 @@ export default function SubmitWizard({ category }: { category: string }) {
   });
 
   const bodyValue = watch('body') || '';
+  const titleValue = watch('title') || '';
+  const nameValue = watch('name') || '';
+  const locationValue = watch('location') || '';
+  const genderValue = watch('gender') || '';
+  const occupationValue = watch('occupation') || '';
+  const ageValue = watch('age') || '';
   const voiceMode = watch('voiceMode');
   const voiceName = watch('voiceName');
   const editorialConsent = watch('editorialConsent');
   const wordCount = countWords(bodyValue);
+
+  useEffect(() => {
+    setPreviewCover(null);
+    setCoverError(null);
+  }, [titleValue, bodyValue, nameValue, locationValue, genderValue, occupationValue, ageValue]);
 
   useEffect(() => {
     if (!voices.length || voiceName) return;
@@ -148,6 +173,11 @@ export default function SubmitWizard({ category }: { category: string }) {
         appToast.error('Upload a cover image or switch to Generate for me.');
         return false;
       }
+      if (coverMode === 'ai_generated' && !previewCover) {
+        setCoverError('Generate a cover first, or switch to Upload my own.');
+        appToast.error('Generate a cover first, or switch to Upload my own.');
+        return false;
+      }
       setCoverError(null);
       return true;
     }
@@ -183,10 +213,14 @@ export default function SubmitWizard({ category }: { category: string }) {
       location: data.location.trim(),
       gender: data.gender.trim(),
       occupation: data.occupation.trim(),
-      age: data.age,
+      age: Number(data.age),
       story_input: data.body.trim(),
       image_mode: coverMode,
     };
+
+    if (coverMode === 'ai_generated' && previewCover) {
+      payload.preview_cover_key = previewCover.key;
+    }
 
     if (data.voiceMode === 'own_narration' && audioFile) {
       payload.skip_narration = true;
@@ -240,6 +274,53 @@ export default function SubmitWizard({ category }: { category: string }) {
         setPlayingName(null);
         appToast.error('Voice preview could not be played.');
       });
+  };
+
+  const handleGeneratePreview = async () => {
+    const title = titleValue.trim();
+    const body = bodyValue.trim();
+    if (!title || !body) {
+      appToast.error('Complete your piece first, then generate a cover.');
+      setStep(0);
+      return;
+    }
+
+    const identityOk = await trigger(['name', 'location', 'gender', 'occupation', 'age']);
+    if (!identityOk) {
+      appToast.error('Complete who this piece is about first.');
+      setStep(1);
+      return;
+    }
+
+    try {
+      const res = await generateCoverPreview({
+        story_type: isConfession ? 'confession' : 'meditation',
+        title,
+        first_name: nameValue.trim(),
+        location: locationValue.trim(),
+        gender: genderValue.trim(),
+        occupation: occupationValue.trim(),
+        age: Number(ageValue),
+        story_input: body,
+      }).unwrap();
+
+      const url = res.data?.cover_image_url;
+      const key = res.data?.cover_image_key;
+      if (!url || !key) {
+        appToast.error('Cover was generated but could not be shown. Try again.');
+        return;
+      }
+
+      setPreviewCover({ url, key });
+      setCoverError(null);
+      appToast.success('Cover generated. Continue when you are happy with it.');
+    } catch (error: any) {
+      appToast.error(
+        error?.data?.message ||
+          error?.data?.detail ||
+          'Cover generation failed. Try again or upload your own.',
+      );
+    }
   };
 
   const handleAudioFile = (file: File | null) => {
@@ -487,14 +568,15 @@ export default function SubmitWizard({ category }: { category: string }) {
         {step === 3 ? (
           <div className="space-y-4">
             <p className="font-sans text-sm leading-relaxed text-[#666]">
-              Generate artwork after your story is written, or upload your own cover now. You can
-              change it later from My Stories.
+              Generate artwork from what you wrote, or upload your own cover. You can change it
+              later from My Stories.
             </p>
             <StoryCoverPicker
               mode={coverMode}
               onModeChange={(mode) => {
                 setCoverMode(mode);
                 setCoverError(null);
+                if (mode === 'user_uploaded') setPreviewCover(null);
               }}
               coverFile={coverFile}
               onFileChange={(file) => {
@@ -502,6 +584,9 @@ export default function SubmitWizard({ category }: { category: string }) {
                 setCoverError(null);
               }}
               error={coverError ?? undefined}
+              aiPreviewUrl={previewCover?.url}
+              isGeneratingPreview={isGeneratingPreview}
+              onGeneratePreview={handleGeneratePreview}
             />
           </div>
         ) : null}
@@ -548,7 +633,7 @@ export default function SubmitWizard({ category }: { category: string }) {
                 <span className="block">
                   {coverMode === 'user_uploaded'
                     ? 'Your uploaded image will be the cover. You can replace it later from My Stories.'
-                    : 'We create the cover artwork from your story and the identity you provided. You can upload a different image later from My Stories.'}
+                    : 'The cover you generated will be used. You can replace it later from My Stories.'}
                 </span>
               </span>
             </label>
@@ -560,14 +645,20 @@ export default function SubmitWizard({ category }: { category: string }) {
             <button
               type="button"
               onClick={() => setStep((current) => current - 1)}
-              className="flex-1 rounded-none border-2 border-[#B39B7F] py-2.5 font-sans text-sm font-semibold text-[#503225] uppercase"
+              disabled={isGeneratingPreview}
+              className="flex-1 rounded-none border-2 border-[#B39B7F] py-2.5 font-sans text-sm font-semibold text-[#503225] uppercase disabled:opacity-50"
             >
               Back
             </button>
           ) : null}
           {step < STEP_LABELS.length - 1 ? (
             <div className="flex-1">
-              <DynamicActionButton text="Continue" onClick={goNext} fullWidth />
+              <DynamicActionButton
+                text="Continue"
+                onClick={goNext}
+                fullWidth
+                disabled={isGeneratingPreview}
+              />
             </div>
           ) : (
             <div className="flex-1">

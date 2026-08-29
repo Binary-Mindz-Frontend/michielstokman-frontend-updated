@@ -2,7 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import type { CoverImageMode } from '@/utils/storyGenerate.utils';
-import { Sparkles, Upload } from 'lucide-react';
+import { Loader2, Sparkles, Upload } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useMemo, useRef } from 'react';
 import { appToast } from '@/utils/appToast';
@@ -20,6 +20,9 @@ interface StoryCoverPickerProps {
   error?: string;
   /** Hide the generate/upload mode toggle (e.g. artwork modal after creation). */
   showModeToggle?: boolean;
+  aiPreviewUrl?: string | null;
+  isGeneratingPreview?: boolean;
+  onGeneratePreview?: () => void;
 }
 
 export default function StoryCoverPicker({
@@ -29,6 +32,9 @@ export default function StoryCoverPicker({
   onFileChange,
   error,
   showModeToggle = true,
+  aiPreviewUrl = null,
+  isGeneratingPreview = false,
+  onGeneratePreview,
 }: StoryCoverPickerProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const uploadPreview = useMemo(
@@ -144,6 +150,63 @@ export default function StoryCoverPicker({
             JPEG, PNG, or WebP up to 8 MB. You can also generate AI artwork later from My Stories.
           </p>
         </>
+      ) : onGeneratePreview ? (
+        <div className="space-y-3">
+          <div
+            className={cn(
+              'relative flex h-[257px] w-[220px] items-center justify-center overflow-hidden rounded-lg border border-solid',
+              aiPreviewUrl ? 'border-[#B39B7F]' : 'border-dashed border-[#EEA13D] bg-[#F5F2F0]',
+            )}
+          >
+            {aiPreviewUrl ? (
+              <Image
+                src={aiPreviewUrl}
+                alt="Generated cover preview"
+                fill
+                className="object-cover"
+                unoptimized
+              />
+            ) : (
+              <div className="px-4 text-center">
+                <Sparkles className="mx-auto mb-2 size-8 text-[#EEA13D]" />
+                <p className="font-sans text-sm font-semibold text-[#1A1A1A]">
+                  Generate your cover
+                </p>
+                <p className="mt-1 font-sans text-xs text-[#888]">
+                  Artwork is drawn from your piece and who it is about. This can take up to a
+                  minute.
+                </p>
+              </div>
+            )}
+            {isGeneratingPreview ? (
+              <div className="absolute inset-0 flex items-center justify-center bg-[#F5F2F0]/80">
+                <Loader2 className="size-8 animate-spin text-[#EEA13D]" />
+              </div>
+            ) : null}
+          </div>
+
+          <button
+            type="button"
+            onClick={onGeneratePreview}
+            disabled={isGeneratingPreview}
+            className="font-playpen inline-flex items-center gap-2 rounded-xl border border-[#EBE4D5] bg-white px-4 py-2.5 text-xs font-bold text-gray-800 transition-colors hover:bg-gray-50 disabled:opacity-60"
+          >
+            {isGeneratingPreview ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Generating artwork…
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-3.5 w-3.5" />
+                {aiPreviewUrl ? 'Generate again' : 'Generate cover'}
+              </>
+            )}
+          </button>
+
+          <p className="font-sans text-xs text-[#888]">
+            Generate here, then submit. You can still replace it later from My Stories.
+          </p>
+        </div>
       ) : (
         <div className="flex h-[140px] w-full max-w-sm items-center justify-center rounded-lg border border-dashed border-[#EEA13D] bg-[#F5F2F0] px-4 text-center">
           <div>
