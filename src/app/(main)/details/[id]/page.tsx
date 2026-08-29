@@ -13,7 +13,7 @@ import Image from 'next/image';
 
 import { useParams, useRouter } from 'next/navigation';
 
-import { useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 
 import LoginRequiredModal from '@/app/(main)/create/CreateForm/_components/LoginRequiredModal/LoginRequiredModal';
 import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicActionButton';
@@ -23,10 +23,65 @@ import { useCurrentUser, useIsAuthenticated } from '@/redux/features/auth/authSl
 import { useAppSelector } from '@/redux/hooks';
 import StoryPlayer from '../StoryPlayer/StoryPlayer';
 
+import brushTextBg from '@/assets/shared/brush-text-bg.png';
 import confessionsHero from '@/assets/shared/confessions-hero.png';
 import pinkHeartDrawn from '@/assets/shared/pink-heart-drawn.png';
 import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
 import { resolveStoryCoverSrc } from '@/utils/storyCover.utils';
+
+function BrushTagline({
+  tagline,
+  title,
+  isMeditation,
+}: {
+  tagline?: string | null;
+  title?: string | null;
+  isMeditation: boolean;
+}) {
+  const accent = isMeditation ? 'text-[#E9A139]' : 'text-[#E81A66]';
+  const raw = (tagline || title || '').trim();
+
+  if (!raw) {
+    return isMeditation ? (
+      <>
+        You&apos;re Not Alone. Read What Others
+        <br /> Have <span className={accent}>Never </span>
+        Dared To Say.
+      </>
+    ) : (
+      <>
+        A SPACE TO SAY WHAT <br /> YOU&apos;VE <span className={accent}>NEVER </span>
+        DARED TO SAY.
+      </>
+    );
+  }
+
+  return (
+    <>
+      {raw.split(/(\*\*[^*]+\*\*)/g).map((part, index) => {
+        const marked = part.match(/^\*\*([^*]+)\*\*$/);
+        if (marked) {
+          return (
+            <span key={index} className={accent}>
+              {marked[1]}
+            </span>
+          );
+        }
+
+        return (
+          <Fragment key={index}>
+            {part.split('\n').map((line, lineIndex) => (
+              <Fragment key={lineIndex}>
+                {lineIndex > 0 ? <br /> : null}
+                {line}
+              </Fragment>
+            ))}
+          </Fragment>
+        );
+      })}
+    </>
+  );
+}
 
 export default function StoryDetailPage() {
   const params = useParams();
@@ -389,62 +444,66 @@ export default function StoryDetailPage() {
           variants={FADE_IN_UP_CONTAINER}
           className="flex w-full flex-col items-center justify-between gap-8 md:flex-row md:items-center"
         >
-          {/* LEFT COLUMN: Title, identity, hook */}
-          <motion.div
-            variants={FADE_IN_UP_ITEM}
-            className="flex w-full flex-col items-start md:w-1/2"
-          >
-            {/* Title */}
-            <div className="font-edo relative leading-none font-medium uppercase">
-              <h1
-                style={{ color: themeColor }}
-                className="-rotate-3 transform text-3xl tracking-wider sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl"
-              >
-                {feedData?.title}
-              </h1>
-
-              {/* Decorative Pink Heart Top-Right of Title */}
-              <div className="absolute -top-12 right-6 h-8 w-8 sm:-top-6 sm:right-8 sm:h-10 sm:w-10">
-                <Image src={pinkHeartDrawn} alt="Heart" fill className="object-contain" />
+          {/* LEFT COLUMN: Brush title, right-aligned identity, hook */}
+          <motion.div variants={FADE_IN_UP_ITEM} className="flex w-full flex-col md:w-1/2">
+            <div className="flex w-full flex-col items-stretch gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+              <div className="relative flex min-h-18 w-full max-w-[280px] shrink-0 -rotate-2 transform items-center justify-center sm:min-h-22.5 sm:max-w-[320px]">
+                <div className="absolute inset-0 h-full w-full">
+                  <Image src={brushTextBg} alt="" fill className="object-fill" />
+                </div>
+                <h1 className="relative z-10 px-4 py-2 text-center font-sans text-xs font-medium tracking-wide text-white uppercase sm:px-6 sm:text-sm">
+                  <BrushTagline
+                    tagline={feedData?.hero_tagline}
+                    title={feedData?.title}
+                    isMeditation={isMeditation}
+                  />
+                </h1>
               </div>
+
+              {(feedData?.author_name ||
+                feedData?.location ||
+                feedData?.gender ||
+                feedData?.occupation ||
+                feedData?.age) && (
+                <div
+                  className="min-w-0 flex-1 text-right font-serif text-lg leading-snug italic sm:text-xl"
+                  style={{ color: themeColor }}
+                >
+                  {feedData?.author_name ? <p>{feedData.author_name}</p> : null}
+                  {feedData?.location ? <p>{feedData.location}</p> : null}
+                  {feedData?.gender ? <p>{feedData.gender}</p> : null}
+                  {feedData?.occupation ? <p>{feedData.occupation}</p> : null}
+                  {feedData?.age !== null && feedData?.age !== undefined ? (
+                    <p>{feedData.age}</p>
+                  ) : null}
+                </div>
+              )}
             </div>
-
-            {(feedData?.author_name ||
-              feedData?.location ||
-              feedData?.gender ||
-              feedData?.occupation ||
-              feedData?.age) && (
-              <div
-                className="mt-6 space-y-0.5 font-serif text-lg leading-snug italic sm:mt-8 sm:text-xl"
-                style={{ color: themeColor }}
-              >
-                {feedData?.author_name ? <p>{feedData.author_name}</p> : null}
-                {feedData?.location ? <p>{feedData.location}</p> : null}
-                {feedData?.gender ? <p>{feedData.gender}</p> : null}
-                {feedData?.occupation ? <p>{feedData.occupation}</p> : null}
-                {feedData?.age !== null && feedData?.age !== undefined ? (
-                  <p>{feedData.age}</p>
-                ) : null}
-              </div>
-            )}
 
             {feedData?.hero_hook ? (
-              <p className="mt-5 max-w-lg font-serif text-base leading-relaxed text-[#1A1A1A] italic sm:mt-6 sm:text-lg">
-                {feedData.hero_hook}
-              </p>
-            ) : null}
-
-            {/* Bottom Left Pink Heart Deco */}
-            <div className="relative mt-6 ml-4 h-7 w-7 sm:ml-8 sm:h-9 sm:w-9">
-              <Image src={pinkHeartDrawn} alt="Heart" fill className="object-contain" />
-            </div>
+              <div className="mt-6 flex items-start gap-3 sm:mt-8">
+                <div className="relative mt-1 h-7 w-7 shrink-0 sm:h-9 sm:w-9">
+                  <Image src={pinkHeartDrawn} alt="" fill className="object-contain" />
+                </div>
+                <p className="max-w-lg font-serif text-base leading-relaxed text-[#1A1A1A] italic sm:text-lg">
+                  {feedData.hero_hook}
+                </p>
+              </div>
+            ) : (
+              <div className="relative mt-6 h-7 w-7 sm:h-9 sm:w-9">
+                <Image src={pinkHeartDrawn} alt="" fill className="object-contain" />
+              </div>
+            )}
           </motion.div>
 
-          {/* RIGHT COLUMN: Hero Collage Image */}
+          {/* RIGHT COLUMN: Cover, with a heart like the client mock */}
           <motion.div
             variants={FADE_IN_UP_ITEM}
             className="relative flex w-full justify-center md:w-1/2"
           >
+            <div className="absolute top-8 -left-2 hidden h-8 w-8 md:block lg:top-12 lg:-left-4">
+              <Image src={pinkHeartDrawn} alt="" fill className="object-contain" />
+            </div>
             <div className="relative h-80 w-full max-w-85 shrink-0 sm:h-112.5 sm:max-w-125 md:max-w-150 lg:h-120 lg:max-w-170 xl:h-150 xl:max-w-187.5">
               <Image
                 src={heroImageSrc}
