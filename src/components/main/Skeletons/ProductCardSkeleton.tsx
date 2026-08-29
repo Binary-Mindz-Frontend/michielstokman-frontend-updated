@@ -20,8 +20,12 @@ const ProductCardSkeleton = () => {
           <div className="h-3 w-4/5 rounded bg-[#EADED5]" />
         </div>
 
-        {/* Audio Meta Information */}
-        <div className="my-2 h-3 w-1/2 rounded bg-[#EADED5]" />
+        {/* Identity + audio meta */}
+        <div className="my-2 space-y-2">
+          <div className="h-3 w-2/5 rounded bg-[#EADED5]" />
+          <div className="h-3 w-3/5 rounded bg-[#EADED5]" />
+          <div className="h-3 w-1/2 rounded bg-[#EADED5]" />
+        </div>
       </div>
 
       {/* Start Listening Action Button */}

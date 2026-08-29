@@ -76,6 +76,13 @@ export const ReviewDetails = ({
           <p className="text-sm font-semibold text-[#5C3A21] capitalize">
             {story?.story_type || 'Uncategorized'}
           </p>
+          {story?.submission_mode === 'human_ready' ? (
+            <p className="mt-1 text-xs font-semibold text-[#BF7758]">
+              As submitted · human narration
+            </p>
+          ) : (
+            <p className="mt-1 text-xs text-[#8A6E5F]">Studio Voice</p>
+          )}
         </div>
 
         {/* Subtle Metadata Layout */}
@@ -100,6 +107,11 @@ export const ReviewDetails = ({
           {story?.gender && (
             <span className="flex items-center gap-1">
               <strong>Gender:</strong> {story.gender}
+            </span>
+          )}
+          {story?.sexual_orientation && (
+            <span className="flex items-center gap-1">
+              <strong>Orientation:</strong> {story.sexual_orientation}
             </span>
           )}
           {story?.occupation && (
@@ -171,6 +183,34 @@ export const ReviewDetails = ({
             </div>
           )}
         </div>
+
+        {(story?.background || story?.personality || story?.lifestyle || story?.situation) && (
+          <div className="space-y-3 border-t border-[#F0EAE5] pt-4">
+            <span className="block text-[12px] font-bold tracking-wider text-[#A08170] uppercase">
+              Character brief
+            </span>
+            {story.background ? (
+              <p className="text-sm text-[#4A3B32]">
+                <strong>Background:</strong> {story.background}
+              </p>
+            ) : null}
+            {story.personality ? (
+              <p className="text-sm text-[#4A3B32]">
+                <strong>Personality:</strong> {story.personality}
+              </p>
+            ) : null}
+            {story.lifestyle ? (
+              <p className="text-sm text-[#4A3B32]">
+                <strong>Lifestyle:</strong> {story.lifestyle}
+              </p>
+            ) : null}
+            {story.situation ? (
+              <p className="text-sm text-[#4A3B32]">
+                <strong>Situation:</strong> {story.situation}
+              </p>
+            ) : null}
+          </div>
+        )}
 
         {story?.hero_hook && (
           <div className="border-t border-[#F0EAE5] pt-4">
