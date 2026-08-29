@@ -31,8 +31,8 @@ export default function MeditationsHero() {
           </div>
         </div>
 
-        {/* Brush Stroke Subtitle */}
-        <div className="relative mt-6 flex min-h-18 w-full max-w-[320px] -rotate-2 transform items-center justify-center sm:mt-8 sm:min-h-22.5 sm:max-w-105">
+        {/* Brush Stroke Subtitle — desktop only */}
+        <div className="relative mt-6 hidden min-h-18 w-full max-w-[320px] -rotate-2 transform items-center justify-center sm:mt-8 sm:min-h-22.5 sm:max-w-105 md:flex">
           {/* Black brush background */}
           <div className="absolute inset-0 h-full w-full">
             <Image src={brushTextBg} alt="Brush background" fill className="object-fill" />
@@ -45,8 +45,8 @@ export default function MeditationsHero() {
           </p>
         </div>
 
-        {/* Listen first — share lives on /create and after playback */}
-        <div className="mt-6 ml-4 w-56 sm:mt-8 sm:ml-8 sm:w-64 lg:ml-20">
+        {/* Listen first — desktop only */}
+        <div className="mt-6 ml-4 hidden w-56 sm:mt-8 sm:ml-8 sm:w-64 md:block lg:ml-20">
           <DynamicActionButton
             text="Start Listening"
             href="#stories"
