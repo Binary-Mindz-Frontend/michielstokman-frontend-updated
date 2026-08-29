@@ -37,8 +37,8 @@ const HeroContent = () => {
           </span>
         </div>
 
-        {/* Brush stroke subtitle */}
-        <div className="relative mt-6 flex min-h-18 w-full max-w-[320px] -rotate-2 transform items-center justify-center sm:mt-8 sm:min-h-22.5 sm:max-w-105">
+        {/* Brush stroke subtitle — desktop only */}
+        <div className="relative mt-6 hidden min-h-18 w-full max-w-[320px] -rotate-2 transform items-center justify-center sm:mt-8 sm:min-h-22.5 sm:max-w-105 md:flex">
           {/* Black brush background */}
           <div className="absolute inset-0 h-full w-full">
             <Image src={brushTextBg} alt="Brush background" fill className="object-fill" />
@@ -50,8 +50,8 @@ const HeroContent = () => {
           </p>
         </div>
 
-        {/* READ CONFESSIONS Button */}
-        <div className="relative mt-6 ml-4 h-12 w-56 sm:mt-8 sm:ml-8 sm:h-13 sm:w-64 lg:ml-20">
+        {/* READ CONFESSIONS Button — desktop only */}
+        <div className="relative mt-6 ml-4 hidden h-12 w-56 sm:mt-8 sm:ml-8 sm:h-13 sm:w-64 md:block lg:ml-20">
           <Image src={btnBg} alt="Button background" fill className="object-fill" />
           <Link
             href="/confessions"
