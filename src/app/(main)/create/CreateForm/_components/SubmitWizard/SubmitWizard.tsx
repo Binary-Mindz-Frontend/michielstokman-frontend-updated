@@ -8,52 +8,72 @@ import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicAc
 import { cn } from '@/lib/utils';
 import { useGenerateStoryMutation, useGetVoicesQuery } from '@/redux/features/aiStory/aiStory.api';
 import { appToast } from '@/utils/appToast';
-import { appendStoryPayloadToFormData, type CoverImageMode } from '@/utils/storyGenerate.utils';
+import { appendStoryPayloadToFormData } from '@/utils/storyGenerate.utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Pause, Play } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import StoryCoverPicker from '../StoryCoverPicker/StoryCoverPicker';
 import SuccessModal from '../SuccessModal/SuccessModal';
 import { countWords } from '../submitStory.utils';
 
 const CONFESSION_MIN_WORDS = 1000;
 const CONFESSION_MAX_WORDS = 1800;
 const MEDITATION_MAX_WORDS = 1800;
+const MAX_AUDIO_BYTES = 10 * 1024 * 1024;
+const AUDIO_ACCEPT =
+  'audio/mpeg,audio/wav,audio/mp4,audio/x-m4a,audio/ogg,audio/webm,.mp3,.wav,.m4a,.ogg,.webm';
 
 const schema = z.object({
+  submissionMode: z.enum(['studio', 'human_ready']),
   title: z.string().min(1, 'Title is required'),
   body: z.string().min(1, 'This field is required'),
   name: z.string().min(1, 'Name is required'),
-  location: z.string().min(1, 'Location is required'),
-  gender: z.string().min(1, 'Gender is required'),
-  occupation: z.string().min(1, 'Occupation is required'),
+  location: z.string(),
+  gender: z.string(),
+  sexualOrientation: z.string(),
+  occupation: z.string(),
   age: z
     .string()
     .trim()
-    .min(1, 'Age is required')
     .refine((value) => {
+      if (!value) return true;
       const parsed = Number(value);
       return Number.isInteger(parsed) && parsed >= 1 && parsed <= 120;
     }, 'Enter a valid age'),
-  voiceName: z.string().min(1, 'Choose a voice'),
+  background: z.string(),
+  personality: z.string(),
+  lifestyle: z.string(),
+  situation: z.string(),
+  voiceName: z.string(),
   editorialConsent: z.boolean(),
+  termsAccepted: z.boolean(),
 });
 
 type FormValues = z.infer<typeof schema>;
 
-const STEP_LABELS = ['Your piece', 'Who this is about', 'Voice', 'Cover', 'Review & submit'];
+const STEP_LABELS = [
+  'How you’ll submit',
+  'Your piece',
+  'Who this is about',
+  'Voice',
+  'Review & submit',
+];
+
+function optionalText(value: string) {
+  const trimmed = value.trim();
+  return trimmed ? trimmed : undefined;
+}
 
 export default function SubmitWizard({ category }: { category: string }) {
   const router = useRouter();
   const isConfession = category === 'Confessions';
   const [step, setStep] = useState(0);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [coverMode, setCoverMode] = useState<CoverImageMode>('ai_generated');
-  const [coverFile, setCoverFile] = useState<File | null>(null);
-  const [coverError, setCoverError] = useState<string | null>(null);
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [audioError, setAudioError] = useState<string | null>(null);
   const [playingName, setPlayingName] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [generateStory, { isLoading: isGenerating }] = useGenerateStoryMutation();
@@ -74,29 +94,39 @@ export default function SubmitWizard({ category }: { category: string }) {
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
+      submissionMode: 'studio',
       title: '',
       body: '',
       name: '',
       location: '',
       gender: '',
+      sexualOrientation: '',
       occupation: '',
       age: '',
+      background: '',
+      personality: '',
+      lifestyle: '',
+      situation: '',
       voiceName: '',
       editorialConsent: false,
+      termsAccepted: false,
     },
   });
 
   const bodyValue = watch('body') || '';
   const voiceName = watch('voiceName');
+  const submissionMode = watch('submissionMode');
   const editorialConsent = watch('editorialConsent');
+  const termsAccepted = watch('termsAccepted');
+  const isStudio = submissionMode === 'studio';
   const wordCount = countWords(bodyValue);
 
   useEffect(() => {
-    if (!voices.length || voiceName) return;
+    if (!isStudio || !voices.length || voiceName) return;
     const fallback =
       voices.find((voice) => voice.name === voicesCatalog?.default_voice) || voices[0];
     if (fallback) setValue('voiceName', fallback.name);
-  }, [voices, voicesCatalog?.default_voice, voiceName, setValue]);
+  }, [isStudio, voices, voicesCatalog?.default_voice, voiceName, setValue]);
 
   useEffect(() => {
     return () => {
@@ -106,6 +136,13 @@ export default function SubmitWizard({ category }: { category: string }) {
 
   const validateStep = async (index: number) => {
     if (index === 0) {
+      if (!submissionMode) {
+        appToast.error('Choose how you want to submit.');
+        return false;
+      }
+      return true;
+    }
+    if (index === 1) {
       const ok = await trigger(['title', 'body']);
       if (!ok) {
         appToast.error(
@@ -125,28 +162,28 @@ export default function SubmitWizard({ category }: { category: string }) {
       }
       return true;
     }
-    if (index === 1) {
-      const ok = await trigger(['name', 'location', 'gender', 'occupation', 'age']);
-      if (!ok) {
-        appToast.error('Please complete who this piece is about.');
-        return false;
-      }
-      return true;
-    }
     if (index === 2) {
-      if (!voiceName) {
-        appToast.error('Choose a voice for the finished piece.');
+      const ok = await trigger(['name', 'age']);
+      if (!ok) {
+        appToast.error(errors.name?.message || errors.age?.message || 'Please add a name.');
         return false;
       }
       return true;
     }
     if (index === 3) {
-      if (coverMode === 'user_uploaded' && !coverFile) {
-        setCoverError('Upload a cover image or switch to Generate for me.');
-        appToast.error('Upload a cover image or switch to Generate for me.');
+      if (isStudio) {
+        if (!voiceName) {
+          appToast.error('Choose a voice for the finished piece.');
+          return false;
+        }
+        return true;
+      }
+      if (!audioFile) {
+        setAudioError('Upload the finished narration.');
+        appToast.error('Upload the finished narration.');
         return false;
       }
-      setCoverError(null);
+      setAudioError(null);
       return true;
     }
     return true;
@@ -159,17 +196,26 @@ export default function SubmitWizard({ category }: { category: string }) {
   };
 
   const onSubmit = async (data: FormValues) => {
-    const voiceOk = await validateStep(2);
-    if (!voiceOk) {
+    const pieceOk = await validateStep(1);
+    if (!pieceOk) {
+      setStep(1);
+      return;
+    }
+    const identityOk = await validateStep(2);
+    if (!identityOk) {
       setStep(2);
       return;
     }
-    const coverOk = await validateStep(3);
-    if (!coverOk) {
+    const voiceOk = await validateStep(3);
+    if (!voiceOk) {
       setStep(3);
       return;
     }
-    if (!data.editorialConsent) {
+    if (!data.termsAccepted) {
+      appToast.error('Please agree to the Terms & Conditions before submitting.');
+      return;
+    }
+    if (isStudio && !data.editorialConsent) {
       appToast.error('Please confirm you understand how editorial review works before submitting.');
       return;
     }
@@ -178,30 +224,38 @@ export default function SubmitWizard({ category }: { category: string }) {
       story_type: isConfession ? 'confession' : 'meditation',
       title: data.title,
       first_name: data.name.trim(),
-      location: data.location.trim(),
-      gender: data.gender.trim(),
-      occupation: data.occupation.trim(),
-      age: Number(data.age),
+      location: optionalText(data.location),
+      gender: optionalText(data.gender),
+      sexual_orientation: optionalText(data.sexualOrientation),
+      occupation: optionalText(data.occupation),
       story_input: data.body.trim(),
-      image_mode: coverMode,
+      background: optionalText(data.background),
+      personality: optionalText(data.personality),
+      lifestyle: optionalText(data.lifestyle),
+      situation: optionalText(data.situation),
+      submission_mode: data.submissionMode,
+      image_mode: 'ai_generated',
     };
 
-    if (data.voiceName) {
-      payload.voice_name = data.voiceName;
+    if (data.age.trim()) {
+      payload.age = Number(data.age);
     }
-
-    const needsMultipart = coverMode === 'user_uploaded' && coverFile;
 
     try {
       let res;
-      if (needsMultipart) {
+      if (data.submissionMode === 'human_ready') {
+        payload.skip_rewrite = true;
+        payload.skip_narration = true;
         const formData = new FormData();
         appendStoryPayloadToFormData(formData, payload);
-        if (coverFile) {
-          formData.append('image', coverFile);
+        if (audioFile) {
+          formData.append('audio', audioFile);
         }
         res = await generateStory(formData).unwrap();
       } else {
+        if (data.voiceName) {
+          payload.voice_name = data.voiceName;
+        }
         res = await generateStory(payload).unwrap();
       }
 
@@ -233,9 +287,39 @@ export default function SubmitWizard({ category }: { category: string }) {
       });
   };
 
+  const handleAudioChange = (file: File | null) => {
+    if (!file) {
+      setAudioFile(null);
+      setAudioError(null);
+      return;
+    }
+    if (file.size > MAX_AUDIO_BYTES) {
+      setAudioFile(null);
+      setAudioError('Narration must be 10 MB or smaller.');
+      appToast.error('Narration must be 10 MB or smaller.');
+      return;
+    }
+    setAudioFile(file);
+    setAudioError(null);
+  };
+
   const stepTitle = isConfession
-    ? ['Your confession', 'Who we meet', 'Voice', 'Cover', 'Review & submit']
-    : ['Your meditation', 'Who this is about', 'Voice', 'Cover', 'Review & submit'];
+    ? [
+        'How you’ll submit',
+        'Your confession',
+        'Who we meet',
+        isStudio ? 'Voice' : 'Your narration',
+        'Review & submit',
+      ]
+    : [
+        'How you’ll submit',
+        'Your meditation',
+        'Who this is about',
+        isStudio ? 'Voice' : 'Your narration',
+        'Review & submit',
+      ];
+
+  const canSubmit = termsAccepted && (isStudio ? editorialConsent : true) && !isGenerating;
 
   return (
     <>
@@ -266,6 +350,50 @@ export default function SubmitWizard({ category }: { category: string }) {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {step === 0 ? (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <h3 className="font-sans text-sm font-bold text-[#1A1A1A]">How you’ll submit</h3>
+              <p className="font-sans text-sm leading-relaxed text-[#666]">
+                Choose one path. You can still withdraw later from My Stories.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setValue('submissionMode', 'studio')}
+              className={cn(
+                'w-full rounded-lg border p-4 text-left',
+                isStudio ? 'border-[#EEA13D] bg-[#EEA13D]/10' : 'border-[#B39B7F]',
+              )}
+            >
+              <span className="block font-sans text-sm font-bold text-[#1A1A1A]">
+                Confession/meditation + Studio Voice
+              </span>
+              <span className="mt-1 block font-sans text-sm leading-relaxed text-[#666]">
+                You submit the text. We edit it, then narrate the finished piece in one of our four
+                studio voices.
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setValue('submissionMode', 'human_ready')}
+              className={cn(
+                'w-full rounded-lg border p-4 text-left',
+                !isStudio ? 'border-[#EEA13D] bg-[#EEA13D]/10' : 'border-[#B39B7F]',
+              )}
+            >
+              <span className="block font-sans text-sm font-bold text-[#1A1A1A]">
+                Fully narrated confession/meditation
+              </span>
+              <span className="mt-1 block font-sans text-sm leading-relaxed text-[#666]">
+                You submit a complete script and a complete narration in your own voice. We do not
+                rewrite it or replace your voice. It is reviewed as submitted and either published
+                or not accepted.
+              </span>
+            </button>
+          </div>
+        ) : null}
+
+        {step === 1 ? (
           <div className="space-y-5">
             <InputField
               label="Title"
@@ -303,7 +431,7 @@ export default function SubmitWizard({ category }: { category: string }) {
           </div>
         ) : null}
 
-        {step === 1 ? (
+        {step === 2 ? (
           <div className="space-y-4">
             <div className="space-y-2">
               <h3 className="font-sans text-sm font-bold text-[#1A1A1A]">
@@ -312,8 +440,8 @@ export default function SubmitWizard({ category }: { category: string }) {
                   : 'Who is this meditation about?'}
               </h3>
               <p className="font-sans text-sm leading-relaxed text-[#666]">
-                These details appear on the public story page — name, place, gender, occupation, and
-                age, stacked under the title.
+                Used to create the cover and bring this person to life. Name is required. Skip
+                anything you don’t want to share.
               </p>
             </div>
             <InputField
@@ -330,15 +458,20 @@ export default function SubmitWizard({ category }: { category: string }) {
               placeholder="Place the story started or is set"
               control={control}
               error={errors.location?.message}
-              required
             />
             <InputField
-              label="Gender"
+              label="Gender / sex"
               name="gender"
-              placeholder="e.g. Woman, Queer (bi)"
+              placeholder="e.g. Woman"
               control={control}
               error={errors.gender?.message}
-              required
+            />
+            <InputField
+              label="Sexual orientation"
+              name="sexualOrientation"
+              placeholder="e.g. Queer, bisexual"
+              control={control}
+              error={errors.sexualOrientation?.message}
             />
             <InputField
               label="Occupation"
@@ -346,7 +479,6 @@ export default function SubmitWizard({ category }: { category: string }) {
               placeholder="e.g. Mother, teacher"
               control={control}
               error={errors.occupation?.message}
-              required
             />
             <InputField
               label="Age"
@@ -355,12 +487,39 @@ export default function SubmitWizard({ category }: { category: string }) {
               placeholder="e.g. 37"
               control={control}
               error={errors.age?.message}
-              required
+            />
+            <TextAreaField
+              label="Background"
+              name="background"
+              placeholder="What should we know about their history?"
+              control={control}
+              rows={3}
+            />
+            <TextAreaField
+              label="Personality"
+              name="personality"
+              placeholder="How they come across"
+              control={control}
+              rows={3}
+            />
+            <TextAreaField
+              label="Lifestyle"
+              name="lifestyle"
+              placeholder="How they live day to day"
+              control={control}
+              rows={3}
+            />
+            <TextAreaField
+              label="Situation"
+              name="situation"
+              placeholder="Where they are right now"
+              control={control}
+              rows={3}
             />
           </div>
         ) : null}
 
-        {step === 2 ? (
+        {step === 3 && isStudio ? (
           <div className="space-y-5">
             <div className="space-y-2">
               <h3 className="font-sans text-sm font-bold text-[#1A1A1A]">Who reads this</h3>
@@ -418,25 +577,28 @@ export default function SubmitWizard({ category }: { category: string }) {
           </div>
         ) : null}
 
-        {step === 3 ? (
+        {step === 3 && !isStudio ? (
           <div className="space-y-4">
-            <p className="font-sans text-sm leading-relaxed text-[#666]">
-              Generate artwork after your story is written, or upload your own cover now. You can
-              change it later from My Stories.
-            </p>
-            <StoryCoverPicker
-              mode={coverMode}
-              onModeChange={(mode) => {
-                setCoverMode(mode);
-                setCoverError(null);
-              }}
-              coverFile={coverFile}
-              onFileChange={(file) => {
-                setCoverFile(file);
-                setCoverError(null);
-              }}
-              error={coverError ?? undefined}
+            <div className="space-y-2">
+              <h3 className="font-sans text-sm font-bold text-[#1A1A1A]">Your narration</h3>
+              <p className="font-sans text-sm leading-relaxed text-[#666]">
+                Upload the complete recording in your own voice. This is the published narration. We
+                do not replace it with AI.
+              </p>
+            </div>
+            <input
+              type="file"
+              accept={AUDIO_ACCEPT}
+              onChange={(event) => handleAudioChange(event.target.files?.[0] ?? null)}
+              className="block w-full font-sans text-sm text-[#503225]"
             />
+            {audioFile ? <p className="font-sans text-xs text-[#666]">{audioFile.name}</p> : null}
+            {audioError ? (
+              <p className="font-sans text-xs font-semibold text-[#D22D4C]">{audioError}</p>
+            ) : null}
+            <p className="font-sans text-xs text-[#888]">
+              mp3, wav, m4a, ogg or webm · up to 10 MB
+            </p>
           </div>
         ) : null}
 
@@ -454,40 +616,67 @@ export default function SubmitWizard({ category }: { category: string }) {
               </p>
             </div>
 
+            <p className="font-sans text-sm leading-relaxed text-[#666]">
+              We create the cover from the finished piece and the details you shared about this
+              person. You can regenerate artwork later from My Stories.
+            </p>
+
+            {isStudio ? (
+              <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-[#B39B7F] p-4">
+                <input
+                  type="checkbox"
+                  checked={editorialConsent}
+                  onChange={(event) => setValue('editorialConsent', event.target.checked)}
+                  className="mt-1 size-4 shrink-0"
+                />
+                <span className="space-y-2 font-sans text-sm leading-relaxed text-[#503225]">
+                  <span className="block font-bold">Before you submit</span>
+                  <span className="block">
+                    Transform to Liberation is an editorial platform, not a self-publishing
+                    platform.
+                  </span>
+                  <span className="block">
+                    We may rewrite, shorten, restructure or substantially change your Confession or
+                    Meditation. We do this to create something we believe our audience will love.
+                  </span>
+                  <span className="block">
+                    You may dislike some of our changes. That&apos;s okay. You can withdraw your
+                    submission if you don&apos;t want our edited version published.
+                  </span>
+                  <span className="block">
+                    Publication can take up to two months. Submission does not guarantee
+                    publication.
+                  </span>
+                  <span className="block">
+                    We narrate the edited piece in the voice you chose. You can change the voice
+                    later from My Stories.
+                  </span>
+                </span>
+              </label>
+            ) : (
+              <p className="rounded-lg border border-[#B39B7F] p-4 font-sans text-sm leading-relaxed text-[#503225]">
+                This submission is reviewed as you sent it — your text and your voice. If it is not
+                publication-ready, it will not be published.
+              </p>
+            )}
+
             <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-[#B39B7F] p-4">
               <input
                 type="checkbox"
-                checked={editorialConsent}
-                onChange={(event) => setValue('editorialConsent', event.target.checked)}
+                checked={termsAccepted}
+                onChange={(event) => setValue('termsAccepted', event.target.checked)}
                 className="mt-1 size-4 shrink-0"
               />
-              <span className="space-y-2 font-sans text-sm leading-relaxed text-[#503225]">
-                <span className="block font-bold">Before you submit</span>
-                <span className="block">
-                  Transform to Liberation is an editorial platform, not a self-publishing platform.
-                </span>
-                <span className="block">
-                  We may rewrite, shorten, restructure or substantially change your Confession or
-                  Meditation. We do this to create something we believe our audience will love.
-                </span>
-                <span className="block">
-                  You may dislike some of our changes. That&apos;s okay. You can withdraw your
-                  submission if you don&apos;t want our edited version published.
-                </span>
-                <span className="block">
-                  Publication can take up to two months. Sometimes we&apos;re overloaded, or we
-                  receive many submissions about the same subject. Submission does not guarantee
-                  publication.
-                </span>
-                <span className="block">
-                  {coverMode === 'user_uploaded'
-                    ? 'Your uploaded image will be the cover. You can replace it later from My Stories.'
-                    : 'We create the cover artwork from your story and the identity you provided. You can upload a different image later from My Stories.'}
-                </span>
-                <span className="block">
-                  We narrate the edited piece in the voice you chose. You can change the voice later
-                  from My Stories.
-                </span>
+              <span className="font-sans text-sm leading-relaxed text-[#503225]">
+                I have read and agree to the{' '}
+                <Link
+                  href="/terms"
+                  target="_blank"
+                  className="font-bold underline underline-offset-2"
+                >
+                  Terms &amp; Conditions
+                </Link>
+                .
               </span>
             </label>
           </div>
@@ -512,7 +701,7 @@ export default function SubmitWizard({ category }: { category: string }) {
               <DynamicActionButton
                 text={isGenerating ? 'Submitting…' : 'Submit'}
                 type="submit"
-                disabled={isGenerating || !editorialConsent}
+                disabled={!canSubmit}
                 fullWidth
               />
             </div>

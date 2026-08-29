@@ -1,10 +1,6 @@
 'use client';
 
-import StoryCoverPicker from '@/app/(main)/create/CreateForm/_components/StoryCoverPicker/StoryCoverPicker';
-import {
-  useGenerateStoryImageMutation,
-  useUploadStoryImageMutation,
-} from '@/redux/features/memberStory/memberStory.api';
+import { useGenerateStoryImageMutation } from '@/redux/features/memberStory/memberStory.api';
 import { hasStoryCover } from '@/utils/storyCover.utils';
 import { Loader2, Sparkles, X } from 'lucide-react';
 import Image from 'next/image';
@@ -20,38 +16,14 @@ interface ArtworkModalProps {
 
 export default function ArtworkModal({ isOpen, item, onClose, onUpdated }: ArtworkModalProps) {
   const storyId = item ? String(item.id) : '';
-  const [coverFile, setCoverFile] = useState<File | null>(null);
-  const [uploadImage, { isLoading: isUploading }] = useUploadStoryImageMutation();
   const [generateImage, { isLoading: isGenerating }] = useGenerateStoryImageMutation();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   if (!isOpen || !item) return null;
 
-  const isBusy = isUploading || isGenerating;
   const currentCover =
     typeof item.image === 'string' && hasStoryCover(item.image) ? item.image : null;
-
-  const handleUpload = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!coverFile) {
-      setErrorMessage('Choose an image to upload.');
-      return;
-    }
-
-    setErrorMessage(null);
-    setSuccessMessage(null);
-
-    try {
-      const result = await uploadImage({ storyId, file: coverFile }).unwrap();
-      setSuccessMessage(result.data?.message || 'Cover image updated.');
-      setCoverFile(null);
-      onUpdated?.();
-    } catch (error) {
-      console.error('Failed to upload cover:', error);
-      setErrorMessage('Upload failed. Use JPEG, PNG, or WebP up to 8 MB.');
-    }
-  };
 
   const handleGenerate = async () => {
     setErrorMessage(null);
@@ -63,7 +35,7 @@ export default function ArtworkModal({ isOpen, item, onClose, onUpdated }: Artwo
       onUpdated?.();
     } catch (error) {
       console.error('Failed to generate cover:', error);
-      setErrorMessage('Generation failed. Try again or upload your own image.');
+      setErrorMessage('Generation failed. Please try again.');
     }
   };
 
@@ -100,43 +72,10 @@ export default function ArtworkModal({ isOpen, item, onClose, onUpdated }: Artwo
             </div>
           ) : null}
 
-          <form onSubmit={handleUpload} className="space-y-4">
-            <StoryCoverPicker
-              mode="user_uploaded"
-              onModeChange={() => {}}
-              coverFile={coverFile}
-              onFileChange={setCoverFile}
-              showModeToggle={false}
-            />
-
-            <button
-              type="submit"
-              disabled={isBusy || !coverFile}
-              className="font-playpen w-full rounded-xl bg-[#D22D4C] py-2.5 text-xs font-bold text-white transition-colors hover:bg-[#b5243f] disabled:opacity-60"
-            >
-              {isUploading ? (
-                <span className="inline-flex items-center gap-2">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Uploading…
-                </span>
-              ) : (
-                'Upload cover'
-              )}
-            </button>
-          </form>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-[#EBE4D5]" />
-            </div>
-            <div className="relative flex justify-center">
-              <span className="bg-[#FAF7F2] px-3 font-sans text-xs text-gray-500">or</span>
-            </div>
-          </div>
-
           <button
             type="button"
             onClick={handleGenerate}
-            disabled={isBusy}
+            disabled={isGenerating}
             className="font-playpen flex w-full items-center justify-center gap-2 rounded-xl border border-[#EBE4D5] bg-white py-2.5 text-xs font-bold text-gray-800 transition-colors hover:bg-gray-50 disabled:opacity-60"
           >
             {isGenerating ? (
@@ -151,8 +90,8 @@ export default function ArtworkModal({ isOpen, item, onClose, onUpdated }: Artwo
           </button>
 
           <p className="font-sans text-xs text-gray-500">
-            Upload or generate anytime. Either action replaces the current cover. AI generation can
-            take 30–60 seconds.
+            Covers are generated from the finished piece so every story shares the same visual
+            language. Generation can take 30–60 seconds.
           </p>
 
           {errorMessage ? (

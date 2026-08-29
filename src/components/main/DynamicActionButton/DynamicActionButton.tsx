@@ -18,6 +18,8 @@ export interface DynamicActionButtonProps {
   className?: string;
   fullWidth?: boolean;
   disabled?: boolean;
+  /** Render the button look without a link or button — for cards that are already links. */
+  asVisual?: boolean;
 }
 
 const DynamicActionButton: React.FC<DynamicActionButtonProps> = ({
@@ -31,6 +33,7 @@ const DynamicActionButton: React.FC<DynamicActionButtonProps> = ({
   className = '',
   fullWidth = true,
   disabled = false,
+  asVisual = false,
 }) => {
   // Determine if bgColor is hex string (starts with '#') or Tailwind class
   const isHexBg = bgColor.startsWith('#');
@@ -72,6 +75,10 @@ const DynamicActionButton: React.FC<DynamicActionButtonProps> = ({
       )}
     </div>
   );
+
+  if (asVisual) {
+    return content;
+  }
 
   if (href) {
     return (

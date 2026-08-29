@@ -11,6 +11,13 @@ export type IStoryItemType = {
   audio_path: string;
   rating: number | null;
   listened_count: number;
+  author_name?: string | null;
+  location?: string | null;
+  gender?: string | null;
+  sexual_orientation?: string | null;
+  occupation?: string | null;
+  age?: number | null;
+  audio_duration_seconds?: number | null;
   is_explicit: boolean;
 };
 

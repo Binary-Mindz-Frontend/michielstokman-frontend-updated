@@ -76,6 +76,11 @@ function MainFooter() {
                 </Link>
               </li>
               <li>
+                <Link href="/terms" className="transition-colors hover:text-[#E81A66]">
+                  TERMS
+                </Link>
+              </li>
+              <li>
                 <Link
                   href="/safety-freedom-rules"
                   className="transition-colors hover:text-[#E81A66]"

@@ -6,6 +6,7 @@ import ProductCardSkeleton from '@/components/main/Skeletons/ProductCardSkeleton
 import { useGetDiscoveryFeedQuery } from '@/redux/features/discoveryFeed/discoveryFeed.api';
 import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
 import { resolveStoryCoverSrc } from '@/utils/storyCover.utils';
+import { publicDisplayName } from '@/utils/storyIdentity.utils';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import ConfessionsCard, { ConfessionItem } from './_components/ConfessionsCard/ConfessionsCard';
@@ -33,6 +34,13 @@ export default function ConfessionsGrid() {
     rating: item.rating ? item.rating.toString() : '4.8',
     listenedCount: item.listened_count ?? 0,
     isExplicit: item.is_explicit ?? false,
+    authorName: publicDisplayName(item.author_name),
+    location: item.location,
+    gender: item.gender,
+    sexualOrientation: item.sexual_orientation,
+    occupation: item.occupation,
+    age: item.age,
+    durationSeconds: item.audio_duration_seconds,
   }));
 
   const visibleConfessions = confessionsData.slice(0, visibleCount);

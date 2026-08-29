@@ -463,6 +463,7 @@ export default function StoryDetailPage() {
               {(feedData?.author_name ||
                 feedData?.location ||
                 feedData?.gender ||
+                feedData?.sexual_orientation ||
                 feedData?.occupation ||
                 feedData?.age) && (
                 <div
@@ -472,6 +473,7 @@ export default function StoryDetailPage() {
                   {feedData?.author_name ? <p>{feedData.author_name}</p> : null}
                   {feedData?.location ? <p>{feedData.location}</p> : null}
                   {feedData?.gender ? <p>{feedData.gender}</p> : null}
+                  {feedData?.sexual_orientation ? <p>{feedData.sexual_orientation}</p> : null}
                   {feedData?.occupation ? <p>{feedData.occupation}</p> : null}
                   {feedData?.age !== null && feedData?.age !== undefined ? (
                     <p>{feedData.age}</p>

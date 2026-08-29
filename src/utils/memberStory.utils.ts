@@ -79,6 +79,12 @@ export function formatAudioDuration(seconds: number | null | undefined): string 
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
+export function formatListenLength(seconds: number | null | undefined): string | null {
+  if (!seconds || seconds <= 0) return null;
+  if (seconds < 60) return `${seconds}s`;
+  return `${Math.round(seconds / 60)} min`;
+}
+
 export function hasProcessingStories(stories: MemberStoryListItem[]): boolean {
   return stories.some((s) => s.generation_status === 'processing');
 }
