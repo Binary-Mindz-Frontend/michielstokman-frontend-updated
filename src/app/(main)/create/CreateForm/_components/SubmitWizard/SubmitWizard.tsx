@@ -8,15 +8,16 @@ import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicAc
 import { cn } from '@/lib/utils';
 import { useGenerateStoryMutation, useGetVoicesQuery } from '@/redux/features/aiStory/aiStory.api';
 import { appToast } from '@/utils/appToast';
-import { appendStoryPayloadToFormData } from '@/utils/storyGenerate.utils';
+import { appendStoryPayloadToFormData, type CoverImageMode } from '@/utils/storyGenerate.utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Pause, Play } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
+import StoryCoverPicker from '../StoryCoverPicker/StoryCoverPicker';
 import SuccessModal from '../SuccessModal/SuccessModal';
-import { composeEditorialStoryInput, countWords } from '../submitStory.utils';
+import { countWords } from '../submitStory.utils';
 
 const CONFESSION_MIN_WORDS = 1000;
 const CONFESSION_MAX_WORDS = 1800;
@@ -26,9 +27,11 @@ const MAX_AUDIO_BYTES = 10 * 1024 * 1024;
 const schema = z.object({
   title: z.string().min(1, 'Title is required'),
   body: z.string().min(1, 'This field is required'),
-  aboutYou: z.string().optional(),
-  context: z.string().optional(),
-  coverName: z.string().optional(),
+  name: z.string().min(1, 'Name is required'),
+  location: z.string().min(1, 'Location is required'),
+  gender: z.string().min(1, 'Gender is required'),
+  occupation: z.string().min(1, 'Occupation is required'),
+  age: z.coerce.number().int().min(1, 'Age is required').max(120, 'Enter a valid age'),
   voiceMode: z.enum(['our_voice', 'own_narration']),
   voiceName: z.string().optional(),
   editorialConsent: z.boolean(),
@@ -36,7 +39,7 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-const STEP_LABELS = ['Your piece', 'About you', 'Bring it alive', 'Voice', 'Review & submit'];
+const STEP_LABELS = ['Your piece', 'Who this is about', 'Voice', 'Cover', 'Review & submit'];
 
 export default function SubmitWizard({ category }: { category: string }) {
   const router = useRouter();
@@ -44,6 +47,9 @@ export default function SubmitWizard({ category }: { category: string }) {
   const [step, setStep] = useState(0);
   const [isSuccess, setIsSuccess] = useState(false);
   const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [coverMode, setCoverMode] = useState<CoverImageMode>('ai_generated');
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverError, setCoverError] = useState<string | null>(null);
   const [playingName, setPlayingName] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [generateStory, { isLoading: isGenerating }] = useGenerateStoryMutation();
@@ -66,9 +72,11 @@ export default function SubmitWizard({ category }: { category: string }) {
     defaultValues: {
       title: '',
       body: '',
-      aboutYou: '',
-      context: '',
-      coverName: '',
+      name: '',
+      location: '',
+      gender: '',
+      occupation: '',
+      age: undefined as unknown as number,
       voiceMode: 'our_voice',
       voiceName: '',
       editorialConsent: false,
@@ -115,7 +123,15 @@ export default function SubmitWizard({ category }: { category: string }) {
       }
       return true;
     }
-    if (index === 3) {
+    if (index === 1) {
+      const ok = await trigger(['name', 'location', 'gender', 'occupation', 'age']);
+      if (!ok) {
+        appToast.error('Please complete who this piece is about.');
+        return false;
+      }
+      return true;
+    }
+    if (index === 2) {
       if (voiceMode === 'our_voice' && !voiceName) {
         appToast.error('Choose one of our voices, or upload your own narration.');
         return false;
@@ -124,6 +140,15 @@ export default function SubmitWizard({ category }: { category: string }) {
         appToast.error('Upload your finished audio recording, or choose one of our voices.');
         return false;
       }
+      return true;
+    }
+    if (index === 3) {
+      if (coverMode === 'user_uploaded' && !coverFile) {
+        setCoverError('Upload a cover image or switch to Generate for me.');
+        appToast.error('Upload a cover image or switch to Generate for me.');
+        return false;
+      }
+      setCoverError(null);
       return true;
     }
     return true;
@@ -136,8 +161,13 @@ export default function SubmitWizard({ category }: { category: string }) {
   };
 
   const onSubmit = async (data: FormValues) => {
-    const lastOk = await validateStep(3);
-    if (!lastOk) {
+    const voiceOk = await validateStep(2);
+    if (!voiceOk) {
+      setStep(2);
+      return;
+    }
+    const coverOk = await validateStep(3);
+    if (!coverOk) {
       setStep(3);
       return;
     }
@@ -146,22 +176,16 @@ export default function SubmitWizard({ category }: { category: string }) {
       return;
     }
 
-    const story_input = composeEditorialStoryInput({
-      isConfession,
-      body: data.body,
-      aboutYou: data.aboutYou || '',
-      context: data.context || '',
-    });
-
     const payload: Record<string, unknown> = {
       story_type: isConfession ? 'confession' : 'meditation',
       title: data.title,
-      first_name: data.coverName?.trim() || undefined,
-      story_input,
-      growth_areas: [],
-      tags: [],
-      high_intensity: false,
-      image_mode: 'ai_generated',
+      first_name: data.name.trim(),
+      location: data.location.trim(),
+      gender: data.gender.trim(),
+      occupation: data.occupation.trim(),
+      age: data.age,
+      story_input: data.body.trim(),
+      image_mode: coverMode,
     };
 
     if (data.voiceMode === 'own_narration' && audioFile) {
@@ -170,12 +194,21 @@ export default function SubmitWizard({ category }: { category: string }) {
       payload.voice_name = data.voiceName;
     }
 
+    const needsMultipart =
+      (data.voiceMode === 'own_narration' && audioFile) ||
+      (coverMode === 'user_uploaded' && coverFile);
+
     try {
       let res;
-      if (data.voiceMode === 'own_narration' && audioFile) {
+      if (needsMultipart) {
         const formData = new FormData();
         appendStoryPayloadToFormData(formData, payload);
-        formData.append('audio', audioFile);
+        if (data.voiceMode === 'own_narration' && audioFile) {
+          formData.append('audio', audioFile);
+        }
+        if (coverMode === 'user_uploaded' && coverFile) {
+          formData.append('image', coverFile);
+        }
         res = await generateStory(formData).unwrap();
       } else {
         res = await generateStory(payload).unwrap();
@@ -222,14 +255,8 @@ export default function SubmitWizard({ category }: { category: string }) {
   };
 
   const stepTitle = isConfession
-    ? [
-        'Your confession',
-        'About you — the author',
-        'About the main character',
-        'Voice',
-        'Review & submit',
-      ]
-    : ['Your meditation', 'About you', 'Bring the meditation alive', 'Voice', 'Review & submit'];
+    ? ['Your confession', 'Who we meet', 'Voice', 'Cover', 'Review & submit']
+    : ['Your meditation', 'Who this is about', 'Voice', 'Cover', 'Review & submit'];
 
   return (
     <>
@@ -301,83 +328,60 @@ export default function SubmitWizard({ category }: { category: string }) {
           <div className="space-y-4">
             <div className="space-y-2">
               <h3 className="font-sans text-sm font-bold text-[#1A1A1A]">
-                {isConfession ? 'Help us understand who is behind this.' : 'About you'}
+                {isConfession
+                  ? 'Who do we meet in the confession?'
+                  : 'Who is this meditation about?'}
               </h3>
               <p className="font-sans text-sm leading-relaxed text-[#666]">
-                {isConfession
-                  ? 'Who are you? Age, gender, where you’re from, where you live, occupation, relationship situation, sexual orientation, personality, interests, lifestyle — anything that brings you alive.'
-                  : 'Tell us anything about yourself that helps us understand where this meditation comes from.'}
-              </p>
-              <p className="font-sans text-xs leading-relaxed text-[#888]">
-                Nothing here is required. Share what feels relevant. This information helps us
-                understand and edit your {isConfession ? 'confession' : 'meditation'}; it does not
-                mean this is how you will be identified publicly.
+                These details appear on the public story page — name, place, gender, occupation, and
+                age, stacked under the title.
               </p>
             </div>
-            <TextAreaField
-              label="About you"
-              name="aboutYou"
-              placeholder="Optional"
-              control={control}
-              rows={8}
-            />
             <InputField
-              label="Name on the cover (optional)"
-              name="coverName"
+              label="Name"
+              name="name"
               placeholder="First name or pseudonym"
               control={control}
+              error={errors.name?.message}
+              required
+            />
+            <InputField
+              label="Location"
+              name="location"
+              placeholder="Place the story started or is set"
+              control={control}
+              error={errors.location?.message}
+              required
+            />
+            <InputField
+              label="Gender"
+              name="gender"
+              placeholder="e.g. Woman, Queer (bi)"
+              control={control}
+              error={errors.gender?.message}
+              required
+            />
+            <InputField
+              label="Occupation"
+              name="occupation"
+              placeholder="e.g. Mother, teacher"
+              control={control}
+              error={errors.occupation?.message}
+              required
+            />
+            <InputField
+              label="Age"
+              name="age"
+              type="number"
+              placeholder="e.g. 37"
+              control={control}
+              error={errors.age?.message}
+              required
             />
           </div>
         ) : null}
 
         {step === 2 ? (
-          <div className="space-y-4">
-            {isConfession ? (
-              <>
-                <h3 className="font-sans text-sm font-bold text-[#1A1A1A]">
-                  Who do we meet in the confession?
-                </h3>
-                <p className="font-sans text-sm leading-relaxed text-[#666]">
-                  The main character can be you, a version of you, or someone else. Sometimes
-                  changing details creates just enough distance to make a difficult confession
-                  possible.
-                </p>
-                <p className="font-sans text-sm leading-relaxed text-[#666]">
-                  Tell us anything useful: name/pseudonym, age, gender, location, background,
-                  occupation, relationship situation, sexual orientation, personality, interests,
-                  lifestyle, dreams, fears, etc.
-                </p>
-                <p className="font-sans text-xs leading-relaxed text-[#888]">
-                  Again: nothing is required. More detail simply helps us make the confession vivid,
-                  human and impactful — and helps us create the right cover.
-                </p>
-              </>
-            ) : (
-              <>
-                <h3 className="font-sans text-sm font-bold text-[#1A1A1A]">
-                  Bring the meditation alive
-                </h3>
-                <p className="font-sans text-sm leading-relaxed text-[#666]">
-                  What should the listener experience? Where does it take them? What should they
-                  feel, see, imagine or transform?
-                </p>
-                <p className="font-sans text-sm leading-relaxed text-[#666]">
-                  Give us any context, atmosphere, characters, setting, fantasy, emotion or imagery
-                  that helps us make it powerful.
-                </p>
-              </>
-            )}
-            <TextAreaField
-              label={isConfession ? 'About the main character' : 'Context and atmosphere'}
-              name="context"
-              placeholder="Optional"
-              control={control}
-              rows={8}
-            />
-          </div>
-        ) : null}
-
-        {step === 3 ? (
           <div className="space-y-5">
             <p className="font-sans text-sm font-bold text-[#1A1A1A]">Choose one</p>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -480,6 +484,28 @@ export default function SubmitWizard({ category }: { category: string }) {
           </div>
         ) : null}
 
+        {step === 3 ? (
+          <div className="space-y-4">
+            <p className="font-sans text-sm leading-relaxed text-[#666]">
+              Generate artwork after your story is written, or upload your own cover now. You can
+              change it later from My Stories.
+            </p>
+            <StoryCoverPicker
+              mode={coverMode}
+              onModeChange={(mode) => {
+                setCoverMode(mode);
+                setCoverError(null);
+              }}
+              coverFile={coverFile}
+              onFileChange={(file) => {
+                setCoverFile(file);
+                setCoverError(null);
+              }}
+              error={coverError ?? undefined}
+            />
+          </div>
+        ) : null}
+
         {step === 4 ? (
           <div className="space-y-6">
             <div className="rounded-lg border-2 border-[#D22D4C]/40 bg-[#D22D4C]/5 p-4">
@@ -520,7 +546,9 @@ export default function SubmitWizard({ category }: { category: string }) {
                   publication.
                 </span>
                 <span className="block">
-                  We create the cover artwork based on the information you provide.
+                  {coverMode === 'user_uploaded'
+                    ? 'Your uploaded image will be the cover. You can replace it later from My Stories.'
+                    : 'We create the cover artwork from your story and the identity you provided. You can upload a different image later from My Stories.'}
                 </span>
               </span>
             </label>

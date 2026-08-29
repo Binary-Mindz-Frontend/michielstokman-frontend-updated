@@ -89,7 +89,27 @@ export const ReviewDetails = ({
           </span>
           {story?.first_name && (
             <span className="flex items-center gap-1">
-              <strong>First Name:</strong> {story.first_name}
+              <strong>Name:</strong> {story.first_name}
+            </span>
+          )}
+          {story?.location && (
+            <span className="flex items-center gap-1">
+              <strong>Location:</strong> {story.location}
+            </span>
+          )}
+          {story?.gender && (
+            <span className="flex items-center gap-1">
+              <strong>Gender:</strong> {story.gender}
+            </span>
+          )}
+          {story?.occupation && (
+            <span className="flex items-center gap-1">
+              <strong>Occupation:</strong> {story.occupation}
+            </span>
+          )}
+          {story?.age !== null && story?.age !== undefined && (
+            <span className="flex items-center gap-1">
+              <strong>Age:</strong> {story.age}
             </span>
           )}
         </div>
@@ -152,7 +172,15 @@ export const ReviewDetails = ({
           )}
         </div>
 
-        {/* Original User Input Prompt */}
+        {story?.hero_hook && (
+          <div className="border-t border-[#F0EAE5] pt-4">
+            <span className="mb-2 block text-[12px] font-bold tracking-wider text-[#A08170] uppercase">
+              Hero hook
+            </span>
+            <p className="text-sm text-[#4A3B32] italic">{story.hero_hook}</p>
+          </div>
+        )}
+
         {story?.story_input && (
           <div className="border-t border-[#F0EAE5] pt-4">
             <span className="mb-2 flex items-center gap-1 text-[12px] font-bold tracking-wider text-[#A08170] uppercase">

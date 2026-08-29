@@ -28,7 +28,7 @@ export default function MeditationsGrid() {
     id: item.id,
     category: 'STORY',
     title: item.title,
-    description: item.description,
+    description: item.excerpt || item.description,
     image: resolveStoryCoverSrc(item.cover_image_url, 'meditation'),
     rating: item.rating ? item.rating.toString() : '4.8',
     listenedCount: item.listened_count ?? 0,
