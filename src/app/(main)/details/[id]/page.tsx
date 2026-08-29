@@ -23,7 +23,6 @@ import { useCurrentUser, useIsAuthenticated } from '@/redux/features/auth/authSl
 import { useAppSelector } from '@/redux/hooks';
 import StoryPlayer from '../StoryPlayer/StoryPlayer';
 
-import brushTextBg from '@/assets/shared/brush-text-bg.png';
 import confessionsHero from '@/assets/shared/confessions-hero.png';
 import pinkHeartDrawn from '@/assets/shared/pink-heart-drawn.png';
 import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
@@ -390,7 +389,7 @@ export default function StoryDetailPage() {
           variants={FADE_IN_UP_CONTAINER}
           className="flex w-full flex-col items-center justify-between gap-8 md:flex-row md:items-center"
         >
-          {/* LEFT COLUMN: Title & Brush Subtitle */}
+          {/* LEFT COLUMN: Title, identity, hook */}
           <motion.div
             variants={FADE_IN_UP_ITEM}
             className="flex w-full flex-col items-start md:w-1/2"
@@ -410,18 +409,30 @@ export default function StoryDetailPage() {
               </div>
             </div>
 
-            {/* Brush Stroke Subtitle */}
-            <div className="relative mt-6 flex min-h-18 w-full max-w-[320px] -rotate-1 transform items-center justify-center sm:mt-8 sm:min-h-22.5 sm:max-w-105">
-              {/* Black brush background */}
-              <div className="absolute inset-0 h-full w-full">
-                <Image src={brushTextBg} alt="Brush background" fill className="object-fill" />
+            {(feedData?.author_name ||
+              feedData?.location ||
+              feedData?.gender ||
+              feedData?.occupation ||
+              feedData?.age) && (
+              <div
+                className="mt-6 space-y-0.5 font-serif text-lg leading-snug italic sm:mt-8 sm:text-xl"
+                style={{ color: themeColor }}
+              >
+                {feedData?.author_name ? <p>{feedData.author_name}</p> : null}
+                {feedData?.location ? <p>{feedData.location}</p> : null}
+                {feedData?.gender ? <p>{feedData.gender}</p> : null}
+                {feedData?.occupation ? <p>{feedData.occupation}</p> : null}
+                {feedData?.age !== null && feedData?.age !== undefined ? (
+                  <p>{feedData.age}</p>
+                ) : null}
               </div>
+            )}
 
-              <p className="relative z-10 px-4 py-2 text-center font-sans text-xs font-medium tracking-wide text-white uppercase sm:px-6 sm:text-sm">
-                A Story About The Day Fear <br /> <span className="text-[#E81A66]">Loosened</span>{' '}
-                Its Grip
+            {feedData?.hero_hook ? (
+              <p className="mt-5 max-w-lg font-serif text-base leading-relaxed text-[#1A1A1A] italic sm:mt-6 sm:text-lg">
+                {feedData.hero_hook}
               </p>
-            </div>
+            ) : null}
 
             {/* Bottom Left Pink Heart Deco */}
             <div className="relative mt-6 ml-4 h-7 w-7 sm:ml-8 sm:h-9 sm:w-9">

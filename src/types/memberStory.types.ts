@@ -35,6 +35,10 @@ export type MemberStoryDetail = MemberStoryListItem & {
   story_text: string | null;
   story_input: string | null;
   first_name: string | null;
+  location: string | null;
+  gender: string | null;
+  occupation: string | null;
+  age: number | null;
   growth_areas: string[] | null;
   life_phase: string | null;
   tags: string[] | null;
