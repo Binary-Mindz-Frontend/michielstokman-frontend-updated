@@ -104,29 +104,7 @@ export const aiStoryApi = apiClient.injectEndpoints({
       }),
       invalidatesTags: ['PROFILE', 'Voices', 'MemberStories'],
     }),
-
-    generateCoverPreview: builder.mutation<
-      { success: boolean; data: { cover_image_url: string; cover_image_key: string } },
-      {
-        story_type: string;
-        title: string;
-        first_name: string;
-        location: string;
-        gender: string;
-        occupation: string;
-        age: number;
-        story_input: string;
-      }
-    >({
-      query: (body) => ({
-        url: '/ai/story/cover-preview',
-        method: 'POST',
-        body,
-        timeout: 240000,
-      }),
-    }),
   }),
 });
 
-export const { useGenerateStoryMutation, useGetVoicesQuery, useGenerateCoverPreviewMutation } =
-  aiStoryApi;
+export const { useGenerateStoryMutation, useGetVoicesQuery } = aiStoryApi;
