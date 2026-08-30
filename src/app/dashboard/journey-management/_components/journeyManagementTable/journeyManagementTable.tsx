@@ -95,11 +95,12 @@ function JourneyManagementTable() {
       cell: (row) => <span>€ {row?.price}</span>,
     },
     {
-      header: 'Status',
+      header: 'Published in catalog',
       cell: (row) => (
         <Switch
           checked={row?.is_active}
           onCheckedChange={() => handleStatusToggle(row?.id, row?.is_active)}
+          aria-label={row?.is_active ? 'Published in catalog' : 'Hidden from catalog'}
         />
       ),
     },

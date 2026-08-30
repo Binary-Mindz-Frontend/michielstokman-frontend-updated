@@ -1,4 +1,5 @@
 import { apiClient } from '@/redux/apiClient/apiClient';
+
 type ModerationQueueParams = {
   status?: string;
   search?: string;
@@ -6,9 +7,31 @@ type ModerationQueueParams = {
   page?: number;
 };
 
+export type ModerationSuggestField = 'hook' | 'tagline' | 'moods' | 'analysis' | 'voice';
+
+export type ModerationStoryUpdate = {
+  storyId: string;
+  title?: string;
+  story_type?: string;
+  story_text?: string;
+  hero_hook?: string;
+  hero_tagline?: string;
+  first_name?: string;
+  location?: string;
+  gender?: string;
+  sexual_orientation?: string;
+  occupation?: string;
+  age?: number | null;
+  tags?: string[];
+  growth_areas?: string[];
+  life_phase?: string;
+  high_intensity?: boolean;
+  editorial_brief?: string;
+  voice_name?: string;
+};
+
 const adminModerationApi = apiClient.injectEndpoints({
   endpoints: (builder) => ({
-    // Get Moderation Queue
     getModerationQueue: builder.query({
       query: ({ status, search, limit = 10, page = 1 }: ModerationQueueParams = {}) => ({
         url: '/admin/moderation/queue',
@@ -22,21 +45,19 @@ const adminModerationApi = apiClient.injectEndpoints({
       providesTags: ['ModerationQueue'],
     }),
 
-    // Get Story Details
     getStoryDetails: builder.query({
       query: (storyId) => ({
         url: `/admin/moderation/story/${storyId}`,
         method: 'GET',
       }),
-      providesTags: (storyId) => [{ type: 'Story', id: storyId }],
+      providesTags: (_result, _error, storyId) => [{ type: 'Story', id: storyId }],
     }),
 
-    // Update Story Details
     updateStory: builder.mutation({
-      query: ({ storyId, ...patch }) => ({
+      query: ({ storyId, ...patch }: ModerationStoryUpdate) => ({
         url: `/admin/moderation/story/${storyId}`,
         method: 'PUT',
-        body: patch, // This will now be { title, story_type, story_text }
+        body: patch,
       }),
       invalidatesTags: (_result, _error, { storyId }) => [
         { type: 'Story', id: storyId },
@@ -45,7 +66,27 @@ const adminModerationApi = apiClient.injectEndpoints({
       ],
     }),
 
-    // Delete Story
+    suggestStoryField: builder.mutation({
+      query: ({ storyId, field }: { storyId: string; field: ModerationSuggestField }) => ({
+        url: `/admin/moderation/story/${storyId}/suggest`,
+        method: 'POST',
+        body: { field },
+      }),
+    }),
+
+    requestStoryChanges: builder.mutation({
+      query: ({ storyId, reason }: { storyId: string; reason: string }) => ({
+        url: `/admin/moderation/story/${storyId}/request-changes`,
+        method: 'POST',
+        body: { reason },
+      }),
+      invalidatesTags: (_result, _error, { storyId }) => [
+        { type: 'Story', id: storyId },
+        'ModerationQueue',
+        'MemberStories',
+      ],
+    }),
+
     deleteStory: builder.mutation({
       query: (storyId) => ({
         url: `/admin/moderation/story/${storyId}`,
@@ -54,20 +95,22 @@ const adminModerationApi = apiClient.injectEndpoints({
       invalidatesTags: ['ModerationQueue', 'Story', 'MemberStories'],
     }),
 
-    // Approve Story
     approveStory: builder.mutation({
-      query: (storyId) => ({
-        url: `/admin/moderation/story/${storyId}/approve`,
-        method: 'POST',
-      }),
-      invalidatesTags: (_result, _error, storyId) => [
-        { type: 'Story', id: storyId },
-        'ModerationQueue',
-        'MemberStories',
-      ],
+      query: (arg: string | { storyId: string; notes?: string }) => {
+        const storyId = typeof arg === 'string' ? arg : arg.storyId;
+        const notes = typeof arg === 'string' ? undefined : arg.notes;
+        return {
+          url: `/admin/moderation/story/${storyId}/approve`,
+          method: 'POST',
+          body: notes ? { notes } : undefined,
+        };
+      },
+      invalidatesTags: (_result, _error, arg) => {
+        const storyId = typeof arg === 'string' ? arg : arg.storyId;
+        return [{ type: 'Story', id: storyId }, 'ModerationQueue', 'MemberStories'];
+      },
     }),
 
-    // Reject Story
     rejectStory: builder.mutation({
       query: ({ data, storyId }) => ({
         url: `/admin/moderation/story/${storyId}/reject`,
@@ -87,6 +130,8 @@ export const {
   useGetModerationQueueQuery,
   useGetStoryDetailsQuery,
   useUpdateStoryMutation,
+  useSuggestStoryFieldMutation,
+  useRequestStoryChangesMutation,
   useDeleteStoryMutation,
   useApproveStoryMutation,
   useRejectStoryMutation,

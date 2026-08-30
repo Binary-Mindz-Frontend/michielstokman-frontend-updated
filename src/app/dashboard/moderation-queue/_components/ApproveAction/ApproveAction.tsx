@@ -11,14 +11,20 @@ import { toast } from 'sonner';
 interface ActionProps {
   id: string;
   onSuccess: () => void;
+  notes?: string;
 }
 
 // --- APPROVE ---
-export const ApproveAction = ({ id, onSuccess }: ActionProps) => {
+export const ApproveAction = ({ id, onSuccess, notes }: ActionProps) => {
   const [approve, { isLoading }] = useApproveStoryMutation();
+  const [optionalNote, setOptionalNote] = useState(notes || '');
   const handleApprove = async () => {
     try {
-      const res = await approve(id).unwrap();
+      const trimmed = optionalNote.trim();
+      const res = await approve({
+        storyId: id,
+        notes: trimmed || undefined,
+      }).unwrap();
       if (res.success) {
         toast.success(res.message);
         onSuccess();
@@ -30,11 +36,22 @@ export const ApproveAction = ({ id, onSuccess }: ActionProps) => {
   };
 
   return (
-    <div className="space-y-4 text-center">
-      <p>
+    <div className="space-y-4">
+      <p className="text-center">
         Are you sure you want to <strong>Approve</strong> this story?
       </p>
-      <Button onClick={handleApprove} disabled={isLoading} className="btn-styles">
+      <div className="space-y-2">
+        <label className="text-mute text-[10px] font-bold tracking-wider uppercase">
+          Note to member (optional)
+        </label>
+        <textarea
+          value={optionalNote}
+          onChange={(e) => setOptionalNote(e.target.value)}
+          placeholder="Shown on My Stories only if you later request changes or reject."
+          className="border-primary/20 min-h-20 w-full rounded-md border bg-white p-3 text-sm outline-none focus:ring-1"
+        />
+      </div>
+      <Button onClick={handleApprove} disabled={isLoading} className="btn-styles w-full">
         Confirm Approval
       </Button>
     </div>
