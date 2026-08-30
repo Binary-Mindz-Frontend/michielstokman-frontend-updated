@@ -38,7 +38,7 @@ export default function EditConfessionModal({ isOpen, item, onClose }: EditConfe
     () => (voicesCatalog?.voices ?? []).filter((voice) => !voice.is_custom).slice(0, 4),
     [voicesCatalog?.voices],
   );
-  const humanReady = isHumanReady(detail ?? item);
+  const humanReady = isHumanReady(detail ?? item ?? undefined);
 
   useEffect(() => {
     if (!detail) return;
