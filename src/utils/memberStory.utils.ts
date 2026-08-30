@@ -2,15 +2,18 @@ import type { MemberStoryListItem, StoryType } from '@/types/memberStory.types';
 
 export type SubmissionTab = 'all' | 'submitted' | 'withdrawn' | 'draft';
 
-export function isHumanReady(
-  story?: Pick<MemberStoryListItem, 'submission_mode'> | { submission_mode?: string | null } | null,
-): boolean {
+type StoryModeSource =
+  | {
+      submission_mode?: string | null;
+    }
+  | null
+  | undefined;
+
+export function isHumanReady(story?: StoryModeSource): boolean {
   return story?.submission_mode === 'human_ready';
 }
 
-export function getRouteLabel(
-  story?: Pick<MemberStoryListItem, 'submission_mode'> | { submission_mode?: string | null } | null,
-): string {
+export function getRouteLabel(story?: StoryModeSource): string {
   return isHumanReady(story) ? 'Your narration' : 'Studio Voice';
 }
 

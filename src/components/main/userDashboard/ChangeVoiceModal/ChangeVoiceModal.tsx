@@ -58,7 +58,7 @@ export default function ChangeVoiceModal({ isOpen, item, onClose }: ChangeVoiceM
 
   if (!isOpen || !item) return null;
 
-  if (isHumanReady(detail ?? item)) {
+  if (isHumanReady(detail ?? item ?? undefined)) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
         <div className="relative w-full max-w-md rounded-2xl border border-[#EBE4D5] bg-[#FAF7F2] p-6 shadow-2xl">
