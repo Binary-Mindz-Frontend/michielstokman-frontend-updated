@@ -151,7 +151,7 @@ function MemberStoryDetailPage() {
         </Link>
 
         <div className="overflow-hidden rounded-2xl border border-[#EBE4D5] bg-[#FAF7F2]">
-          <div className="relative h-56 w-full sm:h-72">
+          <div className="relative mx-auto aspect-[4/5] w-full max-w-md bg-[#EDE6DC]">
             {coverSrc ? (
               <Image
                 key={typeof coverSrc === 'string' ? coverSrc : 'fallback-cover'}
@@ -159,7 +159,8 @@ function MemberStoryDetailPage() {
                 alt={story.title || 'Story cover'}
                 fill
                 unoptimized={typeof coverSrc === 'string'}
-                className="object-cover"
+                className="object-contain"
+                sizes="(max-width: 768px) 100vw, 448px"
                 onError={() => {
                   setBrokenCoverKey(coverKey);
                 }}

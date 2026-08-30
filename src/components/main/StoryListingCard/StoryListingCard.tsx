@@ -1,6 +1,7 @@
 'use client';
 
 import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicActionButton';
+import { cn } from '@/lib/utils';
 import { formatListenLength } from '@/utils/memberStory.utils';
 import { storyIdentityLines } from '@/utils/storyIdentity.utils';
 import Image, { StaticImageData } from 'next/image';
@@ -15,7 +16,7 @@ export interface StoryListingItem {
   title: string;
   description: string;
   image: string | StaticImageData;
-  rating: string;
+  rating: string | null;
   listenedCount: number;
   isExplicit?: boolean;
   authorName?: string | null;
@@ -25,6 +26,7 @@ export interface StoryListingItem {
   occupation?: string | null;
   age?: number | string | null;
   durationSeconds?: number | null;
+  tags?: string[];
 }
 
 interface StoryListingCardProps {
@@ -34,6 +36,9 @@ interface StoryListingCardProps {
   buttonBg: string;
   ratingColor: string;
   ctaText?: string;
+  selectedTag?: string | null;
+  // eslint-disable-next-line no-unused-vars -- callback prop type
+  onTagClick?: (nextTag: string) => void;
 }
 
 const StoryListingCard: React.FC<StoryListingCardProps> = ({
@@ -43,6 +48,8 @@ const StoryListingCard: React.FC<StoryListingCardProps> = ({
   buttonBg,
   ratingColor,
   ctaText = 'Start Listening',
+  selectedTag,
+  onTagClick,
 }) => {
   const { nameLine, detailLine } = storyIdentityLines(item);
   const duration = formatListenLength(item.durationSeconds);
@@ -53,6 +60,7 @@ const StoryListingCard: React.FC<StoryListingCardProps> = ({
       : null,
     item.isExplicit ? 'Explicit' : null,
   ].filter(Boolean);
+  const tags = item.tags?.slice(0, 2) ?? [];
 
   return (
     <Link
@@ -71,17 +79,19 @@ const StoryListingCard: React.FC<StoryListingCardProps> = ({
             priority
           />
 
-          <div className="absolute right-6 bottom-3 flex h-6.5 w-12 items-center justify-center">
-            <div className="absolute inset-0 h-full w-full">
-              <Image src={ratingBadge} alt="" fill className="object-fill" />
+          {item.rating ? (
+            <div className="absolute right-6 bottom-3 flex h-6.5 w-12 items-center justify-center">
+              <div className="absolute inset-0 h-full w-full">
+                <Image src={ratingBadge} alt="" fill className="object-fill" />
+              </div>
+              <span
+                className="relative z-10 font-sans text-xs font-semibold"
+                style={{ color: ratingColor }}
+              >
+                {item.rating}
+              </span>
             </div>
-            <span
-              className="relative z-10 font-sans text-xs font-semibold"
-              style={{ color: ratingColor }}
-            >
-              {item.rating}
-            </span>
-          </div>
+          ) : null}
         </div>
 
         <span className="font-sans text-xs font-semibold tracking-widest text-[#301C05] uppercase">
@@ -113,6 +123,40 @@ const StoryListingCard: React.FC<StoryListingCardProps> = ({
             ) : null}
           </div>
         )}
+
+        {tags.length > 0 ? (
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {tags.map((tag) => {
+              const selected = selectedTag === tag;
+              return (
+                <span
+                  key={tag}
+                  role="button"
+                  tabIndex={0}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    onTagClick?.(tag);
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      onTagClick?.(tag);
+                    }
+                  }}
+                  className={cn(
+                    'rounded-xs border px-2 py-0.5 font-sans text-[11px]',
+                    selected ? 'border-current' : 'border-[#EBE4D5] bg-[#FAF7F2] text-[#5C4A3A]',
+                  )}
+                  style={selected ? { color: accentColor, borderColor: accentColor } : undefined}
+                >
+                  {tag}
+                </span>
+              );
+            })}
+          </div>
+        ) : null}
 
         {stats.length > 0 ? (
           <p className="mt-2 font-sans text-xs font-medium tracking-wide text-[#301C05]">

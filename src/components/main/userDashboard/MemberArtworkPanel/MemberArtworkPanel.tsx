@@ -57,13 +57,14 @@ export default function MemberArtworkPanel({
 
       <div className="space-y-4">
         {currentCover ? (
-          <div className="relative mx-auto h-40 w-32 overflow-hidden rounded-lg border border-[#EBE4D5]">
+          <div className="relative mx-auto aspect-[4/5] w-full max-w-[240px] overflow-hidden rounded-xl border border-[#EBE4D5] bg-[#FAF7F2]">
             <Image
               src={currentCover}
               alt="Current story cover"
               fill
               unoptimized
-              className="object-cover"
+              className="object-contain"
+              sizes="240px"
             />
           </div>
         ) : null}
