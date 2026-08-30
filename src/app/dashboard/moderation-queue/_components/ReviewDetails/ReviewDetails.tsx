@@ -1,281 +1,666 @@
-/* eslint-disable no-unused-vars */
+'use client';
+
 import img from '@/assets/shared/table_placeholder_image.jpg';
-import { useGetStoryDetailsQuery } from '@/redux/features/admin/adminModeration/adminModeration.api';
-import { Compass, Heart, MessageSquareText, User, Volume2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useGetVoicesQuery } from '@/redux/features/aiStory/aiStory.api';
+import {
+  useApproveStoryMutation,
+  useGetStoryDetailsQuery,
+  useRequestStoryChangesMutation,
+  useSuggestStoryFieldMutation,
+  useUpdateStoryMutation,
+  type ModerationSuggestField,
+} from '@/redux/features/admin/adminModeration/adminModeration.api';
+import { Loader2, RefreshCw, Volume2 } from 'lucide-react';
 import Image from 'next/image';
+import { useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
 interface ReviewDetailsProps {
   id: string;
-  onEdit?: (id: string) => void;
-  onApprove?: (id: string) => void;
-  onReject?: (id: string) => void;
-  onRemove?: (id: string) => void;
+  onEdit?: () => void;
+  onApprove?: () => void;
+  onReject?: () => void;
+  onRemove?: () => void;
   onClose?: () => void;
 }
 
-export const ReviewDetails = ({
-  id,
-  onEdit,
-  onApprove,
-  onReject,
-  onRemove,
-  onClose,
-}: ReviewDetailsProps) => {
+type DeskDraft = {
+  title: string;
+  story_type: string;
+  story_text: string;
+  hero_hook: string;
+  hero_tagline: string;
+  editorial_brief: string;
+  first_name: string;
+  location: string;
+  gender: string;
+  sexual_orientation: string;
+  occupation: string;
+  age: string;
+  tags: string;
+  growth_areas: string;
+  life_phase: string;
+  high_intensity: boolean;
+  voice_name: string;
+  changeNote: string;
+};
+
+const emptyDraft = (): DeskDraft => ({
+  title: '',
+  story_type: 'confession',
+  story_text: '',
+  hero_hook: '',
+  hero_tagline: '',
+  editorial_brief: '',
+  first_name: '',
+  location: '',
+  gender: '',
+  sexual_orientation: '',
+  occupation: '',
+  age: '',
+  tags: '',
+  growth_areas: '',
+  life_phase: '',
+  high_intensity: false,
+  voice_name: '',
+  changeNote: '',
+});
+
+function splitList(value: string): string[] {
+  return value
+    .split(',')
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+function joinList(value: unknown): string {
+  if (Array.isArray(value)) return value.filter(Boolean).join(', ');
+  if (typeof value === 'string') return value;
+  return '';
+}
+
+function normalizeStoryType(value?: string | null): string {
+  const raw = (value || '').toLowerCase();
+  if (raw.startsWith('meditat')) return 'meditation';
+  return 'confession';
+}
+
+function storyFromApi(story: Record<string, unknown> | undefined): DeskDraft {
+  const draft = emptyDraft();
+  if (!story) return draft;
+  draft.title = String(story.title || '');
+  draft.story_type = normalizeStoryType(story.story_type as string);
+  draft.story_text = String(story.story_text || '');
+  draft.hero_hook = String(story.hero_hook || '');
+  draft.hero_tagline = String(story.hero_tagline || '');
+  draft.editorial_brief = String(story.editorial_brief || '');
+  draft.first_name = String(story.first_name || '');
+  draft.location = String(story.location || '');
+  draft.gender = String(story.gender || '');
+  draft.sexual_orientation = String(story.sexual_orientation || '');
+  draft.occupation = String(story.occupation || '');
+  draft.age = story.age === null || story.age === undefined ? '' : String(story.age);
+  draft.tags = joinList(story.tags);
+  draft.growth_areas = joinList(story.growth_areas);
+  draft.life_phase = String(story.life_phase || '');
+  draft.high_intensity = Boolean(story.high_intensity);
+  draft.voice_name = String(story.voice_name || '');
+  return draft;
+}
+
+function AiCard({
+  title,
+  hint,
+  onRegenerate,
+  regenerating,
+  children,
+}: {
+  title: string;
+  hint: string;
+  onRegenerate: () => void;
+  regenerating: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-2 rounded-xl border border-[#F0EAE5] bg-[#FAF8F5] p-3">
+      <div className="flex items-center justify-between gap-2">
+        <div>
+          <span className="block text-[11px] font-bold tracking-wider text-[#A08170] uppercase">
+            {title}
+          </span>
+          <p className="text-[11px] text-[#8A6E5F]">{hint}</p>
+        </div>
+        <button
+          type="button"
+          onClick={onRegenerate}
+          disabled={regenerating}
+          className="inline-flex shrink-0 items-center gap-1 rounded-md border border-[#E1D7CE] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#5C3A21] hover:bg-[#F5F0EB] disabled:opacity-60"
+        >
+          {regenerating ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+          Regenerate
+        </button>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export const ReviewDetails = ({ id, onReject, onRemove, onClose }: ReviewDetailsProps) => {
   const { data, isLoading } = useGetStoryDetailsQuery(id);
-  const story = data?.data;
+  const story = data?.data as Record<string, unknown> | undefined;
 
-  console.log(story, 'story');
-
-  if (isLoading) {
+  if (isLoading || !story) {
     return (
-      <div className="mx-auto flex max-w-4xl animate-pulse flex-col gap-6 p-6">
-        <div className="h-48 w-full rounded-xl bg-neutral-200" />
-        <div className="space-y-3">
-          <div className="h-4 w-12 rounded bg-neutral-200" />
-          <div className="h-6 w-3/4 rounded bg-neutral-200" />
-        </div>
-        <div className="space-y-3">
-          <div className="h-4 w-12 rounded bg-neutral-200" />
-          <div className="h-5 w-24 rounded bg-neutral-200" />
-        </div>
-        <div className="mt-2 space-y-3">
-          <div className="h-4 w-full rounded bg-neutral-200" />
-          <div className="h-4 w-5/6 rounded bg-neutral-200" />
-          <div className="h-4 w-4/5 rounded bg-neutral-200" />
-        </div>
+      <div className="mx-auto flex max-w-4xl animate-pulse flex-col gap-6 p-2">
+        <div className="h-24 w-full rounded-xl bg-neutral-200" />
+        <div className="h-40 w-full rounded-xl bg-neutral-200" />
       </div>
     );
   }
 
   return (
-    <div className="flex h-full flex-col justify-between gap-6 overflow-hidden">
-      {/* Main Details Card */}
-      <div className="custom-scrollbar flex-1 space-y-6 overflow-y-auto rounded-xl bg-white p-4">
-        {/* Optional Cover Image */}
-        {story?.cover_image_url && (
-          <div className="relative h-40 w-full overflow-hidden rounded-xl border border-[#E6DFDA]">
+    <ReviewDesk id={id} story={story} onReject={onReject} onRemove={onRemove} onClose={onClose} />
+  );
+};
+
+function ReviewDesk({
+  id,
+  story,
+  onReject,
+  onRemove,
+  onClose,
+}: {
+  id: string;
+  story: Record<string, unknown>;
+  onReject?: () => void;
+  onRemove?: () => void;
+  onClose?: () => void;
+}) {
+  const [draft, setDraft] = useState<DeskDraft>(() => storyFromApi(story));
+  const [suggesting, setSuggesting] = useState<ModerationSuggestField | null>(null);
+  const [showBrief, setShowBrief] = useState(() =>
+    Boolean(story.background || story.personality || story.lifestyle || story.situation),
+  );
+
+  const [updateStory, { isLoading: isSaving }] = useUpdateStoryMutation();
+  const [suggestField] = useSuggestStoryFieldMutation();
+  const [requestChanges, { isLoading: isRequesting }] = useRequestStoryChangesMutation();
+  const [approveStory, { isLoading: isApproving }] = useApproveStoryMutation();
+  const { data: voicesCatalog } = useGetVoicesQuery();
+
+  const isHumanReady = story.submission_mode === 'human_ready';
+  const catalogVoices = useMemo(
+    () => (voicesCatalog?.voices || []).filter((voice) => !voice.is_custom).slice(0, 4),
+    [voicesCatalog],
+  );
+
+  const patch = (partial: Partial<DeskDraft>) => setDraft((prev) => ({ ...prev, ...partial }));
+
+  const persistPayload = () => {
+    const parsedAge = Number(draft.age);
+    return {
+      storyId: id,
+      title: draft.title,
+      story_type: draft.story_type,
+      story_text: draft.story_text,
+      hero_hook: draft.hero_hook,
+      hero_tagline: draft.hero_tagline,
+      editorial_brief: draft.editorial_brief,
+      first_name: draft.first_name,
+      location: draft.location,
+      gender: draft.gender,
+      sexual_orientation: draft.sexual_orientation,
+      occupation: draft.occupation,
+      age: draft.age.trim() !== '' && Number.isFinite(parsedAge) ? parsedAge : undefined,
+      tags: splitList(draft.tags),
+      growth_areas: splitList(draft.growth_areas),
+      life_phase: draft.life_phase,
+      high_intensity: draft.high_intensity,
+      ...(isHumanReady ? {} : { voice_name: draft.voice_name || undefined }),
+    };
+  };
+
+  const handleSave = async () => {
+    try {
+      const res = await updateStory(persistPayload()).unwrap();
+      if (res.success) toast.success('Saved');
+    } catch (err: unknown) {
+      const message =
+        err && typeof err === 'object' && 'data' in err
+          ? (err as { data?: { message?: string } }).data?.message
+          : undefined;
+      toast.error(message || 'Failed to save');
+    }
+  };
+
+  const handleSuggest = async (field: ModerationSuggestField) => {
+    setSuggesting(field);
+    try {
+      const res = await suggestField({ storyId: id, field }).unwrap();
+      const suggestion = res?.data || {};
+      if (field === 'hook' && suggestion.hero_hook) patch({ hero_hook: suggestion.hero_hook });
+      if (field === 'tagline' && suggestion.hero_tagline) {
+        patch({ hero_tagline: suggestion.hero_tagline });
+      }
+      if (field === 'moods') {
+        patch({
+          tags: joinList(suggestion.tags) || draft.tags,
+          growth_areas: joinList(suggestion.growth_areas) || draft.growth_areas,
+          life_phase: suggestion.life_phase || draft.life_phase,
+        });
+      }
+      if (field === 'analysis' && suggestion.editorial_brief) {
+        patch({ editorial_brief: suggestion.editorial_brief });
+      }
+      if (field === 'voice' && suggestion.voice_name) {
+        patch({ voice_name: suggestion.voice_name });
+      }
+      toast.success('Suggestion ready — edit or save');
+    } catch (err: unknown) {
+      const message =
+        err && typeof err === 'object' && 'data' in err
+          ? (err as { data?: { message?: string; detail?: string } }).data?.message ||
+            (err as { data?: { detail?: string } }).data?.detail
+          : undefined;
+      toast.error(message || 'Could not generate a suggestion');
+    } finally {
+      setSuggesting(null);
+    }
+  };
+
+  const handleRequestChanges = async () => {
+    if (!draft.changeNote.trim()) {
+      toast.error('Write a short note the member will see');
+      return;
+    }
+    try {
+      await updateStory(persistPayload()).unwrap();
+      const res = await requestChanges({
+        storyId: id,
+        reason: draft.changeNote.trim(),
+      }).unwrap();
+      if (res.success) toast.success('Changes requested');
+      onClose?.();
+    } catch (err: unknown) {
+      const message =
+        err && typeof err === 'object' && 'data' in err
+          ? (err as { data?: { message?: string } }).data?.message
+          : undefined;
+      toast.error(message || 'Failed to request changes');
+    }
+  };
+
+  const handleApprove = async () => {
+    try {
+      await updateStory(persistPayload()).unwrap();
+      const note = draft.changeNote.trim();
+      const res = await approveStory({
+        storyId: id,
+        notes: note || undefined,
+      }).unwrap();
+      if (res.success) toast.success(res.message || 'Approved');
+      onClose?.();
+    } catch (err: unknown) {
+      const message =
+        err && typeof err === 'object' && 'data' in err
+          ? (err as { data?: { message?: string } }).data?.message
+          : undefined;
+      toast.error(message || 'Save failed — approve cancelled');
+    }
+  };
+
+  const inputClass =
+    'w-full rounded-md border border-[#E1D7CE] bg-white px-3 py-2 text-sm text-[#4A3B32] outline-none focus:ring-1 focus:ring-[#BF7758]/40';
+
+  return (
+    <div className="flex h-full flex-col justify-between gap-4 overflow-hidden">
+      <div className="custom-scrollbar flex-1 space-y-4 overflow-y-auto pr-1">
+        {typeof story?.cover_image_url === 'string' && story.cover_image_url ? (
+          <div className="relative h-32 w-full overflow-hidden rounded-xl border border-[#E6DFDA]">
             <Image src={story.cover_image_url || img} alt="Cover" fill className="object-cover" />
           </div>
-        )}
+        ) : null}
 
-        {/* Dynamic Title */}
-        <div>
-          <span className="text-primary mb-1 block text-[12px] font-bold tracking-wider uppercase">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="rounded-full bg-[#301C05] px-2.5 py-1 text-[10px] font-bold text-white uppercase">
+            {isHumanReady ? 'Your narration' : 'Studio Voice'}
+          </span>
+          <span className="text-xs text-[#8A6E5F]">{String(story?.author || '')}</span>
+        </div>
+
+        {typeof story?.audio_path === 'string' && story.audio_path ? (
+          <div className="rounded-xl border border-[#F0EAE5] bg-[#FAF8F5] p-3">
+            <span className="mb-2 flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-[#A08170] uppercase">
+              <Volume2 size={14} /> Listen
+            </span>
+            <audio controls src={story.audio_path} className="h-10 w-full accent-[#BF7758]" />
+            {isHumanReady ? (
+              <p className="mt-2 text-[11px] text-[#8A6E5F]">
+                Uploaded recording is locked. Edit text only.
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+
+        <label className="block space-y-1">
+          <span className="text-[11px] font-bold tracking-wider text-[#A08170] uppercase">
             Title
           </span>
-          <h3 className="text-lg leading-snug font-bold text-[#5C3A21]">
-            {story?.title || 'Untitled Story'}
-          </h3>
+          <input
+            className={inputClass}
+            value={draft.title}
+            onChange={(e) => patch({ title: e.target.value })}
+          />
+        </label>
+
+        <div className="grid grid-cols-2 gap-3">
+          <label className="block space-y-1">
+            <span className="text-[11px] font-bold tracking-wider text-[#A08170] uppercase">
+              Type
+            </span>
+            <select
+              className={inputClass}
+              value={draft.story_type}
+              onChange={(e) => patch({ story_type: e.target.value })}
+            >
+              <option value="confession">Confession</option>
+              <option value="meditation">Meditation</option>
+            </select>
+          </label>
+          <label className="flex items-end gap-2 pb-2 text-sm text-[#5C3A21]">
+            <input
+              type="checkbox"
+              checked={draft.high_intensity}
+              onChange={(e) => patch({ high_intensity: e.target.checked })}
+            />
+            High intensity
+          </label>
         </div>
 
-        {/* Dynamic Type / Category */}
-        <div>
-          <span className="mb-1 block text-[12px] font-bold tracking-wider text-[#A08170] uppercase">
-            Type
+        <label className="block space-y-1">
+          <span className="text-[11px] font-bold tracking-wider text-[#A08170] uppercase">
+            Piece
           </span>
-          <p className="text-sm font-semibold text-[#5C3A21] capitalize">
-            {story?.story_type || 'Uncategorized'}
-          </p>
-          {story?.submission_mode === 'human_ready' ? (
-            <p className="mt-1 text-xs font-semibold text-[#BF7758]">
-              As submitted · human narration
+          <textarea
+            className={`${inputClass} min-h-40 font-serif leading-relaxed`}
+            value={draft.story_text}
+            onChange={(e) => patch({ story_text: e.target.value })}
+          />
+        </label>
+
+        <AiCard
+          title="Public tagline"
+          hint="Brush line on the public hero"
+          regenerating={suggesting === 'tagline'}
+          onRegenerate={() => handleSuggest('tagline')}
+        >
+          <textarea
+            className={`${inputClass} min-h-16`}
+            value={draft.hero_tagline}
+            onChange={(e) => patch({ hero_tagline: e.target.value })}
+          />
+        </AiCard>
+
+        <AiCard
+          title="First sentences"
+          hint="Hook / summary listeners see first"
+          regenerating={suggesting === 'hook'}
+          onRegenerate={() => handleSuggest('hook')}
+        >
+          <textarea
+            className={`${inputClass} min-h-24`}
+            value={draft.hero_hook}
+            onChange={(e) => patch({ hero_hook: e.target.value })}
+          />
+        </AiCard>
+
+        <AiCard
+          title="Moods"
+          hint="Existing catalog tags — regenerate then tick/edit"
+          regenerating={suggesting === 'moods'}
+          onRegenerate={() => handleSuggest('moods')}
+        >
+          <input
+            className={inputClass}
+            placeholder="Tags, comma separated"
+            value={draft.tags}
+            onChange={(e) => patch({ tags: e.target.value })}
+          />
+          <input
+            className={inputClass}
+            placeholder="Growth areas, comma separated"
+            value={draft.growth_areas}
+            onChange={(e) => patch({ growth_areas: e.target.value })}
+          />
+          <input
+            className={inputClass}
+            placeholder="Life phase"
+            value={draft.life_phase}
+            onChange={(e) => patch({ life_phase: e.target.value })}
+          />
+        </AiCard>
+
+        <AiCard
+          title="Analysis"
+          hint="Private editorial note — not public"
+          regenerating={suggesting === 'analysis'}
+          onRegenerate={() => handleSuggest('analysis')}
+        >
+          <textarea
+            className={`${inputClass} min-h-24`}
+            value={draft.editorial_brief}
+            onChange={(e) => patch({ editorial_brief: e.target.value })}
+          />
+        </AiCard>
+
+        <div className="space-y-2 rounded-xl border border-[#F0EAE5] p-3">
+          <span className="text-[11px] font-bold tracking-wider text-[#A08170] uppercase">
+            Identity
+          </span>
+          <div className="grid grid-cols-2 gap-2">
+            <input
+              className={inputClass}
+              placeholder="Name"
+              value={draft.first_name}
+              onChange={(e) => patch({ first_name: e.target.value })}
+            />
+            <input
+              className={inputClass}
+              placeholder="Location"
+              value={draft.location}
+              onChange={(e) => patch({ location: e.target.value })}
+            />
+            <input
+              className={inputClass}
+              placeholder="Gender"
+              value={draft.gender}
+              onChange={(e) => patch({ gender: e.target.value })}
+            />
+            <input
+              className={inputClass}
+              placeholder="Orientation"
+              value={draft.sexual_orientation}
+              onChange={(e) => patch({ sexual_orientation: e.target.value })}
+            />
+            <input
+              className={inputClass}
+              placeholder="Occupation"
+              value={draft.occupation}
+              onChange={(e) => patch({ occupation: e.target.value })}
+            />
+            <input
+              className={inputClass}
+              placeholder="Age"
+              value={draft.age}
+              onChange={(e) => patch({ age: e.target.value })}
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowBrief((open) => !open)}
+            className="text-[11px] font-semibold text-[#BF7758]"
+          >
+            {showBrief ? 'Hide character brief' : 'More — character brief'}
+          </button>
+          {showBrief ? (
+            <div className="space-y-1 text-sm text-[#4A3B32]">
+              {story?.background ? (
+                <p>
+                  <strong>Background:</strong> {String(story.background)}
+                </p>
+              ) : null}
+              {story?.personality ? (
+                <p>
+                  <strong>Personality:</strong> {String(story.personality)}
+                </p>
+              ) : null}
+              {story?.lifestyle ? (
+                <p>
+                  <strong>Lifestyle:</strong> {String(story.lifestyle)}
+                </p>
+              ) : null}
+              {story?.situation ? (
+                <p>
+                  <strong>Situation:</strong> {String(story.situation)}
+                </p>
+              ) : null}
+              {!story?.background &&
+              !story?.personality &&
+              !story?.lifestyle &&
+              !story?.situation ? (
+                <p className="text-xs text-[#8A6E5F]">No brief on this piece.</p>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+
+        <div className="space-y-2 rounded-xl border border-[#F0EAE5] p-3">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold tracking-wider text-[#A08170] uppercase">
+              Voice
+            </span>
+            {!isHumanReady ? (
+              <button
+                type="button"
+                onClick={() => handleSuggest('voice')}
+                disabled={suggesting === 'voice'}
+                className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#BF7758]"
+              >
+                {suggesting === 'voice' ? (
+                  <Loader2 size={12} className="animate-spin" />
+                ) : (
+                  <RefreshCw size={12} />
+                )}
+                AI pick
+              </button>
+            ) : null}
+          </div>
+          {isHumanReady ? (
+            <p className="text-sm text-[#8A6E5F]">
+              {draft.voice_name || 'Member recording'} — locked
             </p>
           ) : (
-            <p className="mt-1 text-xs text-[#8A6E5F]">Studio Voice</p>
-          )}
-        </div>
-
-        {/* Subtle Metadata Layout */}
-        <div className="flex flex-wrap gap-x-6 gap-y-2 border-t border-b border-[#F0EAE5] py-3 text-xs text-[#8A6E5F]">
-          <span className="flex items-center gap-1">
-            <User size={14} className="text-[#A08170]" />
-            <strong>Author:</strong> {story?.author || 'Anonymous'}
-          </span>
-          <span className="flex items-center gap-1">
-            <strong>Story ID:</strong> {id}
-          </span>
-          {story?.first_name && (
-            <span className="flex items-center gap-1">
-              <strong>Name:</strong> {story.first_name}
-            </span>
-          )}
-          {story?.location && (
-            <span className="flex items-center gap-1">
-              <strong>Location:</strong> {story.location}
-            </span>
-          )}
-          {story?.gender && (
-            <span className="flex items-center gap-1">
-              <strong>Gender:</strong> {story.gender}
-            </span>
-          )}
-          {story?.sexual_orientation && (
-            <span className="flex items-center gap-1">
-              <strong>Orientation:</strong> {story.sexual_orientation}
-            </span>
-          )}
-          {story?.occupation && (
-            <span className="flex items-center gap-1">
-              <strong>Occupation:</strong> {story.occupation}
-            </span>
-          )}
-          {story?.age !== null && story?.age !== undefined && (
-            <span className="flex items-center gap-1">
-              <strong>Age:</strong> {story.age}
-            </span>
-          )}
-        </div>
-
-        {/* Audio Player Section */}
-        {story?.audio_path && (
-          <div className="rounded-xl border border-[#F0EAE5] bg-[#FAF8F5] p-4">
-            <span className="mb-2 flex items-center gap-1.5 text-[12px] font-bold tracking-wider text-[#A08170] uppercase">
-              <Volume2 size={14} /> Audio Narration
-            </span>
-            <audio controls src={story.audio_path} className="mt-1 h-10 w-full accent-[#BF7758]">
-              Your browser does not support the audio element.
-            </audio>
-          </div>
-        )}
-
-        {/* Dynamic Story Body Content */}
-        <div>
-          <span className="mb-2 block text-[12px] font-bold tracking-wider text-[#A08170] uppercase">
-            Content
-          </span>
-          <div className="max-h-87.5 overflow-y-auto pr-2 font-serif text-[15px] leading-relaxed whitespace-pre-line text-[#4A3B32] selection:bg-[#E6DFDA]">
-            {story?.story_text || (
-              <p className="font-sans text-sm text-neutral-400 italic">
-                Place wait, Content is processing...
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Meta Insights: Life Phase & Growth Areas */}
-        <div className="grid grid-cols-1 gap-4 border-t border-[#F0EAE5] pt-4 sm:grid-cols-2">
-          {story?.life_phase && (
-            <div>
-              <span className="mb-2 flex items-center gap-1 text-[12px] font-bold tracking-wider text-[#A08170] uppercase">
-                <Compass size={14} /> Life Phase
-              </span>
-              <span className="inline-block rounded-md border border-[#E6DFDA] bg-[#FDFBF7] px-3 py-1.5 text-sm font-medium text-[#5C3A21]">
-                {story.life_phase}
-              </span>
-            </div>
-          )}
-
-          {story?.growth_areas && story.growth_areas.length > 0 && (
-            <div>
-              <span className="mb-2 flex items-center gap-1 text-[12px] font-bold tracking-wider text-[#A08170] uppercase">
-                <Heart size={14} /> Growth Areas
-              </span>
-              <div className="flex flex-wrap gap-2">
-                {story.growth_areas.map((area: string, index: number) => (
-                  <span
-                    key={index}
-                    className="inline-block rounded-md border border-[#E1D7CE] bg-[#F5EFEA] px-2.5 py-1 text-xs font-semibold text-[#4A2E2B]"
-                  >
-                    {area}
-                  </span>
+            <>
+              <select
+                className={inputClass}
+                value={draft.voice_name}
+                onChange={(e) => patch({ voice_name: e.target.value })}
+              >
+                <option value="">Keep current</option>
+                {catalogVoices.map((voice) => (
+                  <option key={voice.name} value={voice.name}>
+                    {voice.label}
+                  </option>
                 ))}
-              </div>
-            </div>
+                {draft.voice_name &&
+                !catalogVoices.some((voice) => voice.name === draft.voice_name) ? (
+                  <option value={draft.voice_name}>{draft.voice_name}</option>
+                ) : null}
+              </select>
+              <p className="text-[11px] text-[#8A6E5F]">
+                Saves the voice name. Re-narrate in Voice Review to update audio.
+              </p>
+            </>
           )}
         </div>
 
-        {(story?.background || story?.personality || story?.lifestyle || story?.situation) && (
-          <div className="space-y-3 border-t border-[#F0EAE5] pt-4">
-            <span className="block text-[12px] font-bold tracking-wider text-[#A08170] uppercase">
-              Character brief
-            </span>
-            {story.background ? (
-              <p className="text-sm text-[#4A3B32]">
-                <strong>Background:</strong> {story.background}
-              </p>
-            ) : null}
-            {story.personality ? (
-              <p className="text-sm text-[#4A3B32]">
-                <strong>Personality:</strong> {story.personality}
-              </p>
-            ) : null}
-            {story.lifestyle ? (
-              <p className="text-sm text-[#4A3B32]">
-                <strong>Lifestyle:</strong> {story.lifestyle}
-              </p>
-            ) : null}
-            {story.situation ? (
-              <p className="text-sm text-[#4A3B32]">
-                <strong>Situation:</strong> {story.situation}
-              </p>
-            ) : null}
-          </div>
-        )}
+        {typeof story?.story_input === 'string' && story.story_input ? (
+          <details className="rounded-xl border border-[#EDE7E1] bg-[#FAF8F6] p-3 text-sm text-[#614E43]">
+            <summary className="cursor-pointer text-[11px] font-bold tracking-wider text-[#A08170] uppercase">
+              Original input
+            </summary>
+            <p className="mt-2 whitespace-pre-line italic">{story.story_input}</p>
+          </details>
+        ) : null}
 
-        {story?.hero_hook && (
-          <div className="border-t border-[#F0EAE5] pt-4">
-            <span className="mb-2 block text-[12px] font-bold tracking-wider text-[#A08170] uppercase">
-              Hero hook
-            </span>
-            <p className="text-sm text-[#4A3B32] italic">{story.hero_hook}</p>
-          </div>
-        )}
-
-        {story?.story_input && (
-          <div className="border-t border-[#F0EAE5] pt-4">
-            <span className="mb-2 flex items-center gap-1 text-[12px] font-bold tracking-wider text-[#A08170] uppercase">
-              <MessageSquareText size={14} /> Original User Input
-            </span>
-            <div className="rounded-lg border border-[#EDE7E1] bg-[#FAF8F6] p-3 text-sm whitespace-pre-line text-[#614E43] italic">
-              {story.story_input}
-            </div>
-          </div>
-        )}
+        <label className="block space-y-1">
+          <span className="text-[11px] font-bold tracking-wider text-[#A08170] uppercase">
+            Note to member
+          </span>
+          <textarea
+            className={`${inputClass} min-h-16`}
+            placeholder="Required for request changes. Optional on approve."
+            value={draft.changeNote}
+            onChange={(e) => patch({ changeNote: e.target.value })}
+          />
+        </label>
       </div>
 
-      {/* Action Controller Footer */}
-      <div className="flex flex-wrap items-center justify-end gap-3 border-t border-[#E6DFDA] pt-4">
-        {onEdit && (
+      <div className="flex flex-wrap items-center justify-end gap-2 border-t border-[#E6DFDA] pt-3">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleSave}
+          disabled={isSaving}
+          className="border-[#D1C7BD] bg-white text-[#5C4D43]"
+        >
+          {isSaving ? 'Saving…' : 'Save'}
+        </Button>
+        <button
+          type="button"
+          onClick={handleRequestChanges}
+          disabled={isRequesting || isSaving}
+          className="cursor-pointer rounded-md border border-[#E6DFDA] bg-[#F5EFEA] px-4 py-2 text-sm font-medium text-[#5C3A21]"
+        >
+          {isRequesting ? 'Sending…' : 'Request changes'}
+        </button>
+        <button
+          type="button"
+          onClick={handleApprove}
+          disabled={isSaving || isApproving}
+          className="bg-success cursor-pointer rounded-md px-4 py-2 text-sm font-medium text-white"
+        >
+          {isApproving ? 'Approving…' : 'Approve'}
+        </button>
+        {onReject ? (
           <button
-            onClick={() => onEdit(id)}
-            className="cursor-pointer rounded-md bg-[#BF7758] px-5 py-2 text-sm font-medium text-white transition-all hover:bg-[#B37154] active:scale-[0.98]"
-          >
-            Edit
-          </button>
-        )}
-        {onApprove && (
-          <button
-            onClick={() => onApprove(id)}
-            className="bg-success cursor-pointer rounded-md px-5 py-2 text-sm font-medium text-white transition-all hover:bg-[#0A6332] active:scale-[0.98]"
-          >
-            Approve
-          </button>
-        )}
-        {onReject && (
-          <button
-            onClick={() => onReject(id)}
-            className="cursor-pointer rounded-md bg-[#C82323] px-5 py-2 text-sm font-medium text-white transition-all hover:bg-[#850000] active:scale-[0.98]"
+            type="button"
+            onClick={() => onReject()}
+            className="cursor-pointer rounded-md bg-[#C82323] px-4 py-2 text-sm font-medium text-white"
           >
             Reject
           </button>
-        )}
-        {onRemove && (
+        ) : null}
+        {onRemove ? (
           <button
-            onClick={() => onRemove(id)}
-            className="cursor-pointer rounded-md border border-[#E5CDCD] bg-[#FFF5F5] px-5 py-2 text-sm font-medium text-[#A80000] transition-all hover:bg-[#FFE5E5] active:scale-[0.98]"
+            type="button"
+            onClick={() => onRemove()}
+            className="cursor-pointer rounded-md border border-[#E5CDCD] bg-[#FFF5F5] px-4 py-2 text-sm font-medium text-[#A80000]"
           >
             Remove
           </button>
-        )}
-        {onClose && (
+        ) : null}
+        {onClose ? (
           <button
+            type="button"
             onClick={onClose}
-            className="cursor-pointer rounded-md border border-[#D1C7BD] bg-white px-5 py-2 text-sm font-medium text-[#5C4D43] transition-all hover:bg-[#F5F0EB] active:scale-[0.98]"
+            className="cursor-pointer rounded-md border border-[#D1C7BD] bg-white px-4 py-2 text-sm font-medium text-[#5C4D43]"
           >
             Close
           </button>
-        )}
+        ) : null}
       </div>
     </div>
   );
-};
+}

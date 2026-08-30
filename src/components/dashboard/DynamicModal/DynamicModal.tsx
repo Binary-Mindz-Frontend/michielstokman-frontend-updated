@@ -1,6 +1,7 @@
 'use client';
 
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { cn } from '@/lib/utils';
 import React from 'react';
 
 /**
@@ -27,7 +28,7 @@ const DynamicModal: React.FC<DynamicModalProps> = ({
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={`border-mute/20 max-w-137.5 gap-0 p-4 ${className}`}>
+      <DialogContent className={cn('border-mute/20 max-w-137.5 gap-0 p-4', className)}>
         {!title && (
           <>
             <DialogTitle>Modal Dialog</DialogTitle>

@@ -14,6 +14,7 @@ import {
   getModerationStatusLabel,
   getRouteLabel,
   getSubmissionStatusLabel,
+  shouldShowModerationNotes,
 } from '@/utils/memberStory.utils';
 import type {
   GenerationStatus,
@@ -185,8 +186,8 @@ const UserDashboardCard: React.FC<UserDashboardCardProps> = ({
           {item.description}
         </p>
 
-        {item.moderation_status === 'rejected' && item.moderation_notes ? (
-          <p className="mt-2 rounded-md border border-red-200 bg-red-50 px-2 py-1.5 font-sans text-xs text-red-700">
+        {shouldShowModerationNotes(item.moderation_status, item.moderation_notes) ? (
+          <p className="mt-2 rounded-md border border-amber-200 bg-amber-50 px-2 py-1.5 font-sans text-xs text-amber-900">
             {item.moderation_notes}
           </p>
         ) : null}

@@ -3,13 +3,13 @@ import type { MemberStoryListItem, StoryType } from '@/types/memberStory.types';
 export type SubmissionTab = 'all' | 'submitted' | 'withdrawn' | 'draft';
 
 export function isHumanReady(
-  story: Pick<MemberStoryListItem, 'submission_mode'> | { submission_mode?: string | null },
+  story?: Pick<MemberStoryListItem, 'submission_mode'> | { submission_mode?: string | null } | null,
 ): boolean {
-  return story.submission_mode === 'human_ready';
+  return story?.submission_mode === 'human_ready';
 }
 
 export function getRouteLabel(
-  story: Pick<MemberStoryListItem, 'submission_mode'> | { submission_mode?: string | null },
+  story?: Pick<MemberStoryListItem, 'submission_mode'> | { submission_mode?: string | null } | null,
 ): string {
   return isHumanReady(story) ? 'Your narration' : 'Studio Voice';
 }
@@ -29,6 +29,14 @@ export function getGenerationStatusLabel(status: MemberStoryListItem['generation
     default:
       return status;
   }
+}
+
+export function shouldShowModerationNotes(
+  status: MemberStoryListItem['moderation_status'] | string | null | undefined,
+  notes?: string | null,
+): boolean {
+  if (!notes?.trim()) return false;
+  return status === 'pending' || status === 'rejected' || status === 'flagged';
 }
 
 export function getModerationStatusLabel(status: MemberStoryListItem['moderation_status']): string {

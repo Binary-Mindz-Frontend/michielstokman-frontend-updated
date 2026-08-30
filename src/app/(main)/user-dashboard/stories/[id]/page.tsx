@@ -11,6 +11,7 @@ import {
   getModerationStatusLabel,
   getRouteLabel,
   getSubmissionStatusLabel,
+  shouldShowModerationNotes,
 } from '@/utils/memberStory.utils';
 import { getMemberStoryQueryErrorMessage } from '@/utils/memberStoryQuery.utils';
 import {
@@ -247,8 +248,8 @@ export default function MemberStoryDetailPage() {
               </span>
             </div>
 
-            {story.moderation_notes ? (
-              <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 font-sans text-xs text-red-700">
+            {shouldShowModerationNotes(story.moderation_status, story.moderation_notes) ? (
+              <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 font-sans text-xs text-amber-900">
                 {story.moderation_notes}
               </p>
             ) : null}

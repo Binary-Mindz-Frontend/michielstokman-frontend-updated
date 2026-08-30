@@ -1,6 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable no-unused-vars */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import img from '@/assets/shared/table_placeholder_image.jpg';
@@ -33,7 +31,6 @@ import {
 import Image from 'next/image';
 import { useState } from 'react';
 import { ApproveAction, DeleteAction, RejectAction } from '../ApproveAction/ApproveAction';
-import EditAction from '../EditModeration/EditModeration';
 import { ReviewDetails } from '../ReviewDetails/ReviewDetails';
 
 interface IModerationStory {
@@ -177,7 +174,7 @@ const ModerationTable = () => {
                 <Trash2 size={16} className="text-error" /> Remove
               </button>
               <button
-                onClick={() => openModal('edit', row)}
+                onClick={() => openModal('review', row)}
                 className="text-secondary hover:bg-primary/5 flex cursor-pointer items-center gap-3 px-3 py-2.5 transition-all"
               >
                 <Edit3 size={16} className="text-secondary" /> Edit
@@ -226,16 +223,25 @@ const ModerationTable = () => {
       {!isLoading && !isFetching && meta && <CustomPagination meta={meta} />}
 
       {/* --- Global Dynamic Modal --- */}
-      <DynamicModal isOpen={modalState.isOpen} onClose={closeModal} title={`Review Details`}>
+      <DynamicModal
+        isOpen={modalState.isOpen}
+        onClose={closeModal}
+        title={
+          modalState.type === 'review' || modalState.type === 'edit'
+            ? 'Edit concept'
+            : 'Review Details'
+        }
+        className={
+          modalState.type === 'review' || modalState.type === 'edit' ? 'max-w-4xl sm:max-w-5xl' : ''
+        }
+      >
         {modalState.selectedStory && (
           <>
-            {modalState.type === 'review' && (
+            {(modalState.type === 'review' || modalState.type === 'edit') && (
               <ReviewDetails
                 id={modalState.selectedStory.id}
-                onEdit={(id) => openModal('edit', modalState.selectedStory!)}
-                onApprove={(id) => openModal('approve', modalState.selectedStory!)}
-                onReject={(id) => openModal('reject', modalState.selectedStory!)}
-                onRemove={(id) => openModal('remove', modalState.selectedStory!)}
+                onReject={() => openModal('reject', modalState.selectedStory!)}
+                onRemove={() => openModal('remove', modalState.selectedStory!)}
                 onClose={closeModal}
               />
             )}
@@ -250,10 +256,6 @@ const ModerationTable = () => {
 
             {modalState.type === 'remove' && (
               <DeleteAction id={modalState.selectedStory.id} onSuccess={closeModal} />
-            )}
-
-            {modalState.type === 'edit' && (
-              <EditAction id={modalState.selectedStory.id} onSuccess={closeModal} />
             )}
           </>
         )}
