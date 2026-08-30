@@ -48,12 +48,6 @@ export interface UserDashboardItem {
 interface UserDashboardCardProps {
   item: UserDashboardItem;
   // eslint-disable-next-line no-unused-vars
-  onEdit: (item: UserDashboardItem) => void;
-  // eslint-disable-next-line no-unused-vars
-  onChangeVoice: (item: UserDashboardItem) => void;
-  // eslint-disable-next-line no-unused-vars
-  onArtwork: (item: UserDashboardItem) => void;
-  // eslint-disable-next-line no-unused-vars
   onShare: (item: UserDashboardItem) => void;
   // eslint-disable-next-line no-unused-vars
   onWithdraw: (item: UserDashboardItem) => void;
@@ -109,11 +103,34 @@ function ActionButton({
   );
 }
 
+function ActionLink({
+  label,
+  href,
+  disabled,
+}: {
+  label: string;
+  href: string;
+  disabled?: boolean;
+}) {
+  if (disabled) {
+    return (
+      <span className="font-playpen rounded-md px-2 py-1 text-[10px] font-bold tracking-wide text-[#301C05] uppercase opacity-40">
+        {label}
+      </span>
+    );
+  }
+  return (
+    <Link
+      href={href}
+      className="font-playpen rounded-md px-2 py-1 text-[10px] font-bold tracking-wide text-[#301C05] uppercase hover:bg-[#EBE4D5]/60"
+    >
+      {label}
+    </Link>
+  );
+}
+
 const UserDashboardCard: React.FC<UserDashboardCardProps> = ({
   item,
-  onEdit,
-  onChangeVoice,
-  onArtwork,
   onShare,
   onWithdraw,
   onResubmit,
@@ -202,15 +219,19 @@ const UserDashboardCard: React.FC<UserDashboardCardProps> = ({
         </p>
 
         <div className="flex flex-wrap gap-1 border-t border-[#EBE4D5]/80 pt-2">
-          <ActionButton label="Edit" onClick={() => onEdit(item)} disabled={!canEditStory(item)} />
-          <ActionButton
+          <ActionLink
+            label="Edit"
+            href={`/user-dashboard/stories/${item.id}?panel=edit`}
+            disabled={!canEditStory(item)}
+          />
+          <ActionLink
             label="Voice"
-            onClick={() => onChangeVoice(item)}
+            href={`/user-dashboard/stories/${item.id}?panel=voice`}
             disabled={!canChangeVoice(item)}
           />
-          <ActionButton
+          <ActionLink
             label="Artwork"
-            onClick={() => onArtwork(item)}
+            href={`/user-dashboard/stories/${item.id}?panel=artwork`}
             disabled={!canChangeArtwork(item)}
           />
           <ActionButton

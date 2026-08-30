@@ -1,11 +1,15 @@
 'use client';
 
 import ShareStoryModal from '@/components/main/userDashboard/ShareStoryModal/ShareStoryModal';
-import ArtworkModal from '@/components/main/userDashboard/ArtworkModal/ArtworkModal';
-import type { UserDashboardItem } from '@/components/main/userDashboard/UserDashboardCard/UserDashboardCard';
+import MemberEditPanel from '@/components/main/userDashboard/MemberEditPanel/MemberEditPanel';
+import MemberVoicePanel from '@/components/main/userDashboard/MemberVoicePanel/MemberVoicePanel';
+import MemberArtworkPanel from '@/components/main/userDashboard/MemberArtworkPanel/MemberArtworkPanel';
 import StoryPlayer from '@/app/(main)/details/StoryPlayer/StoryPlayer';
 import { useGetMyStoryQuery } from '@/redux/features/memberStory/memberStory.api';
 import {
+  canChangeArtwork,
+  canChangeVoice,
+  canEditStory,
   formatAudioDuration,
   getGenerationStatusLabel,
   getModerationStatusLabel,
@@ -22,17 +26,25 @@ import {
 import { ArrowLeft, Loader2, Share2, Sparkles } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 
 type ContentTab = 'listen' | 'read' | 'original';
+type StoryPanel = 'edit' | 'voice' | 'artwork' | null;
 
-export default function MemberStoryDetailPage() {
+function parsePanel(value: string | null): StoryPanel {
+  if (value === 'edit' || value === 'voice' || value === 'artwork') return value;
+  return null;
+}
+
+function MemberStoryDetailPage() {
   const params = useParams();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const storyId = String(params.id ?? '').trim();
+  const panel = parsePanel(searchParams.get('panel'));
   const [activeTab, setActiveTab] = useState<ContentTab>('listen');
   const [shareOpen, setShareOpen] = useState(false);
-  const [artworkOpen, setArtworkOpen] = useState(false);
   const [brokenCoverKey, setBrokenCoverKey] = useState<string | null>(null);
 
   const {
@@ -59,6 +71,10 @@ export default function MemberStoryDetailPage() {
     return () => clearInterval(timer);
   }, [isProcessing, refetch]);
 
+  const closePanel = () => router.replace(`/user-dashboard/stories/${storyId}`);
+  const openPanel = (next: Exclude<StoryPanel, null>) =>
+    router.replace(`/user-dashboard/stories/${storyId}?panel=${next}`);
+
   const coverKey = story?.cover_image_url ?? 'missing';
 
   const coverSrc = useMemo(() => {
@@ -68,32 +84,6 @@ export default function MemberStoryDetailPage() {
     }
     return resolveStoryCoverSrc(story.cover_image_url, story.story_type);
   }, [brokenCoverKey, coverKey, story]);
-
-  const artworkItem = useMemo<UserDashboardItem | null>(() => {
-    if (!story) return null;
-    return {
-      id: story.id,
-      story_reference: story.story_reference,
-      category:
-        story.story_type === 'meditation'
-          ? 'MEDITATION'
-          : story.story_type === 'transformation'
-            ? 'TRANSFORMATION'
-            : 'STORY',
-      title: story.title || 'Untitled story',
-      description: story.excerpt || story.title || '',
-      image: resolveStoryCoverSrc(story.cover_image_url, story.story_type),
-      story_type: story.story_type,
-      generation_status: story.generation_status,
-      moderation_status: story.moderation_status,
-      submission_status: story.submission_status,
-      submission_mode: story.submission_mode,
-      has_social_intros: story.has_social_intros,
-      moderation_notes: story.moderation_notes,
-      audio_duration_seconds: story.audio_duration_seconds,
-      voice_name: story.voice_name,
-    };
-  }, [story]);
 
   if (!storyId) {
     return (
@@ -181,7 +171,7 @@ export default function MemberStoryDetailPage() {
                 {story.generation_status === 'completed' ? (
                   <button
                     type="button"
-                    onClick={() => setArtworkOpen(true)}
+                    onClick={() => openPanel('artwork')}
                     className="font-playpen inline-flex items-center gap-2 rounded-xl bg-white/95 px-4 py-2 text-xs font-bold text-gray-900"
                   >
                     <Sparkles size={14} />
@@ -222,15 +212,44 @@ export default function MemberStoryDetailPage() {
                 </p>
               </div>
 
-              {story.generation_status === 'completed' ? (
-                <button
-                  type="button"
-                  onClick={() => setShareOpen(true)}
-                  className="font-playpen flex items-center gap-2 rounded-xl bg-[#D98755] px-4 py-2 text-xs font-bold text-white"
-                >
-                  <Share2 size={14} /> Share
-                </button>
-              ) : null}
+              <div className="flex flex-wrap items-center gap-2">
+                {canEditStory(story) ? (
+                  <button
+                    type="button"
+                    onClick={() => openPanel('edit')}
+                    className="font-playpen rounded-xl border border-[#EBE4D5] bg-white px-4 py-2 text-xs font-bold text-gray-800"
+                  >
+                    Edit
+                  </button>
+                ) : null}
+                {canChangeVoice(story) ? (
+                  <button
+                    type="button"
+                    onClick={() => openPanel('voice')}
+                    className="font-playpen rounded-xl border border-[#EBE4D5] bg-white px-4 py-2 text-xs font-bold text-gray-800"
+                  >
+                    Voice
+                  </button>
+                ) : null}
+                {canChangeArtwork(story) ? (
+                  <button
+                    type="button"
+                    onClick={() => openPanel('artwork')}
+                    className="font-playpen rounded-xl border border-[#EBE4D5] bg-white px-4 py-2 text-xs font-bold text-gray-800"
+                  >
+                    Artwork
+                  </button>
+                ) : null}
+                {story.generation_status === 'completed' ? (
+                  <button
+                    type="button"
+                    onClick={() => setShareOpen(true)}
+                    className="font-playpen flex items-center gap-2 rounded-xl bg-[#D98755] px-4 py-2 text-xs font-bold text-white"
+                  >
+                    <Share2 size={14} /> Share
+                  </button>
+                ) : null}
+              </div>
             </div>
 
             <div className="flex flex-wrap gap-2">
@@ -252,6 +271,18 @@ export default function MemberStoryDetailPage() {
               <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 font-sans text-xs text-amber-900">
                 {story.moderation_notes}
               </p>
+            ) : null}
+
+            {panel === 'edit' ? <MemberEditPanel storyId={storyId} onDone={closePanel} /> : null}
+            {panel === 'voice' ? <MemberVoicePanel storyId={storyId} onDone={closePanel} /> : null}
+            {panel === 'artwork' ? (
+              <MemberArtworkPanel
+                storyId={storyId}
+                title={story.title || undefined}
+                coverUrl={typeof coverSrc === 'string' ? coverSrc : null}
+                onDone={closePanel}
+                onUpdated={() => refetch()}
+              />
             ) : null}
 
             <div className="flex gap-2 border-b border-[#EBE4D5]">
@@ -313,13 +344,20 @@ export default function MemberStoryDetailPage() {
         storyTitle={story.title || undefined}
         onClose={() => setShareOpen(false)}
       />
-
-      <ArtworkModal
-        isOpen={artworkOpen}
-        item={artworkItem}
-        onClose={() => setArtworkOpen(false)}
-        onUpdated={() => refetch()}
-      />
     </main>
+  );
+}
+
+export default function MemberStoryDetailPageRoute() {
+  return (
+    <Suspense
+      fallback={
+        <main className="bg-bg-primary flex min-h-screen items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-[#D98755]" />
+        </main>
+      }
+    >
+      <MemberStoryDetailPage />
+    </Suspense>
   );
 }

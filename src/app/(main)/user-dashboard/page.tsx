@@ -9,11 +9,8 @@ import UserDashboardToolbar, {
 import UserDashboardCard, {
   UserDashboardItem,
 } from '@/components/main/userDashboard/UserDashboardCard/UserDashboardCard';
-import EditConfessionModal from '@/components/main/userDashboard/EditConfessionModal/EditConfessionModal';
 import DeleteConfessionModal from '@/components/main/userDashboard/DeleteConfessionModal/DeleteConfessionModal';
 import ShareStoryModal from '@/components/main/userDashboard/ShareStoryModal/ShareStoryModal';
-import ChangeVoiceModal from '@/components/main/userDashboard/ChangeVoiceModal/ChangeVoiceModal';
-import ArtworkModal from '@/components/main/userDashboard/ArtworkModal/ArtworkModal';
 import WithdrawStoryModal from '@/components/main/userDashboard/WithdrawStoryModal/WithdrawStoryModal';
 import ProductCardSkeleton from '@/components/main/Skeletons/ProductCardSkeleton';
 
@@ -97,11 +94,8 @@ export default function UserDashboardPage() {
   const [withdrawStory, { isLoading: isWithdrawing }] = useWithdrawMyStoryMutation();
   const [resubmitStory] = useResubmitMyStoryMutation();
 
-  const [editingItem, setEditingItem] = useState<UserDashboardItem | null>(null);
   const [deletingItem, setDeletingItem] = useState<UserDashboardItem | null>(null);
   const [sharingItem, setSharingItem] = useState<UserDashboardItem | null>(null);
-  const [voiceItem, setVoiceItem] = useState<UserDashboardItem | null>(null);
-  const [artworkItem, setArtworkItem] = useState<UserDashboardItem | null>(null);
   const [withdrawingItem, setWithdrawingItem] = useState<UserDashboardItem | null>(null);
 
   const mappedItems = useMemo(() => {
@@ -207,9 +201,6 @@ export default function UserDashboardPage() {
                   <UserDashboardCard
                     key={item.id}
                     item={item}
-                    onEdit={setEditingItem}
-                    onChangeVoice={setVoiceItem}
-                    onArtwork={setArtworkItem}
                     onShare={setSharingItem}
                     onWithdraw={setWithdrawingItem}
                     onResubmit={handleResubmit}
@@ -254,12 +245,6 @@ export default function UserDashboardPage() {
           )}
         </motion.div>
 
-        <EditConfessionModal
-          isOpen={!!editingItem}
-          item={editingItem}
-          onClose={() => setEditingItem(null)}
-        />
-
         <DeleteConfessionModal
           isOpen={!!deletingItem}
           item={deletingItem}
@@ -272,19 +257,6 @@ export default function UserDashboardPage() {
           storyId={sharingItem ? String(sharingItem.id) : null}
           storyTitle={sharingItem?.title}
           onClose={() => setSharingItem(null)}
-        />
-
-        <ChangeVoiceModal
-          isOpen={!!voiceItem}
-          item={voiceItem}
-          onClose={() => setVoiceItem(null)}
-        />
-
-        <ArtworkModal
-          isOpen={!!artworkItem}
-          item={artworkItem}
-          onClose={() => setArtworkItem(null)}
-          onUpdated={() => refetch()}
         />
 
         <WithdrawStoryModal
