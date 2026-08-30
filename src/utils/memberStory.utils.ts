@@ -1,6 +1,22 @@
-import type { MemberStoryListItem } from '@/types/memberStory.types';
+import type { MemberStoryListItem, StoryType } from '@/types/memberStory.types';
 
 export type SubmissionTab = 'all' | 'submitted' | 'withdrawn' | 'draft';
+
+export function isHumanReady(
+  story: Pick<MemberStoryListItem, 'submission_mode'> | { submission_mode?: string | null },
+): boolean {
+  return story.submission_mode === 'human_ready';
+}
+
+export function getRouteLabel(
+  story: Pick<MemberStoryListItem, 'submission_mode'> | { submission_mode?: string | null },
+): string {
+  return isHumanReady(story) ? 'Your narration' : 'Studio Voice';
+}
+
+export function createHrefForStoryType(storyType: StoryType): string {
+  return storyType === 'meditation' ? '/create?type=Meditation' : '/create?type=Confessions';
+}
 
 export function getGenerationStatusLabel(status: MemberStoryListItem['generation_status']): string {
   switch (status) {
@@ -30,10 +46,13 @@ export function getModerationStatusLabel(status: MemberStoryListItem['moderation
   }
 }
 
-export function getSubmissionStatusLabel(status: MemberStoryListItem['submission_status']): string {
+export function getSubmissionStatusLabel(
+  status: MemberStoryListItem['submission_status'],
+  moderation?: MemberStoryListItem['moderation_status'],
+): string {
   switch (status) {
     case 'submitted':
-      return 'Live';
+      return moderation === 'approved' ? 'Live' : 'In review';
     case 'withdrawn':
       return 'Withdrawn';
     case 'draft':
@@ -45,7 +64,7 @@ export function getSubmissionStatusLabel(status: MemberStoryListItem['submission
 
 export type StoryActionState = Pick<
   MemberStoryListItem,
-  'generation_status' | 'submission_status' | 'moderation_status'
+  'generation_status' | 'submission_status' | 'moderation_status' | 'submission_mode'
 >;
 
 export function canEditStory(story: StoryActionState): boolean {
@@ -64,8 +83,10 @@ export function canShareStory(story: Pick<MemberStoryListItem, 'generation_statu
   return story.generation_status === 'completed';
 }
 
-export function canChangeVoice(story: Pick<MemberStoryListItem, 'generation_status'>): boolean {
-  return story.generation_status === 'completed';
+export function canChangeVoice(
+  story: Pick<MemberStoryListItem, 'generation_status' | 'submission_mode'>,
+): boolean {
+  return story.generation_status === 'completed' && !isHumanReady(story);
 }
 
 export function canChangeArtwork(story: Pick<MemberStoryListItem, 'generation_status'>): boolean {

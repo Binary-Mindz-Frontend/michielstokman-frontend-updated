@@ -48,6 +48,7 @@ function mapStoryToCardItem(story: MemberStoryListItem): UserDashboardItem {
     generation_status: story.generation_status,
     moderation_status: story.moderation_status,
     submission_status: story.submission_status,
+    submission_mode: story.submission_mode,
     has_social_intros: story.has_social_intros,
     moderation_notes: story.moderation_notes,
     audio_duration_seconds: story.audio_duration_seconds,

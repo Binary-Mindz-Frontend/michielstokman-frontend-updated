@@ -7,6 +7,7 @@ import {
   useRenarrateMyStoryMutation,
 } from '@/redux/features/memberStory/memberStory.api';
 import type { RenarrateRequest } from '@/types/memberStory.types';
+import { isHumanReady } from '@/utils/memberStory.utils';
 import { Loader2, X } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { UserDashboardItem } from '../UserDashboardCard/UserDashboardCard';
@@ -30,14 +31,17 @@ export default function ChangeVoiceModal({ isOpen, item, onClose }: ChangeVoiceM
   const [selectedVoice, setSelectedVoice] = useState<StoryVoiceOption | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const voices = useMemo(() => voicesResponse?.voices ?? [], [voicesResponse?.voices]);
+  const voices = useMemo(
+    () => (voicesResponse?.voices ?? []).filter((voice) => !voice.is_custom).slice(0, 4),
+    [voicesResponse?.voices],
+  );
 
   /* eslint-disable react-hooks/set-state-in-effect -- prefill voice from story detail */
   useEffect(() => {
     if (!isOpen || !item) return;
 
     if (detail?.uses_custom_voice && voicesResponse?.custom_voice) {
-      setSelectedVoice(voicesResponse.custom_voice);
+      setSelectedVoice(null);
       return;
     }
 
@@ -54,6 +58,34 @@ export default function ChangeVoiceModal({ isOpen, item, onClose }: ChangeVoiceM
 
   if (!isOpen || !item) return null;
 
+  if (isHumanReady(detail ?? item)) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
+        <div className="relative w-full max-w-md rounded-2xl border border-[#EBE4D5] bg-[#FAF7F2] p-6 shadow-2xl">
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-full text-gray-500 hover:bg-gray-200"
+          >
+            <X size={18} />
+          </button>
+          <h3 className="font-edo text-xl font-bold tracking-wider text-[#D98755]">CHANGE VOICE</h3>
+          <p className="mt-3 font-sans text-sm text-gray-700">
+            This piece uses your uploaded narration. The recording cannot be replaced with a studio
+            voice.
+          </p>
+          <button
+            type="button"
+            onClick={onClose}
+            className="font-playpen mt-6 rounded-xl bg-[#D22D4C] px-6 py-2 text-xs font-bold text-white"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const currentName = selectedVoice?.name ?? '';
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -66,9 +98,7 @@ export default function ChangeVoiceModal({ isOpen, item, onClose }: ChangeVoiceM
 
     setErrorMessage(null);
 
-    const body: RenarrateRequest = selectedVoice.is_custom
-      ? { use_custom_voice: true }
-      : { voice_name: selectedVoice.name };
+    const body: RenarrateRequest = { voice_name: selectedVoice.name };
 
     try {
       await renarrate({ storyId, body }).unwrap();
@@ -100,8 +130,8 @@ export default function ChangeVoiceModal({ isOpen, item, onClose }: ChangeVoiceM
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <p className="rounded-lg border border-[#EBE4D5] bg-white px-3 py-2 font-sans text-xs text-gray-700">
-            Re-records your story in a new voice — preset or your cloned voice. Text and cover art
-            stay the same. No credit charged.
+            Re-records your story in a studio voice. Text and cover art stay the same. No credit
+            charged.
           </p>
 
           <StoryVoicePicker

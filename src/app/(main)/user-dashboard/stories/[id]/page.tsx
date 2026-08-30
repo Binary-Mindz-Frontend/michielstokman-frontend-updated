@@ -9,6 +9,7 @@ import {
   formatAudioDuration,
   getGenerationStatusLabel,
   getModerationStatusLabel,
+  getRouteLabel,
   getSubmissionStatusLabel,
 } from '@/utils/memberStory.utils';
 import { getMemberStoryQueryErrorMessage } from '@/utils/memberStoryQuery.utils';
@@ -85,6 +86,7 @@ export default function MemberStoryDetailPage() {
       generation_status: story.generation_status,
       moderation_status: story.moderation_status,
       submission_status: story.submission_status,
+      submission_mode: story.submission_mode,
       has_social_intros: story.has_social_intros,
       moderation_notes: story.moderation_notes,
       audio_duration_seconds: story.audio_duration_seconds,
@@ -209,6 +211,7 @@ export default function MemberStoryDetailPage() {
                 </h1>
                 <p className="mt-1 font-sans text-xs text-gray-600">
                   {[
+                    getRouteLabel(story),
                     duration,
                     story.voice_name ? `Voice: ${story.voice_name}` : null,
                     story.uses_custom_voice ? '(your voice)' : null,
@@ -237,7 +240,10 @@ export default function MemberStoryDetailPage() {
                 {getModerationStatusLabel(story.moderation_status)}
               </span>
               <span className="rounded-full bg-[#EBE4D5]/60 px-2.5 py-1 font-sans text-[10px] font-bold uppercase">
-                {getSubmissionStatusLabel(story.submission_status)}
+                {getSubmissionStatusLabel(story.submission_status, story.moderation_status)}
+              </span>
+              <span className="rounded-full bg-[#301C05] px-2.5 py-1 font-sans text-[10px] font-bold text-white uppercase">
+                {getRouteLabel(story)}
               </span>
             </div>
 

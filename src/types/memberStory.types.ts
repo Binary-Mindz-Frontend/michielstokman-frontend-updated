@@ -1,6 +1,7 @@
 export type GenerationStatus = 'processing' | 'completed' | 'failed';
 export type ModerationStatus = 'pending' | 'approved' | 'rejected' | 'flagged';
 export type SubmissionStatus = 'submitted' | 'withdrawn' | 'draft';
+export type SubmissionMode = 'studio' | 'human_ready';
 export type StoryType = 'confession' | 'meditation' | 'transformation';
 
 export type SocialIntros = {
@@ -23,6 +24,7 @@ export type MemberStoryListItem = {
   generation_status: GenerationStatus;
   moderation_status: ModerationStatus;
   submission_status: SubmissionStatus;
+  submission_mode?: SubmissionMode | null;
   has_social_intros: boolean;
   moderation_notes?: string | null;
   created_at: string;
