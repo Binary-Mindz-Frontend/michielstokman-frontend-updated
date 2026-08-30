@@ -11,10 +11,11 @@ import {
   useUpdateStoryMutation,
   type ModerationSuggestField,
 } from '@/redux/features/admin/adminModeration/adminModeration.api';
-import { Loader2, RefreshCw, Volume2 } from 'lucide-react';
+import { Loader2, RefreshCw, Volume2, X } from 'lucide-react';
 import Image from 'next/image';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { DeleteAction, RejectAction } from '../ApproveAction/ApproveAction';
 
 interface ReviewDetailsProps {
   id: string;
@@ -75,9 +76,98 @@ function splitList(value: string): string[] {
 }
 
 function joinList(value: unknown): string {
-  if (Array.isArray(value)) return value.filter(Boolean).join(', ');
-  if (typeof value === 'string') return value;
-  return '';
+  return asStringList(value).join(', ');
+}
+
+function asStringList(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.flatMap((item) => {
+      if (typeof item === 'string' && item.trim()) return [item.trim()];
+      if (item && typeof item === 'object') {
+        const rec = item as Record<string, unknown>;
+        const name = rec.name ?? rec.label ?? rec.tag;
+        if (typeof name === 'string' && name.trim()) return [name.trim()];
+      }
+      return [];
+    });
+  }
+  if (typeof value === 'string' && value.trim()) {
+    const trimmed = value.trim();
+    if (trimmed.startsWith('[')) {
+      try {
+        return asStringList(JSON.parse(trimmed));
+      } catch {
+        /* fall through */
+      }
+    }
+    return trimmed
+      .split(',')
+      .map((part) => part.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
+function suggestionPayload(res: unknown): Record<string, unknown> {
+  if (!res || typeof res !== 'object') return {};
+  const body = res as Record<string, unknown>;
+  if (body.data && typeof body.data === 'object') return body.data as Record<string, unknown>;
+  return body;
+}
+
+function ChipList({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: string;
+  // eslint-disable-next-line no-unused-vars -- callback prop type
+  onChange: (list: string) => void;
+  placeholder: string;
+}) {
+  const items = splitList(value);
+  const [draft, setDraft] = useState('');
+
+  const add = () => {
+    const next = draft.trim();
+    if (!next) return;
+    if (!items.includes(next)) onChange([...items, next].join(', '));
+    setDraft('');
+  };
+
+  return (
+    <div className="space-y-2">
+      {items.length ? (
+        <div className="flex flex-wrap gap-1.5">
+          {items.map((item) => (
+            <button
+              key={item}
+              type="button"
+              onClick={() => onChange(items.filter((entry) => entry !== item).join(', '))}
+              className="inline-flex items-center gap-1 rounded-full border border-[#E1D7CE] bg-white px-2.5 py-1 text-[11px] font-medium text-[#5C3A21]"
+            >
+              {item}
+              <X size={10} />
+            </button>
+          ))}
+        </div>
+      ) : (
+        <p className="text-[11px] text-[#8A6E5F]">No values yet — regenerate or type below.</p>
+      )}
+      <input
+        className="w-full rounded-md border border-[#E1D7CE] bg-white px-3 py-2 text-sm text-[#4A3B32] outline-none focus:ring-1 focus:ring-[#BF7758]/40"
+        placeholder={placeholder}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            add();
+          }
+        }}
+      />
+    </div>
+  );
 }
 
 function normalizeStoryType(value?: string | null): string {
@@ -146,7 +236,7 @@ function AiCard({
   );
 }
 
-export const ReviewDetails = ({ id, onReject, onRemove, onClose }: ReviewDetailsProps) => {
+export const ReviewDetails = ({ id, onClose }: ReviewDetailsProps) => {
   const { data, isLoading } = useGetStoryDetailsQuery(id);
   const story = data?.data as Record<string, unknown> | undefined;
 
@@ -159,26 +249,21 @@ export const ReviewDetails = ({ id, onReject, onRemove, onClose }: ReviewDetails
     );
   }
 
-  return (
-    <ReviewDesk id={id} story={story} onReject={onReject} onRemove={onRemove} onClose={onClose} />
-  );
+  return <ReviewDesk id={id} story={story} onClose={onClose} />;
 };
 
 function ReviewDesk({
   id,
   story,
-  onReject,
-  onRemove,
   onClose,
 }: {
   id: string;
   story: Record<string, unknown>;
-  onReject?: () => void;
-  onRemove?: () => void;
   onClose?: () => void;
 }) {
   const [draft, setDraft] = useState<DeskDraft>(() => storyFromApi(story));
   const [suggesting, setSuggesting] = useState<ModerationSuggestField | null>(null);
+  const [confirmAction, setConfirmAction] = useState<'reject' | 'remove' | null>(null);
   const [showBrief, setShowBrief] = useState(() =>
     Boolean(story.background || story.personality || story.lifestyle || story.situation),
   );
@@ -238,25 +323,57 @@ function ReviewDesk({
     setSuggesting(field);
     try {
       const res = await suggestField({ storyId: id, field }).unwrap();
-      const suggestion = res?.data || {};
-      if (field === 'hook' && suggestion.hero_hook) patch({ hero_hook: suggestion.hero_hook });
-      if (field === 'tagline' && suggestion.hero_tagline) {
-        patch({ hero_tagline: suggestion.hero_tagline });
+      const suggestion = suggestionPayload(res);
+      let applied = false;
+
+      if (field === 'hook') {
+        const value = String(suggestion.hero_hook || '').trim();
+        if (value) {
+          patch({ hero_hook: value });
+          applied = true;
+        }
+      }
+      if (field === 'tagline') {
+        const value = String(suggestion.hero_tagline || '').trim();
+        if (value) {
+          patch({ hero_tagline: value });
+          applied = true;
+        }
       }
       if (field === 'moods') {
-        patch({
-          tags: joinList(suggestion.tags) || draft.tags,
-          growth_areas: joinList(suggestion.growth_areas) || draft.growth_areas,
-          life_phase: suggestion.life_phase || draft.life_phase,
-        });
+        const tags = asStringList(suggestion.tags);
+        const growth = asStringList(suggestion.growth_areas);
+        const life = String(suggestion.life_phase || '').trim();
+        if (tags.length || growth.length || life) {
+          setDraft((prev) => ({
+            ...prev,
+            ...(tags.length ? { tags: tags.join(', ') } : {}),
+            ...(growth.length ? { growth_areas: growth.join(', ') } : {}),
+            ...(life ? { life_phase: life } : {}),
+          }));
+          applied = true;
+        }
       }
-      if (field === 'analysis' && suggestion.editorial_brief) {
-        patch({ editorial_brief: suggestion.editorial_brief });
+      if (field === 'analysis') {
+        const value = String(suggestion.editorial_brief || '').trim();
+        if (value) {
+          patch({ editorial_brief: value });
+          applied = true;
+        }
       }
-      if (field === 'voice' && suggestion.voice_name) {
-        patch({ voice_name: suggestion.voice_name });
+      if (field === 'voice') {
+        const value = String(suggestion.voice_name || '').trim();
+        if (value) {
+          patch({ voice_name: value });
+          applied = true;
+        }
       }
-      toast.success('Suggestion ready — edit or save');
+
+      if (!applied) {
+        toast.error('Nothing was filled — try regenerate again');
+        return;
+      }
+      toast.success('Filled — edit in place, then save');
     } catch (err: unknown) {
       const message =
         err && typeof err === 'object' && 'data' in err
@@ -314,8 +431,8 @@ function ReviewDesk({
     'w-full rounded-md border border-[#E1D7CE] bg-white px-3 py-2 text-sm text-[#4A3B32] outline-none focus:ring-1 focus:ring-[#BF7758]/40';
 
   return (
-    <div className="flex h-full flex-col justify-between gap-4 overflow-hidden">
-      <div className="custom-scrollbar flex-1 space-y-4 overflow-y-auto pr-1">
+    <div className="flex min-h-[70vh] flex-col justify-between gap-4">
+      <div className="space-y-4 pr-1">
         {typeof story?.cover_image_url === 'string' && story.cover_image_url ? (
           <div className="relative h-32 w-full overflow-hidden rounded-xl border border-[#E6DFDA]">
             <Image src={story.cover_image_url || img} alt="Cover" fill className="object-cover" />
@@ -417,28 +534,38 @@ function ReviewDesk({
 
         <AiCard
           title="Moods"
-          hint="Existing catalog tags — regenerate then tick/edit"
+          hint="Regenerate fills chips — click a chip to remove, or type to add"
           regenerating={suggesting === 'moods'}
           onRegenerate={() => handleSuggest('moods')}
         >
-          <input
-            className={inputClass}
-            placeholder="Tags, comma separated"
-            value={draft.tags}
-            onChange={(e) => patch({ tags: e.target.value })}
-          />
-          <input
-            className={inputClass}
-            placeholder="Growth areas, comma separated"
-            value={draft.growth_areas}
-            onChange={(e) => patch({ growth_areas: e.target.value })}
-          />
-          <input
-            className={inputClass}
-            placeholder="Life phase"
-            value={draft.life_phase}
-            onChange={(e) => patch({ life_phase: e.target.value })}
-          />
+          <div className="space-y-3">
+            <div>
+              <span className="mb-1 block text-[10px] font-bold tracking-wider text-[#A08170] uppercase">
+                Tags
+              </span>
+              <ChipList
+                value={draft.tags}
+                onChange={(tags) => patch({ tags })}
+                placeholder="Add a tag and press Enter"
+              />
+            </div>
+            <div>
+              <span className="mb-1 block text-[10px] font-bold tracking-wider text-[#A08170] uppercase">
+                Growth areas
+              </span>
+              <ChipList
+                value={draft.growth_areas}
+                onChange={(growth_areas) => patch({ growth_areas })}
+                placeholder="Add a growth area and press Enter"
+              />
+            </div>
+            <input
+              className={inputClass}
+              placeholder="Life phase"
+              value={draft.life_phase}
+              onChange={(e) => patch({ life_phase: e.target.value })}
+            />
+          </div>
         </AiCard>
 
         <AiCard
@@ -607,6 +734,17 @@ function ReviewDesk({
         </label>
       </div>
 
+      {confirmAction === 'reject' ? (
+        <div className="rounded-xl border border-[#E5CDCD] bg-[#FFF8F8] p-4">
+          <RejectAction id={id} onSuccess={() => onClose?.()} />
+        </div>
+      ) : null}
+      {confirmAction === 'remove' ? (
+        <div className="rounded-xl border border-[#E5CDCD] bg-[#FFF8F8] p-4">
+          <DeleteAction id={id} onSuccess={() => onClose?.()} />
+        </div>
+      ) : null}
+
       <div className="flex flex-wrap items-center justify-end gap-2 border-t border-[#E6DFDA] pt-3">
         <Button
           type="button"
@@ -633,31 +771,27 @@ function ReviewDesk({
         >
           {isApproving ? 'Approving…' : 'Approve'}
         </button>
-        {onReject ? (
-          <button
-            type="button"
-            onClick={() => onReject()}
-            className="cursor-pointer rounded-md bg-[#C82323] px-4 py-2 text-sm font-medium text-white"
-          >
-            Reject
-          </button>
-        ) : null}
-        {onRemove ? (
-          <button
-            type="button"
-            onClick={() => onRemove()}
-            className="cursor-pointer rounded-md border border-[#E5CDCD] bg-[#FFF5F5] px-4 py-2 text-sm font-medium text-[#A80000]"
-          >
-            Remove
-          </button>
-        ) : null}
+        <button
+          type="button"
+          onClick={() => setConfirmAction((current) => (current === 'reject' ? null : 'reject'))}
+          className="cursor-pointer rounded-md bg-[#C82323] px-4 py-2 text-sm font-medium text-white"
+        >
+          {confirmAction === 'reject' ? 'Cancel reject' : 'Reject'}
+        </button>
+        <button
+          type="button"
+          onClick={() => setConfirmAction((current) => (current === 'remove' ? null : 'remove'))}
+          className="cursor-pointer rounded-md border border-[#E5CDCD] bg-[#FFF5F5] px-4 py-2 text-sm font-medium text-[#A80000]"
+        >
+          {confirmAction === 'remove' ? 'Cancel remove' : 'Remove'}
+        </button>
         {onClose ? (
           <button
             type="button"
             onClick={onClose}
             className="cursor-pointer rounded-md border border-[#D1C7BD] bg-white px-4 py-2 text-sm font-medium text-[#5C4D43]"
           >
-            Close
+            Back to queue
           </button>
         ) : null}
       </div>
