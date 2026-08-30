@@ -7,6 +7,7 @@ import {
   useGetMyStoryQuery,
   useUpdateMyStoryMutation,
 } from '@/redux/features/memberStory/memberStory.api';
+import { isHumanReady } from '@/utils/memberStory.utils';
 import { Loader2, X } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { UserDashboardItem } from '../UserDashboardCard/UserDashboardCard';
@@ -33,12 +34,22 @@ export default function EditConfessionModal({ isOpen, item, onClose }: EditConfe
   const [useCustomVoice, setUseCustomVoice] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const voices = useMemo(() => voicesCatalog?.voices ?? [], [voicesCatalog?.voices]);
+  const voices = useMemo(
+    () => (voicesCatalog?.voices ?? []).filter((voice) => !voice.is_custom).slice(0, 4),
+    [voicesCatalog?.voices],
+  );
+  const humanReady = isHumanReady(detail ?? item);
 
   useEffect(() => {
     if (!detail) return;
     setTitle(detail.title || '');
     setStoryInput(detail.story_input || detail.story_text || '');
+
+    if (isHumanReady(detail)) {
+      setSelectedVoice(null);
+      setUseCustomVoice(false);
+      return;
+    }
 
     if (detail.uses_custom_voice && voicesCatalog?.custom_voice) {
       setSelectedVoice(voicesCatalog.custom_voice);
@@ -60,21 +71,23 @@ export default function EditConfessionModal({ isOpen, item, onClose }: EditConfe
     e.preventDefault();
     setErrorMessage(null);
 
-    if (useCustomVoice && !voicesCatalog?.custom_voice) {
-      setErrorMessage('Clone your custom voice first, or choose a preset voice.');
+    if (!humanReady && useCustomVoice && !voicesCatalog?.custom_voice) {
+      setErrorMessage('Choose a studio voice.');
       return;
     }
 
     const body: Record<string, unknown> = {
       title,
       story_input: storyInput,
-      regenerate: true,
+      regenerate: !humanReady,
     };
 
-    if (useCustomVoice) {
-      body.use_custom_voice = true;
-    } else if (selectedVoice?.name) {
-      body.voice_name = selectedVoice.name;
+    if (!humanReady) {
+      if (useCustomVoice) {
+        body.use_custom_voice = true;
+      } else if (selectedVoice?.name) {
+        body.voice_name = selectedVoice.name;
+      }
     }
 
     try {
@@ -116,8 +129,9 @@ export default function EditConfessionModal({ isOpen, item, onClose }: EditConfe
         ) : (
           <form onSubmit={handleSubmit} className="mt-4 space-y-4">
             <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 font-sans text-xs text-amber-900">
-              Saving will regenerate your story and send it back for review. Your uploaded cover
-              image is preserved; AI covers may refresh.
+              {humanReady
+                ? 'Saving updates your submitted text and keeps your recording. It goes back for review.'
+                : 'Saving will regenerate your story and send it back for review. AI covers may refresh.'}
             </p>
 
             <div>
@@ -148,15 +162,21 @@ export default function EditConfessionModal({ isOpen, item, onClose }: EditConfe
               />
             </div>
 
-            <StoryVoicePicker
-              voices={voices}
-              selectedName={selectedName}
-              onSelect={(voice) => {
-                setSelectedVoice(voice);
-                setUseCustomVoice(voice.is_custom);
-              }}
-              isLoading={isLoadingVoices}
-            />
+            {humanReady ? (
+              <p className="rounded-lg border border-[#EBE4D5] bg-white px-3 py-2 font-sans text-xs text-gray-700">
+                Your uploaded narration stays as-is. Voice cloning is not available on this route.
+              </p>
+            ) : (
+              <StoryVoicePicker
+                voices={voices}
+                selectedName={selectedName}
+                onSelect={(voice) => {
+                  setSelectedVoice(voice);
+                  setUseCustomVoice(false);
+                }}
+                isLoading={isLoadingVoices}
+              />
+            )}
 
             {errorMessage ? (
               <p className="font-sans text-xs font-semibold text-red-600">{errorMessage}</p>
@@ -177,7 +197,7 @@ export default function EditConfessionModal({ isOpen, item, onClose }: EditConfe
                 className="font-playpen flex items-center gap-2 rounded-xl bg-[#D22D4C] px-6 py-2 text-xs font-bold text-white shadow-xs transition-colors hover:bg-[#b5243f] disabled:opacity-60"
               >
                 {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
-                Save &amp; regenerate
+                {humanReady ? 'Save' : 'Save & regenerate'}
               </button>
             </div>
           </form>

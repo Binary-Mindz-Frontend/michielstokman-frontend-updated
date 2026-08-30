@@ -8,18 +8,22 @@ import {
   canResubmitStory,
   canShareStory,
   canWithdrawStory,
+  createHrefForStoryType,
   formatAudioDuration,
   getGenerationStatusLabel,
   getModerationStatusLabel,
+  getRouteLabel,
   getSubmissionStatusLabel,
 } from '@/utils/memberStory.utils';
 import type {
   GenerationStatus,
   ModerationStatus,
+  SubmissionMode,
   SubmissionStatus,
   StoryType,
 } from '@/types/memberStory.types';
 import Image, { StaticImageData } from 'next/image';
+import Link from 'next/link';
 import React from 'react';
 
 export interface UserDashboardItem {
@@ -33,6 +37,7 @@ export interface UserDashboardItem {
   generation_status: GenerationStatus;
   moderation_status: ModerationStatus;
   submission_status: SubmissionStatus;
+  submission_mode?: SubmissionMode | null;
   has_social_intros: boolean;
   moderation_notes?: string | null;
   audio_duration_seconds?: number | null;
@@ -146,7 +151,10 @@ const UserDashboardCard: React.FC<UserDashboardCardProps> = ({
             <span
               className={`w-fit rounded-full px-2 py-0.5 font-sans text-[9px] font-bold tracking-wide uppercase ${SUBMISSION_COLORS[item.submission_status]}`}
             >
-              {getSubmissionStatusLabel(item.submission_status)}
+              {getSubmissionStatusLabel(item.submission_status, item.moderation_status)}
+            </span>
+            <span className="w-fit rounded-full bg-[#301C05]/80 px-2 py-0.5 font-sans text-[9px] font-bold tracking-wide text-white uppercase">
+              {getRouteLabel(item)}
             </span>
             {item.has_social_intros ? (
               <span className="w-fit rounded-full bg-[#D98755]/15 px-2 py-0.5 font-sans text-[9px] font-bold tracking-wide text-[#D98755] uppercase">
@@ -213,7 +221,15 @@ const UserDashboardCard: React.FC<UserDashboardCardProps> = ({
             <ActionButton label="Withdraw" onClick={() => onWithdraw(item)} />
           ) : null}
           {canResubmitStory(item) ? (
-            <ActionButton label="Resubmit" onClick={() => onResubmit(item)} />
+            <>
+              <ActionButton label="Resubmit" onClick={() => onResubmit(item)} />
+              <Link
+                href={createHrefForStoryType(item.story_type)}
+                className="font-playpen rounded-md px-2 py-1 text-[10px] font-bold tracking-wide text-[#301C05] uppercase hover:bg-[#EBE4D5]/60"
+              >
+                Submit new
+              </Link>
+            </>
           ) : null}
           <ActionButton label="Delete" onClick={() => onDelete(item)} variant="danger" />
         </div>

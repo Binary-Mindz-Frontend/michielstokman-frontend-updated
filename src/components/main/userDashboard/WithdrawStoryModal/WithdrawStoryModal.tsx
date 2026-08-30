@@ -1,6 +1,8 @@
 'use client';
 
+import { createHrefForStoryType } from '@/utils/memberStory.utils';
 import { AlertTriangle, X } from 'lucide-react';
+import Link from 'next/link';
 import React from 'react';
 import { UserDashboardItem } from '../UserDashboardCard/UserDashboardCard';
 
@@ -40,26 +42,35 @@ export default function WithdrawStoryModal({
 
         <p className="mt-2 font-sans text-xs leading-relaxed font-medium text-gray-600">
           &quot;{item.title}&quot; will be removed from the public feed but stays in your library.
-          You can resubmit it later.
+          You can resubmit this piece later, or submit a new one.
         </p>
 
-        <div className="mt-6 flex items-center justify-center gap-3">
-          <button
-            type="button"
+        <div className="mt-6 flex flex-col gap-3">
+          <div className="flex items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isLoading}
+              className="font-playpen w-full rounded-xl border border-[#EBE4D5] bg-white py-2.5 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-100 disabled:opacity-60"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={onConfirm}
+              disabled={isLoading}
+              className="font-playpen w-full rounded-xl bg-amber-600 py-2.5 text-xs font-bold text-white shadow-xs transition-colors hover:bg-amber-700 disabled:opacity-60"
+            >
+              {isLoading ? 'Withdrawing…' : 'Withdraw'}
+            </button>
+          </div>
+          <Link
+            href={createHrefForStoryType(item.story_type)}
             onClick={onClose}
-            disabled={isLoading}
-            className="font-playpen w-full rounded-xl border border-[#EBE4D5] bg-white py-2.5 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-100 disabled:opacity-60"
+            className="font-playpen text-xs font-bold tracking-wide text-[#D98755] uppercase hover:underline"
           >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            disabled={isLoading}
-            className="font-playpen w-full rounded-xl bg-amber-600 py-2.5 text-xs font-bold text-white shadow-xs transition-colors hover:bg-amber-700 disabled:opacity-60"
-          >
-            {isLoading ? 'Withdrawing…' : 'Withdraw'}
-          </button>
+            Submit a new piece instead
+          </Link>
         </div>
       </div>
     </div>
