@@ -434,8 +434,14 @@ function ReviewDesk({
     <div className="flex min-h-[70vh] flex-col justify-between gap-4">
       <div className="space-y-4 pr-1">
         {typeof story?.cover_image_url === 'string' && story.cover_image_url ? (
-          <div className="relative h-32 w-full overflow-hidden rounded-xl border border-[#E6DFDA]">
-            <Image src={story.cover_image_url || img} alt="Cover" fill className="object-cover" />
+          <div className="relative mx-auto aspect-[4/5] w-full max-w-[280px] overflow-hidden rounded-xl border border-[#E6DFDA] bg-[#FAF8F5]">
+            <Image
+              src={story.cover_image_url || img}
+              alt="Cover"
+              fill
+              className="object-contain"
+              sizes="280px"
+            />
           </div>
         ) : null}
 

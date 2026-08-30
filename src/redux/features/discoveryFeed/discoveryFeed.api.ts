@@ -1,22 +1,43 @@
 import { apiClient } from '@/redux/apiClient/apiClient';
+import type { CatalogSort } from '@/utils/storyMoods.utils';
+
+export type DiscoveryFeedQueryArg =
+  | string[]
+  | {
+      storyTypes?: string[];
+      sort?: CatalogSort;
+      hideExplicit?: boolean;
+      growthArea?: string | null;
+      tag?: string | null;
+      limit?: number;
+    };
+
+function buildFeedQuery(arg: DiscoveryFeedQueryArg) {
+  const params = new URLSearchParams();
+  const options = Array.isArray(arg) ? { storyTypes: arg } : arg;
+
+  (options.storyTypes || []).forEach((type) => params.append('story_type', type.toLowerCase()));
+  if (options.sort && options.sort !== 'newest') params.set('sort', options.sort);
+  if (options.hideExplicit) params.set('hide_explicit', 'true');
+  if (options.growthArea) params.set('growth_area', options.growthArea);
+  if (options.tag) params.set('tag', options.tag);
+  if (options.limit) params.set('limit', String(options.limit));
+
+  const query = params.toString();
+  return {
+    url: query ? `/dashboard/feed?${query}` : '/dashboard/feed',
+    method: 'GET' as const,
+  };
+}
 
 const discoveryFeedApi = apiClient.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
-    // Get Discovery Feed
     getDiscoveryFeed: builder.query({
-      query: (storyTypes: string[]) => {
-        const params = new URLSearchParams();
-        storyTypes.forEach((type) => params.append('story_type', type.toLowerCase()));
-
-        return {
-          url: `/dashboard/feed?${params.toString()}`,
-          method: 'GET',
-        };
-      },
+      query: (arg: DiscoveryFeedQueryArg) => buildFeedQuery(arg),
       providesTags: ['Discovery_Feed'],
     }),
 
-    // Get Story Details
     getStoryDetails: builder.query({
       query: (storyId) => ({
         url: `/stories/${storyId}`,
@@ -25,7 +46,6 @@ const discoveryFeedApi = apiClient.injectEndpoints({
       providesTags: (result, error, id) => [{ type: 'Discovery_Feed', id }],
     }),
 
-    // Get Liberation Details
     getLiberationDetails: builder.query({
       query: (journey_code) => ({
         url: `/liberation/catalog/${journey_code}`,
@@ -34,7 +54,6 @@ const discoveryFeedApi = apiClient.injectEndpoints({
       providesTags: (result, error, id) => [{ type: 'Discovery_Feed', id }],
     }),
 
-    // Submit Story Feedback
     submitStoryFeedback: builder.mutation({
       query: ({ storyId, body }) => ({
         url: `/stories/${storyId}/feedback`,

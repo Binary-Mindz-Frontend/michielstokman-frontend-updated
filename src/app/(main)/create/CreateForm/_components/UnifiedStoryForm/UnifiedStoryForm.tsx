@@ -24,20 +24,10 @@ import {
   buildStoryGeneratePayload,
   type CoverImageMode,
 } from '@/utils/storyGenerate.utils';
+import { STORY_GROWTH_AREAS, STORY_LIFE_PHASES } from '@/utils/storyMoods.utils';
 
-const GROWTH_AREAS = [
-  'Fear & Freedom',
-  'Self-Acceptance',
-  'Forgiveness',
-  'Letting Go',
-  'Presence',
-  'Self-Compassion',
-  'Rebuilding',
-  'Patience',
-  'Love & Connection',
-  'Purpose & Meaning',
-];
-const LIFE_PHASES = ['Discovering', 'Building', 'Recalibrating', 'Deepening', 'Passing On'];
+const GROWTH_AREAS = STORY_GROWTH_AREAS;
+const LIFE_PHASES = STORY_LIFE_PHASES;
 
 const schema = z.object({
   title: z.string().min(1, 'Title is required'),

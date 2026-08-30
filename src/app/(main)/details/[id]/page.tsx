@@ -10,7 +10,7 @@ import {
 import { motion } from 'framer-motion';
 
 import Image from 'next/image';
-
+import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 
 import { Fragment, useEffect, useMemo, useState } from 'react';
@@ -553,17 +553,46 @@ export default function StoryDetailPage() {
             </div>
           </div>
 
-          {/* Tags Row */}
-          {feedData?.top_tags && feedData?.top_tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 pt-2">
-              {feedData?.top_tags.map((tag: string) => (
-                <span
-                  key={tag}
-                  className="text-secondary rounded-xs border border-[#EBE4D5] bg-[#FAF7F2] px-3 py-1 text-xs"
-                >
-                  {tag}
-                </span>
-              ))}
+          {/* Moods (editorial tags) and listener resonance */}
+          {((feedData?.tags && feedData.tags.length > 0) ||
+            (feedData?.top_tags && feedData.top_tags.length > 0)) && (
+            <div className="space-y-3 pt-2">
+              {feedData?.tags && feedData.tags.length > 0 ? (
+                <div>
+                  <p className="mb-2 font-sans text-[10px] font-bold tracking-wider text-[#A08170] uppercase">
+                    Moods
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {feedData.tags.map((tag: string) => (
+                      <Link
+                        key={tag}
+                        href={`${isMeditation ? '/meditations' : '/confessions'}?tag=${encodeURIComponent(tag)}`}
+                        className="text-secondary rounded-xs border border-[#EBE4D5] bg-[#FAF7F2] px-3 py-1 text-xs hover:border-current"
+                        style={{ color: themeColor }}
+                      >
+                        {tag}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+              {feedData?.top_tags && feedData.top_tags.length > 0 ? (
+                <div>
+                  <p className="mb-2 font-sans text-[10px] font-bold tracking-wider text-[#A08170] uppercase">
+                    What listeners felt
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {feedData.top_tags.map((tag: string) => (
+                      <span
+                        key={tag}
+                        className="text-secondary rounded-xs border border-[#EBE4D5] bg-[#FAF7F2] px-3 py-1 text-xs"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </div>
           )}
 

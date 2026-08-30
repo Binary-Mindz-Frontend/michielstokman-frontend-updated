@@ -19,6 +19,8 @@ export type IStoryItemType = {
   age?: number | null;
   audio_duration_seconds?: number | null;
   is_explicit: boolean;
+  tags?: string[];
+  growth_areas?: string[];
 };
 
 export type ILiberationJourneyItemType = {
