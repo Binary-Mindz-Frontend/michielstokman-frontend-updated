@@ -22,9 +22,17 @@ import { StepperSkeleton } from './RegistrationStepperSkeletons';
 
 import {
   STORAGE_KEY,
+  STEP_ONE_FIELDS,
   stepperSchema,
   StepperFormData,
   stepVariants,
+  formatHeight,
+  hydrateGender,
+  hydrateOrientation,
+  parseHeight,
+  serializeGender,
+  serializeOrientation,
+  SOMETHING_ELSE,
 } from './RegistrationStepper.types';
 import StepOne from './StepOne';
 import StepTwo from './StepTwo';
@@ -69,8 +77,13 @@ function RegistrationStepperContent() {
       age: '',
       country: '',
       city: '',
+      heightValue: '',
+      heightUnit: 'cm',
+      education: '',
       gender: '',
-      isSexualOrientationEnabled: false,
+      genderCustom: '',
+      sexualOrientation: '',
+      sexualOrientationCustom: '',
       lifePhase: 'Discovering',
       growthFocus: {
         'Desire & Relationship': 5,
@@ -86,7 +99,7 @@ function RegistrationStepperContent() {
   });
 
   const handleStepOneNext = async () => {
-    const isStepOneValid = await trigger(['name', 'age', 'country', 'city', 'gender']);
+    const isStepOneValid = await trigger(STEP_ONE_FIELDS);
     if (isStepOneValid) {
       setStep(2);
     }
@@ -114,23 +127,22 @@ function RegistrationStepperContent() {
       const profileString = JSON.stringify(p);
       if (lastProfileRef.current !== profileString) {
         lastProfileRef.current = profileString;
-        const genderVal = p.gender || '';
-        const matchedGender =
-          ['Male', 'Female', 'Non-binary', 'Prefer not to say'].find(
-            (g) => g.toLowerCase() === genderVal.toLowerCase(),
-          ) || genderVal;
+        const height = parseHeight(p.height);
+        const gender = hydrateGender(p.gender);
+        const orientation = hydrateOrientation(p.sexual_orientation);
 
         reset({
           name: p.true_name || p.name || '',
-          age: p.age !== undefined && p.age !== null ? String(p.age) : '',
+          age: p.age !== undefined && p.age !== null && Number(p.age) > 0 ? String(p.age) : '',
           country: p.country || '',
           city: p.city || '',
-          height: p.height || '',
+          heightValue: height.heightValue,
+          heightUnit: height.heightUnit,
           education: p.education || '',
-          income: p.annual_income || p.income || '',
-          gender: matchedGender,
-          isSexualOrientationEnabled: Boolean(p.sexual_orientation),
-          sexualOrientation: p.sexual_orientation || '',
+          gender: gender.gender,
+          genderCustom: gender.genderCustom,
+          sexualOrientation: orientation.sexualOrientation,
+          sexualOrientationCustom: orientation.sexualOrientationCustom,
           lifePhase: p.life_phase || 'Discovering',
           growthFocus: {
             'Desire & Relationship': p.slider_desire_relationship ?? 5,
@@ -152,7 +164,49 @@ function RegistrationStepperContent() {
       if (savedData) {
         try {
           const parsedData = JSON.parse(savedData);
-          reset(parsedData);
+          const height = parseHeight(
+            parsedData.heightValue
+              ? formatHeight(parsedData.heightValue, parsedData.heightUnit || 'cm')
+              : parsedData.height,
+          );
+          const gender =
+            parsedData.gender === SOMETHING_ELSE
+              ? {
+                  gender: SOMETHING_ELSE,
+                  genderCustom: parsedData.genderCustom || '',
+                }
+              : hydrateGender(parsedData.gender);
+          const orientation =
+            parsedData.sexualOrientation === SOMETHING_ELSE
+              ? {
+                  sexualOrientation: SOMETHING_ELSE,
+                  sexualOrientationCustom: parsedData.sexualOrientationCustom || '',
+                }
+              : hydrateOrientation(parsedData.sexualOrientation || parsedData.sexual_orientation);
+          reset({
+            name: parsedData.name || '',
+            age: parsedData.age || '',
+            country: parsedData.country || '',
+            city: parsedData.city || '',
+            heightValue: height.heightValue,
+            heightUnit: height.heightUnit,
+            education: parsedData.education || '',
+            gender: gender.gender,
+            genderCustom: gender.genderCustom,
+            sexualOrientation: orientation.sexualOrientation,
+            sexualOrientationCustom: orientation.sexualOrientationCustom,
+            lifePhase: parsedData.lifePhase || 'Discovering',
+            growthFocus: parsedData.growthFocus || {
+              'Desire & Relationship': 5,
+              'Life & Purpose': 5,
+              'Career & Money': 5,
+              'Show Your True Self': 5,
+              'Sexuality & Life Energy': 5,
+              'Fear & Freedom': 5,
+              'Health & Body': 5,
+              Enlightenment: 5,
+            },
+          });
         } catch (e) {
           console.error('Error parsing localStorage data', e);
         }
@@ -171,7 +225,6 @@ function RegistrationStepperContent() {
     }
   }, [allFormValues, isSubmitting, isSubmitSuccessful]);
 
-  const isOrientationEnabled = watch('isSexualOrientationEnabled');
   const selectedLifePhase = watch('lifePhase');
   const growthValues = watch('growthFocus');
 
@@ -181,11 +234,10 @@ function RegistrationStepperContent() {
       age: Number(data?.age) || 0,
       country: data?.country,
       city: data?.city,
-      height: data?.height,
+      height: formatHeight(data?.heightValue, data?.heightUnit),
       education: data?.education,
-      annual_income: data?.income,
-      gender: data?.gender,
-      sexual_orientation: data?.isSexualOrientationEnabled ? data?.sexualOrientation : '',
+      gender: serializeGender(data),
+      sexual_orientation: serializeOrientation(data),
       life_phase: data?.lifePhase,
       slider_desire_relationship: data?.growthFocus['Desire & Relationship'] ?? 0,
       slider_life_purpose: data?.growthFocus['Life & Purpose'] ?? 0,
@@ -259,10 +311,11 @@ function RegistrationStepperContent() {
             >
               <StepOne
                 register={register}
-                isOrientationEnabled={isOrientationEnabled}
                 setValue={setValue}
                 errors={errors}
                 genderValue={allFormValues.gender || ''}
+                orientationValue={allFormValues.sexualOrientation || ''}
+                heightUnit={allFormValues.heightUnit || 'cm'}
                 onNext={handleStepOneNext}
               />
             </motion.div>

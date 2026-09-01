@@ -11,8 +11,7 @@ import {
 
 interface ChartDataItem {
   subject: string;
-  A: number;
-  B: number;
+  value: number;
 }
 
 interface ProfileRadarChartProps {
@@ -20,13 +19,9 @@ interface ProfileRadarChartProps {
 }
 
 const chartConfig = {
-  A: {
-    label: 'Current Level',
+  value: {
+    label: 'Focus',
     color: '#E81A66',
-  },
-  B: {
-    label: 'Baseline Level',
-    color: '#3B07BA',
   },
 } satisfies ChartConfig;
 
@@ -100,22 +95,9 @@ export default function ProfileRadarChart({ data }: ProfileRadarChartProps) {
             <PolarGrid gridType="circle" stroke="#D8CDBF" strokeWidth={1} />
             <PolarAngleAxis dataKey="subject" tick={renderCustomPolarAngleAxis} />
 
-            {/* Baseline Level (Purple Dotted Line) */}
             <Radar
-              name="Baseline"
-              dataKey="B"
-              stroke="#3B07BA"
-              strokeDasharray="4 4"
-              strokeWidth={1.5}
-              fill="#3B07BA"
-              fillOpacity={0.12}
-              dot={{ r: 3.5, fill: '#3B07BA', stroke: '#3B07BA' }}
-            />
-
-            {/* Current Level (Pink Solid Line) */}
-            <Radar
-              name="Current"
-              dataKey="A"
+              name="Focus"
+              dataKey="value"
               stroke="#E81A66"
               strokeWidth={2}
               fill="#E81A66"
