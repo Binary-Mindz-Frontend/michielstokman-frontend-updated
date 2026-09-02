@@ -20,6 +20,12 @@ import ProfileHero from './_components/ProfileHero';
 import ProfileDemographics from './_components/ProfileDemographics';
 import ProfileRadarChart from './_components/ProfileRadarChart';
 import ProfileActions from './_components/ProfileActions';
+import {
+  displayLabeledChoice,
+  GROWTH_SLIDER_FIELDS,
+  hydrateGender,
+  hydrateOrientation,
+} from '@/app/(auth)/register/stepper/_components/RegistrationStepper/RegistrationStepper.types';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -81,7 +87,7 @@ export default function ProfilePage() {
               dispatch(authLogout());
               dispatch(apiClient.util.resetApiState());
               await logoutUser();
-              window.location.href = '/login';
+              router.push('/login');
             }}
           >
             {isLoggingOut ? 'Log In Now' : 'Log In Now'}
@@ -126,30 +132,31 @@ export default function ProfilePage() {
     );
   }
 
+  const gender = hydrateGender(profileData?.gender);
+  const orientation = hydrateOrientation(profileData?.sexual_orientation);
+
   const personalDetails = [
     { label: 'AGE', value: profileData?.age ? profileData.age.toString() : 'N A' },
-    { label: 'COUNTRY', value: profileData?.country || 'N A' },
-    { label: 'CITY', value: profileData?.city || 'N A' },
+    { label: 'HOME', value: profileData?.country || 'N A' },
+    { label: 'WHERE YOU ARE NOW', value: profileData?.city || 'N A' },
     { label: 'HEIGHT', value: profileData?.height || 'N A' },
-    { label: 'GENDER', value: profileData?.gender || 'N A' },
-    { label: 'SEXUAL ORIENTATION', value: profileData?.sexual_orientation || 'N A' },
-    { label: 'EDUCATION', value: profileData?.education || 'N A' },
-    { label: 'ANNUAL INCOME', value: profileData?.annual_income || 'N A' },
+    {
+      label: 'HOW YOU IDENTIFY',
+      value: displayLabeledChoice(gender.gender, gender.genderCustom) || 'N A',
+    },
+    {
+      label: 'ATTRACTED TO',
+      value:
+        displayLabeledChoice(orientation.sexualOrientation, orientation.sexualOrientationCustom) ||
+        'N A',
+    },
+    { label: 'WHAT YOU DO', value: profileData?.education || 'N A' },
   ];
 
-  const chartData = [
-    { subject: 'Letting go', A: profileData?.slider_career_money || 8, B: 11 },
-    { subject: 'Forgiveness', A: profileData?.slider_true_self || 9, B: 13 },
-    { subject: 'Fear & Freedom', A: profileData?.slider_fear_freedom || 12, B: 10 },
-    { subject: 'Self acceptance', A: profileData?.slider_health_body || 11, B: 9 },
-    { subject: 'Inner peace', A: profileData?.slider_enlightenment || 14, B: 8.5 },
-    {
-      subject: 'Sexual & Relations Vitality',
-      A: profileData?.slider_desire_relationship || 10,
-      B: 12,
-    },
-    { subject: 'Presence', A: profileData?.slider_life_purpose || 8.5, B: 10 },
-  ];
+  const chartData = GROWTH_SLIDER_FIELDS.map(({ label, field }) => ({
+    subject: label,
+    value: Number(profileData?.[field] ?? 5),
+  }));
 
   return (
     <main className="bg-bg-primary min-h-screen py-10 font-sans">
