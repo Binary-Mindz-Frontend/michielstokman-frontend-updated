@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Slider } from '@/components/ui/slider';
 import { UseFormSetValue } from 'react-hook-form';
-import { StepperFormData } from './RegistrationStepper.types';
+import { GROWTH_KEYS, StepperFormData } from './RegistrationStepper.types';
 
 import step3Hero from '@/assets/account-step/step3-hero-image.png';
 import step3HeroMobile from '@/assets/account-step/step3-hero-image-mobile.png';
@@ -20,17 +20,6 @@ interface StepThreeProps {
   onSubmit: () => void;
   isLoading: boolean;
 }
-
-const GROWTH_KEYS = [
-  'Desire & Relationship',
-  'Life & Purpose',
-  'Sexuality & Life Energy',
-  'Show Your True Self',
-  'Fear & Freedom',
-  'Career & Money',
-  'Health & Body',
-  'Enlightenment',
-];
 
 function SingleSliderItem({
   labelKey,
