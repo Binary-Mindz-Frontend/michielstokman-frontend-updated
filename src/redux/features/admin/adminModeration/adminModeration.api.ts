@@ -62,6 +62,7 @@ const adminModerationApi = apiClient.injectEndpoints({
       invalidatesTags: (_result, _error, { storyId }) => [
         { type: 'Story', id: storyId },
         'ModerationQueue',
+        'Publications',
         'MemberStories',
       ],
     }),

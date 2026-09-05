@@ -117,5 +117,6 @@ export const apiClient = createApi({
     'Voices',
     'MemberStories',
     'CustomVoice',
+    'Publications',
   ],
 });

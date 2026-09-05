@@ -1,16 +1,5 @@
-import DynamicPageHeader from '@/components/dashboard/DynamicPageHeader/DynamicPageHeader';
-import { Suspense } from 'react';
-import VoiceReviewTable from './_components/VoiceReviewTable/VoiceReviewTable';
+import { redirect } from 'next/navigation';
 
-function DashboardVoiceReviewPage() {
-  return (
-    <section>
-      <DynamicPageHeader title="Voice Review — AI Generated Audio" />
-      <Suspense>
-        <VoiceReviewTable />
-      </Suspense>
-    </section>
-  );
+export default function VoiceReviewRedirect() {
+  redirect('/dashboard/publications');
 }
-
-export default DashboardVoiceReviewPage;

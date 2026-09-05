@@ -7,7 +7,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { FileSearch, FileText, Images, LayoutGrid, MessageSquare, Mic2, Route } from 'lucide-react';
+import { FileSearch, FileText, LayoutGrid, MessageSquare, Route } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -19,10 +19,8 @@ function SidebarContentSection() {
     {
       items: [
         { title: 'Dashboard', url: '/dashboard/overview', icon: LayoutGrid },
-        { title: 'Moderation Queue', url: '/dashboard/moderation-queue', icon: FileSearch },
+        { title: 'Publications', url: '/dashboard/publications', icon: FileSearch },
         { title: 'Metrics Chat', url: '/dashboard/metrics-chat', icon: MessageSquare },
-        { title: 'Voice Review', url: '/dashboard/voice-review', icon: Mic2 },
-        { title: 'Photo Management', url: '/dashboard/photo-management', icon: Images },
         { title: 'Liberations', url: '/dashboard/journey-management', icon: Route },
         { title: 'Order History', url: '/dashboard/order-history', icon: FileText },
       ],
@@ -36,7 +34,9 @@ function SidebarContentSection() {
       <SidebarMenu className="gap-2">
         {currentSections.map((section: any) =>
           section.items.map((item: any) => {
-            const isActive = pathname === item?.url;
+            const isActive =
+              pathname === item?.url ||
+              (item?.url !== '/dashboard/overview' && pathname.startsWith(`${item?.url}/`));
             const Icon = item?.icon;
 
             return (

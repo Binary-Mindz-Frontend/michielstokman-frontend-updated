@@ -1,17 +1,5 @@
-import DynamicPageHeader from '@/components/dashboard/DynamicPageHeader/DynamicPageHeader';
-import { Suspense } from 'react';
-import ModerationTable from './_components/ModerationTable/ModerationTable';
+import { redirect } from 'next/navigation';
 
-function DashboardModerationQueuePage() {
-  // test
-  return (
-    <section>
-      <DynamicPageHeader title="Moderation Queue" />
-      <Suspense>
-        <ModerationTable />
-      </Suspense>
-    </section>
-  );
+export default function ModerationQueueRedirect() {
+  redirect('/dashboard/publications');
 }
-
-export default DashboardModerationQueuePage;

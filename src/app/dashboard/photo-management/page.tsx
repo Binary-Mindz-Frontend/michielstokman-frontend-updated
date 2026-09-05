@@ -1,13 +1,5 @@
-import DynamicPageHeader from '@/components/dashboard/DynamicPageHeader/DynamicPageHeader';
-import PhotoManagementTable from './_components/PhotoManagementTable/PhotoManagementTable';
+import { redirect } from 'next/navigation';
 
-function DashboardPhotoManagement() {
-  return (
-    <section>
-      <DynamicPageHeader title="Photo Management" />
-      <PhotoManagementTable />
-    </section>
-  );
+export default function PhotoManagementRedirect() {
+  redirect('/dashboard/publications');
 }
-
-export default DashboardPhotoManagement;
