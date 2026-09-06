@@ -6,26 +6,31 @@ export async function proxy(req: NextRequest) {
   const token = req.cookies.get('accessToken')?.value;
   const userInfo = await getCurrentUser();
   const isAdmin = userInfo?.is_admin;
+  const isGuest = userInfo?.is_guest;
 
   const { pathname } = req.nextUrl;
+  const isLiberationFlow = pathname.includes('/liberation');
+  const requiresRegisteredUser =
+    pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/user-dashboard') ||
+    pathname.startsWith('/profile') ||
+    pathname.startsWith('/create') ||
+    isLiberationFlow;
 
-  /* ===========================================================================
-    IF LOGGED IN & TRYING TO ACCESS LOGIN/REGISTER REDIRECT TO HOME
-    =========================================================================== */
-  if (token && (pathname.startsWith('/login') || pathname.startsWith('/register'))) {
+  if (token && !isGuest && (pathname.startsWith('/login') || pathname.startsWith('/register'))) {
     return NextResponse.redirect(new URL('/', req.url));
   }
 
-  /* ============================
-     NOT LOGGED IN & TRYING TO ACCESS DASHBOARD REDIRECT TO HOME
-     ============================ */
-  if (!token && (pathname.startsWith('/dashboard') || pathname.startsWith('/user-dashboard'))) {
-    return NextResponse.redirect(new URL('/', req.url));
+  if (!token && requiresRegisteredUser) {
+    const loginUrl = new URL('/login', req.url);
+    loginUrl.searchParams.set('redirect', pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
-  /* ============================
-     REDIRECT REGULAR USER AWAY FROM ADMIN DASHBOARD TO USER DASHBOARD
-     ============================ */
+  if (token && isGuest && requiresRegisteredUser && !pathname.startsWith('/dashboard')) {
+    return NextResponse.redirect(new URL('/register', req.url));
+  }
+
   if (token && pathname.startsWith('/dashboard') && !isAdmin) {
     return NextResponse.redirect(new URL('/user-dashboard', req.url));
   }
@@ -34,5 +39,15 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/user-dashboard/:path*', '/login', '/register'],
+  matcher: [
+    '/dashboard/:path*',
+    '/user-dashboard/:path*',
+    '/login',
+    '/register',
+    '/profile',
+    '/profile/:path*',
+    '/create',
+    '/create/:path*',
+    '/journeys/:path*',
+  ],
 };

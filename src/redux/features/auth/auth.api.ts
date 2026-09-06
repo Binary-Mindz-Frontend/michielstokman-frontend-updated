@@ -67,6 +67,12 @@ const authManagementApi = apiClient.injectEndpoints({
       },
       providesTags: ['PROFILE'],
     }),
+    signOut: builder.mutation<unknown, void>({
+      query: () => ({
+        url: '/signout',
+        method: 'POST',
+      }),
+    }),
   }),
 });
 
@@ -77,4 +83,5 @@ export const {
   useGetUserProfileQuery,
   useSocialLoginMutation,
   useGuestLoginMutation,
+  useSignOutMutation,
 } = authManagementApi;

@@ -1,35 +1,24 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use server';
 
 import { jwtDecode } from 'jwt-decode';
 import { cookies } from 'next/headers';
 
+import { sessionCookieOptions } from '@/services/auth/cookieOptions';
+
 export const getNewToken = async () => {
   const cookieStore = await cookies();
-  const refreshToken = cookieStore.get('refreshToken')?.value;
-  const user = cookieStore.get('user')?.value as any;
-
+  const accessToken = cookieStore.get('accessToken')?.value;
   const baseApi = process.env.NEXT_PUBLIC_BASE_API;
 
-  if (!refreshToken) return null;
-  let data;
-  if (user) {
-    data = {
-      userId: user.id as string,
-      refreshToken,
-    };
-    console.log('User Inside New token======>', user);
-  }
+  if (!accessToken || !baseApi) return null;
 
   try {
     const res = await fetch(`${baseApi}/auth/refresh`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+      headers: { Authorization: `Bearer ${accessToken}` },
     });
     if (!res.ok) return null;
-    const result = await res.json();
-    return result;
+    return await res.json();
   } catch (error) {
     console.error('Refresh Token Error:', error);
     return null;
@@ -51,21 +40,14 @@ export const getValidToken = async (): Promise<string | null> => {
   let token = cookieStore.get('accessToken')?.value;
 
   if (!token || (await isTokenExpired(token))) {
-    console.log('Token expired or missing, refreshing...');
     const res = await getNewToken();
-
-    console.log('Res Inside GeT NEW TOKEN======>', res);
-
-    if (res?.data?.accessToken) {
-      token = res.data.accessToken;
-      cookieStore.set('accessToken', token as string);
-      if (res.data.refreshToken) {
-        cookieStore.set('refreshToken', res.data.refreshToken as string);
-      }
-      return token!;
-    } else {
-      return null;
+    const nextToken = res?.data?.access_token as string | undefined;
+    if (nextToken) {
+      token = nextToken;
+      cookieStore.set('accessToken', token, sessionCookieOptions());
+      return token;
     }
+    return null;
   }
 
   return token;

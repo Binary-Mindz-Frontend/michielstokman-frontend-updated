@@ -4,8 +4,8 @@ import { TLoginUser } from '@/types/userRole.types';
 import { cookies } from 'next/headers';
 import { FieldValues } from 'react-hook-form';
 import { baseApi } from '../root/baseApi';
+import { sessionCookieOptions } from './cookieOptions';
 
-//Forget Password
 export const forgetPassword = async (data: FieldValues) => {
   const result = await baseApi('/auth/forgot-password', {
     method: 'POST',
@@ -21,7 +21,6 @@ export const resetPassword = async (data: FieldValues) => {
   return result;
 };
 
-//Update Temporary Password
 export const updateTemporaryPassword = async (data: FieldValues) => {
   const result = await baseApi('/auth/update-password', {
     method: 'POST',
@@ -30,22 +29,6 @@ export const updateTemporaryPassword = async (data: FieldValues) => {
   return result;
 };
 
-//Gwt Access Token using Refresh Token
-export const refreshToken = async () => {
-  const cookieStore = await cookies();
-  const refreshToken = cookieStore.get('refreshToken')?.value;
-  const result = await baseApi('/auth/refresh', {
-    method: 'POST',
-    data: { refreshToken },
-  });
-  if (result?.success) {
-    cookieStore.set('accessToken', result?.data?.accessToken);
-  }
-  console.log('verify refresh', result);
-  return result;
-};
-
-//Get Current User
 export const getCurrentUser = async () => {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get('accessToken')?.value;
@@ -64,7 +47,6 @@ export const getCurrentUser = async () => {
   return null;
 };
 
-//Logout user
 export const logoutUser = async () => {
   const cookiesStore = await cookies();
   cookiesStore.delete('accessToken');
@@ -74,21 +56,14 @@ export const logoutUser = async () => {
 
 export const setAccessToken = async (accessToken: string) => {
   const cookieStore = await cookies();
-  cookieStore.set('accessToken', accessToken);
+  cookieStore.set('accessToken', accessToken, sessionCookieOptions());
 };
 export const setUserProfile = async (user: TLoginUser, token: string) => {
-  // const cookieStore = await cookies();
-  // cookieStore.set('accessToken', token);
-  // cookieStore.set('user', JSON.stringify(user));
-  // cookieStore.set("refreshToken", tokens?.refreshToken);
-
   const cookieStore = await cookies();
-  const EIGHT_DAYS_IN_SECONDS = 15 * 24 * 60 * 60;
-
-  cookieStore.set('accessToken', token, { maxAge: EIGHT_DAYS_IN_SECONDS });
-  cookieStore.set('user', JSON.stringify(user), { maxAge: EIGHT_DAYS_IN_SECONDS });
+  cookieStore.set('accessToken', token, sessionCookieOptions());
+  cookieStore.set('user', JSON.stringify(user), sessionCookieOptions());
 };
 export const updateUserProfile = async (user: TLoginUser) => {
   const cookieStore = await cookies();
-  cookieStore.set('user', JSON.stringify(user));
+  cookieStore.set('user', JSON.stringify(user), sessionCookieOptions());
 };
