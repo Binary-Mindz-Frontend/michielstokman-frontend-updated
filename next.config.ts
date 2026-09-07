@@ -14,6 +14,32 @@ const nextConfig: NextConfig = {
     ],
     dangerouslyAllowSVG: true,
   },
+  // The moderation queue, voice review and photo management pages were merged into
+  // the central publications dashboard. Kept as redirects so existing links survive.
+  async redirects() {
+    return [
+      {
+        source: '/dashboard/moderation-queue',
+        destination: '/dashboard/publications',
+        permanent: false,
+      },
+      {
+        source: '/dashboard/moderation-queue/:id',
+        destination: '/dashboard/publications/:id',
+        permanent: false,
+      },
+      {
+        source: '/dashboard/voice-review',
+        destination: '/dashboard/publications',
+        permanent: false,
+      },
+      {
+        source: '/dashboard/photo-management',
+        destination: '/dashboard/publications/cover-library',
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
