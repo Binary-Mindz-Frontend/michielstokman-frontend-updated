@@ -527,7 +527,7 @@ export default function StoryDetailPage() {
             {/* Left: Author & Listened Info */}
             <p className="text-secondary font-sans text-sm font-medium">
               {feedData?.author_name || 'Hero'} • Listened to {feedData?.listened_count || 0} times
-              • Explicit
+              {feedData?.is_explicit || feedData?.high_intensity ? ' • Explicit' : ''}
             </p>
 
             {/* Right: Resonance & Rating Badge */}

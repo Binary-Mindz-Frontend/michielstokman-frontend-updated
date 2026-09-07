@@ -28,6 +28,7 @@ const PublicationCard = ({ row }: { row: PublicationRow }) => (
         </p>
         <p className="text-xs text-[#8A6E5F]">
           {row.typeLabel} · {row.submittedLabel}
+          {row.explicit ? ' · Explicit' : ''}
         </p>
       </div>
     </div>

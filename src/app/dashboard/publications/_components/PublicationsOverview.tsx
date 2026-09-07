@@ -157,6 +157,7 @@ const PublicationsOverview = () => {
         Title: row.title,
         Author: row.author,
         Type: row.typeLabel,
+        Explicit: row.explicit ? 'Yes' : 'No',
         Submitted: row.submittedLabel,
         Updated: row.updatedLabel || '',
         Text: STATUS_META[row.text].label,
@@ -351,6 +352,11 @@ const PublicationsOverview = () => {
                         <p className="text-secondary line-clamp-2 leading-snug font-semibold">
                           {row.title}
                         </p>
+                        {row.explicit ? (
+                          <span className="mt-1 inline-block text-[10px] font-bold tracking-wider text-[#A35A3A] uppercase">
+                            Explicit
+                          </span>
+                        ) : null}
                       </div>
                     </td>
                     <td className="max-w-[180px] px-4 py-3 text-sm">

@@ -21,6 +21,29 @@ const nullableInt = (value: unknown): number | null => {
   return Number.isFinite(parsed) ? parsed : null;
 };
 
+/**
+ * Legacy rows only have `location`. Admin edits city/country, so when those are
+ * empty we recover them from the last comma in `location` — same rule as the
+ * backend migration / create_story path.
+ */
+export const splitLocation = (location: unknown): { city: string; country: string } => {
+  const text = str(location);
+  if (!text) return { city: '', country: '' };
+  const comma = text.lastIndexOf(',');
+  if (comma < 0) return { city: text, country: '' };
+  return {
+    city: text.slice(0, comma).trim(),
+    country: text.slice(comma + 1).trim(),
+  };
+};
+
+const resolvePlace = (raw: Raw): { city: string; country: string } => {
+  const city = str(raw.city);
+  const country = str(raw.country);
+  if (city || country) return { city, country };
+  return splitLocation(raw.location);
+};
+
 /** Tags and growth areas arrive as arrays, JSON strings or comma strings. */
 export const asStringList = (value: unknown): string[] => {
   if (Array.isArray(value)) {
@@ -180,8 +203,7 @@ export const mapPublicationDetail = (raw: Raw | undefined): PublicationDetail | 
     gender: str(raw.gender),
     sexualOrientation: str(raw.sexual_orientation),
     occupation: str(raw.occupation),
-    city: str(raw.city),
-    country: str(raw.country),
+    ...resolvePlace(raw),
     explicit: Boolean(raw.high_intensity),
     tags: asStringList(raw.tags),
     growthAreas: asStringList(raw.growth_areas),
