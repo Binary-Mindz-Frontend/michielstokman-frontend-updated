@@ -8,7 +8,7 @@ export default function PublicationsPage() {
     <section>
       <DynamicPageHeader
         title="Publications"
-        description="One record per Confession and Meditation — text, story card and voice in one place."
+        description="One record per Confession and Meditation text, story card and voice in one place."
       />
       <Suspense fallback={<TableSkeleton SKELETON_COLS={9} />}>
         <PublicationsOverview />
