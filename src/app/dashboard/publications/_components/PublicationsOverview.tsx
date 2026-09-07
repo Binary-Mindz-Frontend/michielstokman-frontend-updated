@@ -90,7 +90,7 @@ const PublicationsOverview = () => {
     return () => clearTimeout(timer);
   }, [searchDraft, urlSearch, updateParams]);
 
-  const { rows, pageSize, counts, meta, isLoading, isFetching, isError } = usePublicationRows({
+  const { rows, counts, meta, isLoading, isFetching, isError } = usePublicationRows({
     search: urlSearch,
     moderationStatus: moderationTab === 'all' ? undefined : moderationTab,
     page,
@@ -175,8 +175,6 @@ const PublicationsOverview = () => {
     { label: 'Approved', value: 'approved', count: counts.approved },
     { label: 'Rejected', value: 'rejected', count: counts.rejected },
   ];
-
-  const hiddenByFilters = pageSize - rows.length;
 
   return (
     <div className="w-full space-y-6 rounded-md border border-[#F1E9E4] bg-[#F8F7F3] p-4 sm:p-6">
@@ -295,13 +293,6 @@ const PublicationsOverview = () => {
         </div>
       </div>
 
-      {hiddenByFilters > 0 ? (
-        <p className="text-xs text-[#8A6E5F]">
-          Showing {rows.length} of {pageSize} on this page. Type, status and missing filters run in
-          the browser, so they only see the current page.
-        </p>
-      ) : null}
-
       {isError ? (
         <TableEmptyState message="Could not load publications. Refresh to try again." />
       ) : isLoading || isFetching ? (
@@ -388,7 +379,7 @@ const PublicationsOverview = () => {
                     <td className="px-4 py-3">
                       <StatusChip
                         status={row.voice}
-                        note={row.hasNoVoice ? 'by design' : undefined}
+                        note={row.voiceNotRequired ? 'by design' : undefined}
                       />
                     </td>
                     <td className="px-4 py-3">

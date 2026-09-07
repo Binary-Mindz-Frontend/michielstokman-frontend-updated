@@ -1,17 +1,9 @@
 'use client';
 
 import DynamicBadge from '@/components/dashboard/DynamicBadge/DynamicBadge';
-import {
-  indexVoiceItems,
-  mapPublicationDetail,
-  type PublicationVoiceMeta,
-} from '@/lib/publications/adapter';
-import { derivePublicationStatuses } from '@/lib/publications/status';
+import { mapPublicationDetail } from '@/lib/publications/adapter';
 import { useGetModerationStoryDetailsQuery } from '@/redux/features/admin/adminModeration/adminModeration.api';
-import { useGetVoiceReviewListQuery } from '@/redux/features/admin/adminVoiceReview/adminVoiceReview.api';
-import { selectPublicationDraft } from '@/redux/features/admin/publications/publicationsDraft.slice';
-import { useAppSelector } from '@/redux/hooks';
-import type { PublicationDetail, PublicationDraft } from '@/types/publication.types';
+import type { PublicationDetail } from '@/types/publication.types';
 import { AlertTriangle, ArrowLeft, FileText, Image as ImageIcon, Mic2 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo } from 'react';
@@ -44,15 +36,11 @@ const PublicationWorkspace = ({ id }: { id: string }) => {
   const searchParams = useSearchParams();
 
   const { data, isLoading, isError } = useGetModerationStoryDetailsQuery(id);
-  const { data: voiceData } = useGetVoiceReviewListQuery({ limit: 100, page: 1 });
-  const draft = useAppSelector(selectPublicationDraft(id));
 
   const detail = useMemo(
     () => mapPublicationDetail(data?.data as Record<string, unknown> | undefined),
     [data],
   );
-
-  const voiceMeta = useMemo(() => indexVoiceItems(voiceData?.data?.items).get(id), [voiceData, id]);
 
   const tabParam = searchParams.get('tab');
   const activeTab: TabId = TABS.some((tab) => tab.id === tabParam)
@@ -111,43 +99,25 @@ const PublicationWorkspace = ({ id }: { id: string }) => {
     );
   }
 
-  return (
-    <Workspace
-      detail={detail}
-      draft={draft}
-      voiceMeta={voiceMeta}
-      activeTab={activeTab}
-      setTab={setTab}
-    />
-  );
+  return <Workspace detail={detail} activeTab={activeTab} setTab={setTab} />;
 };
 
-/** Split out so the draft form hook only mounts once the detail is known. */
+/** Split out so the form hook only mounts once the detail is known. */
 const Workspace = ({
   detail,
-  draft,
-  voiceMeta,
   activeTab,
   setTab,
 }: {
   detail: PublicationDetail;
-  draft: PublicationDraft;
-  voiceMeta: PublicationVoiceMeta | undefined;
   activeTab: TabId;
   // eslint-disable-next-line no-unused-vars -- callback prop type
   setTab: (tab: TabId) => void;
 }) => {
   const router = useRouter();
-  const { form, patch, reset, isDirty, isSaving, save } = useWorkspaceDraft(detail, draft);
+  const { form, patch, reset, isDirty, isSaving, save } = useWorkspaceDraft(detail);
 
-  const statuses = derivePublicationStatuses({
-    moderationStatus: detail.moderationStatus,
-    coverImageUrl: draft.replacedCoverUrl || detail.coverImageUrl,
-    audioPath: draft.replacedAudioUrl || detail.audioPath,
-    draft,
-    hasText: Boolean(form.storyText.trim()),
-    textEdited: Boolean(detail.storyInput) && form.storyText !== detail.storyInput,
-  });
+  // Review state belongs to the server, so the rail reflects what is saved.
+  const statuses = detail.statuses;
 
   const leave = () => {
     if (isDirty && !window.confirm('You have unsaved edits. Leave anyway?')) return;
@@ -184,7 +154,7 @@ const Workspace = ({
         </div>
 
         <div className="border-y border-[#EDE4DD] py-3">
-          <AssetStatusRail statuses={statuses} hasNoVoice={draft.hasNoVoice} />
+          <AssetStatusRail statuses={statuses} voiceNotRequired={detail.voiceNotRequired} />
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,280px)]">
@@ -222,7 +192,6 @@ const Workspace = ({
             {activeTab === 'content' ? (
               <ContentTab
                 detail={detail}
-                draft={draft}
                 form={form}
                 patch={patch}
                 isDirty={isDirty}
@@ -234,7 +203,6 @@ const Workspace = ({
             {activeTab === 'card' ? (
               <StoryCardTab
                 detail={detail}
-                draft={draft}
                 form={form}
                 patch={patch}
                 isDirty={isDirty}
@@ -246,14 +214,11 @@ const Workspace = ({
             {activeTab === 'voice' ? (
               <VoiceTab
                 detail={detail}
-                draft={draft}
                 form={form}
                 patch={patch}
                 isDirty={isDirty}
                 isSaving={isSaving}
                 save={save}
-                duration={voiceMeta?.audioDuration ?? null}
-                generatedLabel={voiceMeta?.updatedLabel ?? null}
               />
             ) : null}
           </div>
@@ -262,7 +227,7 @@ const Workspace = ({
             <PublishPanel
               id={detail.id}
               statuses={statuses}
-              draft={draft}
+              blockers={detail.publishBlockers}
               isDirty={isDirty}
               onSaveFirst={() => save({ silent: true })}
             />

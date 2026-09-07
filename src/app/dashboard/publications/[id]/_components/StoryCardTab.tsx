@@ -2,15 +2,13 @@
 
 import placeholder from '@/assets/shared/table_placeholder_image.jpg';
 import { Button } from '@/components/ui/button';
-import { useSuggestStoryFieldMutation } from '@/redux/features/admin/adminModeration/adminModeration.api';
+import { apiErrorMessage } from '@/lib/publications/apiError';
 import {
-  markCoverRegenerated,
-  setApproval,
-  setCityCountry,
-  setReplacedCover,
-} from '@/redux/features/admin/publications/publicationsDraft.slice';
-import { useAppDispatch } from '@/redux/hooks';
-import type { PublicationDetail, PublicationDraft } from '@/types/publication.types';
+  useRegeneratePublicationCoverMutation,
+  useReplacePublicationCoverMutation,
+  useSuggestStoryFieldMutation,
+} from '@/redux/features/admin/adminModeration/adminModeration.api';
+import type { PublicationDetail } from '@/types/publication.types';
 import { storyIdentityLines } from '@/utils/storyIdentity.utils';
 import {
   AlertCircle,
@@ -23,9 +21,9 @@ import {
   X,
 } from 'lucide-react';
 import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { toast } from 'sonner';
-import DraftBadge from '../../_components/DraftBadge';
+import { useAssetApproval } from './useAssetApproval';
 import type { WorkspaceForm } from './useWorkspaceDraft';
 
 const inputClass =
@@ -90,7 +88,6 @@ const ChipList = ({
 
 const StoryCardTab = ({
   detail,
-  draft,
   form,
   patch,
   isDirty,
@@ -99,7 +96,6 @@ const StoryCardTab = ({
   reset,
 }: {
   detail: PublicationDetail;
-  draft: PublicationDraft;
   form: WorkspaceForm;
   // eslint-disable-next-line no-unused-vars -- callback prop type
   patch: (partial: Partial<WorkspaceForm>) => void;
@@ -109,18 +105,15 @@ const StoryCardTab = ({
   save: (options?: { silent?: boolean }) => Promise<boolean>;
   reset: () => void;
 }) => {
-  const dispatch = useAppDispatch();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [suggesting, setSuggesting] = useState<'hook' | 'tagline' | 'moods' | null>(null);
   const [suggestField] = useSuggestStoryFieldMutation();
+  const [regenerateCover, { isLoading: isRegenerating }] = useRegeneratePublicationCoverMutation();
+  const [replaceCover, { isLoading: isUploading }] = useReplacePublicationCoverMutation();
+  const { setApproved, isLoading: isApproving } = useAssetApproval(detail.id, 'cover');
 
-  // Keep the city/country split in the draft store so it survives a tab switch.
-  useEffect(() => {
-    if (draft.city === form.city && draft.country === form.country) return;
-    dispatch(setCityCountry({ id: detail.id, city: form.city, country: form.country }));
-  }, [detail.id, dispatch, draft.city, draft.country, form.city, form.country]);
-
-  const coverSrc = draft.replacedCoverUrl || detail.coverImageUrl || placeholder;
+  const approved = detail.statuses.cover === 'approved';
+  const coverSrc = detail.coverImageUrl || placeholder;
 
   const identity = storyIdentityLines({
     authorName: form.pseudonym,
@@ -132,7 +125,7 @@ const StoryCardTab = ({
   });
 
   const checklist = [
-    { label: 'Cover image', ok: Boolean(draft.replacedCoverUrl || detail.coverImageUrl) },
+    { label: 'Cover image', ok: Boolean(detail.coverImageUrl) },
     { label: 'Title', ok: Boolean(form.title.trim()) },
     { label: 'Author name or pseudonym', ok: Boolean(form.pseudonym.trim()) },
     { label: 'Age', ok: Boolean(form.age.trim()) },
@@ -178,28 +171,37 @@ const StoryCardTab = ({
     }
   };
 
-  const handleReplaceCover = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleReplaceCover = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    if (fileInputRef.current) fileInputRef.current.value = '';
     if (!file) return;
     if (file.size > MAX_UPLOAD_BYTES) {
       toast.error('File size exceeds the 10 MB limit.');
       return;
     }
-    if (draft.replacedCoverUrl) URL.revokeObjectURL(draft.replacedCoverUrl);
-    dispatch(
-      setReplacedCover({
-        id: detail.id,
-        url: URL.createObjectURL(file),
-        name: file.name,
-      }),
-    );
-    toast.success('Preview updated — upload needs a backend endpoint');
-    if (fileInputRef.current) fileInputRef.current.value = '';
+    try {
+      const res = await replaceCover({ storyId: detail.id, file }).unwrap();
+      if (res?.success) toast.success(res.message || 'Story card image replaced');
+    } catch (error) {
+      toast.error(apiErrorMessage(error, 'Could not upload the image'));
+    }
   };
 
-  const clearReplacedCover = () => {
-    if (draft.replacedCoverUrl) URL.revokeObjectURL(draft.replacedCoverUrl);
-    dispatch(setReplacedCover({ id: detail.id, url: null, name: null }));
+  const handleRegenerate = async () => {
+    try {
+      const res = await regenerateCover(detail.id).unwrap();
+      if (res?.success) {
+        toast.success(res.message || 'Story card regeneration started');
+      }
+    } catch (error) {
+      toast.error(apiErrorMessage(error, 'Could not start regeneration'));
+    }
+  };
+
+  const toggleApproved = async () => {
+    // Approve the card as saved, so pending edits do not misrepresent it.
+    if (isDirty && !(await save({ silent: true }))) return;
+    await setApproved(!approved);
   };
 
   return (
@@ -280,59 +282,48 @@ const StoryCardTab = ({
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
-              onClick={() => {
-                dispatch(markCoverRegenerated({ id: detail.id }));
-                toast.success('Marked as regenerating — needs a per-story endpoint');
-              }}
-              className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-[#E1D7CE] bg-white px-3 py-2 text-sm font-medium text-[#5C3A21] hover:bg-[#F5F0EB]"
+              onClick={handleRegenerate}
+              disabled={isRegenerating}
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-[#E1D7CE] bg-white px-3 py-2 text-sm font-medium text-[#5C3A21] hover:bg-[#F5F0EB] disabled:opacity-60"
             >
-              <RefreshCw size={14} /> Regenerate
+              {isRegenerating ? (
+                <Loader2 size={14} className="animate-spin" />
+              ) : (
+                <RefreshCw size={14} />
+              )}
+              Regenerate
             </button>
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-[#E1D7CE] bg-white px-3 py-2 text-sm font-medium text-[#5C3A21] hover:bg-[#F5F0EB]"
+              disabled={isUploading}
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-[#E1D7CE] bg-white px-3 py-2 text-sm font-medium text-[#5C3A21] hover:bg-[#F5F0EB] disabled:opacity-60"
             >
-              <ImageUp size={14} /> Replace
+              {isUploading ? <Loader2 size={14} className="animate-spin" /> : <ImageUp size={14} />}
+              Replace
             </button>
-            <DraftBadge />
           </div>
 
-          {draft.replacedCoverName ? (
-            <p className="flex items-center gap-2 text-[11px] text-[#8A6E5F]">
-              Previewing {draft.replacedCoverName}
-              <button
-                type="button"
-                onClick={clearReplacedCover}
-                className="inline-flex cursor-pointer items-center gap-1 font-semibold text-[#BF7758]"
-              >
-                <Undo2 size={11} /> revert
-              </button>
+          {detail.statuses.cover === 'in_progress' ? (
+            <p className="text-[11px] text-[#8A6E5F]">
+              A new story card is being drawn. Refresh in a moment to see it.
             </p>
           ) : null}
 
           <div className="flex items-center gap-2 border-t border-[#F0EAE5] pt-3">
             <button
               type="button"
-              onClick={() =>
-                dispatch(
-                  setApproval({
-                    id: detail.id,
-                    key: 'coverApproved',
-                    value: !draft.coverApproved,
-                  }),
-                )
-              }
-              className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
-                draft.coverApproved
+              onClick={toggleApproved}
+              disabled={isApproving || isSaving}
+              className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-60 ${
+                approved
                   ? 'bg-[#149443] text-white'
                   : 'border border-[#B9D9C4] bg-white text-[#149443] hover:bg-[#F1FAF4]'
               }`}
             >
-              <Check size={14} />
-              {draft.coverApproved ? 'Card approved' : 'Approve story card'}
+              {isApproving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+              {approved ? 'Card approved' : 'Approve story card'}
             </button>
-            <DraftBadge />
           </div>
         </div>
       </div>
@@ -457,11 +448,6 @@ const StoryCardTab = ({
             />
           </label>
         </div>
-
-        <p className="text-[11px] text-[#8A6E5F]">
-          City and country are stored in one `location` column today, so they are saved joined with
-          a comma until the backend splits them.
-        </p>
 
         <div className="space-y-2 rounded-xl border border-[#F0EAE5] bg-[#FAF8F5] p-3">
           <div className="flex items-center justify-between gap-2">

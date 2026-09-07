@@ -6,10 +6,10 @@ import StatusChip from './StatusChip';
 /** Text / Cover / Voice at a glance, used in the workspace header. */
 const AssetStatusRail = ({
   statuses,
-  hasNoVoice,
+  voiceNotRequired,
 }: {
   statuses: PublicationStatuses;
-  hasNoVoice: boolean;
+  voiceNotRequired: boolean;
 }) => {
   const items = [
     { label: 'Text', status: statuses.text, note: undefined as string | undefined },
@@ -17,7 +17,7 @@ const AssetStatusRail = ({
     {
       label: 'Voice',
       status: statuses.voice,
-      note: hasNoVoice ? 'no voice by design' : undefined,
+      note: voiceNotRequired ? 'no voice by design' : undefined,
     },
   ];
 

@@ -9,18 +9,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { apiErrorMessage } from '@/lib/publications/apiError';
 import {
   useRejectStoryMutation,
   useRequestStoryChangesMutation,
   useSuggestStoryFieldMutation,
 } from '@/redux/features/admin/adminModeration/adminModeration.api';
-import { setApproval } from '@/redux/features/admin/publications/publicationsDraft.slice';
-import { useAppDispatch } from '@/redux/hooks';
-import type { PublicationDetail, PublicationDraft } from '@/types/publication.types';
+import type { PublicationDetail } from '@/types/publication.types';
 import { Check, Columns2, Loader2, RefreshCw, Rows2, Undo2, XCircle } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import DraftBadge from '../../_components/DraftBadge';
+import { useAssetApproval } from './useAssetApproval';
 import type { WorkspaceForm } from './useWorkspaceDraft';
 
 const paragraphsOf = (text: string): string[] =>
@@ -106,7 +105,6 @@ const CompareView = ({
 
 const ContentTab = ({
   detail,
-  draft,
   form,
   patch,
   isDirty,
@@ -115,7 +113,6 @@ const ContentTab = ({
   reset,
 }: {
   detail: PublicationDetail;
-  draft: PublicationDraft;
   form: WorkspaceForm;
   // eslint-disable-next-line no-unused-vars -- callback prop type
   patch: (partial: Partial<WorkspaceForm>) => void;
@@ -125,7 +122,6 @@ const ContentTab = ({
   save: (options?: { silent?: boolean }) => Promise<boolean>;
   reset: () => void;
 }) => {
-  const dispatch = useAppDispatch();
   const [layout, setLayout] = useState<'split' | 'stacked'>('split');
   const [note, setNote] = useState('');
   const [rejectOpen, setRejectOpen] = useState(false);
@@ -135,6 +131,9 @@ const ContentTab = ({
   const [suggestField] = useSuggestStoryFieldMutation();
   const [requestChanges, { isLoading: isRequesting }] = useRequestStoryChangesMutation();
   const [rejectStory, { isLoading: isRejecting }] = useRejectStoryMutation();
+  const { setApproved, isLoading: isApproving } = useAssetApproval(detail.id, 'content');
+
+  const approved = detail.statuses.text === 'approved';
 
   const handleSuggestAnalysis = async () => {
     setSuggesting(true);
@@ -165,8 +164,8 @@ const ContentTab = ({
       const res = await requestChanges({ storyId: detail.id, reason: note.trim() }).unwrap();
       if (res?.success) toast.success('Changes requested');
       setNote('');
-    } catch {
-      toast.error('Failed to request changes');
+    } catch (error) {
+      toast.error(apiErrorMessage(error, 'Failed to request changes'));
     }
   };
 
@@ -180,13 +179,16 @@ const ContentTab = ({
       if (res?.success) toast.success(res.message || 'Publication rejected');
       setRejectOpen(false);
       setRejectReason('');
-    } catch {
-      toast.error('Failed to reject');
+    } catch (error) {
+      toast.error(apiErrorMessage(error, 'Failed to reject'));
     }
   };
 
-  const toggleApproved = () => {
-    dispatch(setApproval({ id: detail.id, key: 'contentApproved', value: !draft.contentApproved }));
+  const toggleApproved = async () => {
+    // Approve what is actually on file: saving edits afterwards would send the
+    // text straight back for review.
+    if (isDirty && !(await save({ silent: true }))) return;
+    await setApproved(!approved);
   };
 
   return (
@@ -295,21 +297,19 @@ const ContentTab = ({
         </button>
 
         <div className="ms-auto flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={toggleApproved}
-              className={`inline-flex cursor-pointer items-center gap-1.5 rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
-                draft.contentApproved
-                  ? 'bg-[#149443] text-white'
-                  : 'border border-[#B9D9C4] bg-white text-[#149443] hover:bg-[#F1FAF4]'
-              }`}
-            >
-              <Check size={14} />
-              {draft.contentApproved ? 'Content approved' : 'Approve content'}
-            </button>
-            <DraftBadge />
-          </div>
+          <button
+            type="button"
+            onClick={toggleApproved}
+            disabled={isApproving || isSaving}
+            className={`inline-flex cursor-pointer items-center gap-1.5 rounded-md px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-60 ${
+              approved
+                ? 'bg-[#149443] text-white'
+                : 'border border-[#B9D9C4] bg-white text-[#149443] hover:bg-[#F1FAF4]'
+            }`}
+          >
+            {isApproving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+            {approved ? 'Content approved' : 'Approve content'}
+          </button>
 
           <button
             type="button"

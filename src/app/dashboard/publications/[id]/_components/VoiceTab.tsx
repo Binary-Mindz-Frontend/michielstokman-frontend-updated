@@ -1,21 +1,19 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { apiErrorMessage } from '@/lib/publications/apiError';
 import { useGetVoicesQuery } from '@/redux/features/aiStory/aiStory.api';
-import { useSuggestStoryFieldMutation } from '@/redux/features/admin/adminModeration/adminModeration.api';
-import { useRegenerateVoiceMutation } from '@/redux/features/admin/adminVoiceReview/adminVoiceReview.api';
 import {
-  markVoiceRegenerated,
-  setApproval,
-  setNoVoice,
-  setReplacedAudio,
-} from '@/redux/features/admin/publications/publicationsDraft.slice';
-import { useAppDispatch } from '@/redux/hooks';
-import type { PublicationDetail, PublicationDraft } from '@/types/publication.types';
-import { Check, Download, Loader2, MicOff, RefreshCw, Undo2, Upload, Volume2 } from 'lucide-react';
+  useReplacePublicationAudioMutation,
+  useSetVoiceRequirementMutation,
+  useSuggestStoryFieldMutation,
+} from '@/redux/features/admin/adminModeration/adminModeration.api';
+import { useRegenerateVoiceMutation } from '@/redux/features/admin/adminVoiceReview/adminVoiceReview.api';
+import type { PublicationDetail } from '@/types/publication.types';
+import { Check, Download, Loader2, MicOff, RefreshCw, Upload, Volume2 } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import DraftBadge from '../../_components/DraftBadge';
+import { useAssetApproval } from './useAssetApproval';
 import type { WorkspaceForm } from './useWorkspaceDraft';
 
 const inputClass =
@@ -27,19 +25,20 @@ const SPEEDS = [0.75, 1, 1.25, 1.5];
 
 const MAX_AUDIO_BYTES = 50 * 1024 * 1024;
 
+const formatDuration = (seconds: number | null): string => {
+  if (!seconds) return '—';
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+};
+
 const VoiceTab = ({
   detail,
-  draft,
   form,
   patch,
   isDirty,
   isSaving,
   save,
-  duration,
-  generatedLabel,
 }: {
   detail: PublicationDetail;
-  draft: PublicationDraft;
   form: WorkspaceForm;
   // eslint-disable-next-line no-unused-vars -- callback prop type
   patch: (partial: Partial<WorkspaceForm>) => void;
@@ -47,10 +46,7 @@ const VoiceTab = ({
   isSaving: boolean;
   // eslint-disable-next-line no-unused-vars -- callback prop type
   save: (options?: { silent?: boolean }) => Promise<boolean>;
-  duration: string | null;
-  generatedLabel: string | null;
 }) => {
-  const dispatch = useAppDispatch();
   const audioRef = useRef<HTMLAudioElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [speed, setSpeed] = useState(1);
@@ -59,13 +55,18 @@ const VoiceTab = ({
   const { data: catalog } = useGetVoicesQuery();
   const [suggestField] = useSuggestStoryFieldMutation();
   const [regenerateVoice, { isLoading: isRegenerating }] = useRegenerateVoiceMutation();
+  const [replaceAudio, { isLoading: isUploading }] = useReplacePublicationAudioMutation();
+  const [setVoiceRequirement, { isLoading: isSettingRequirement }] =
+    useSetVoiceRequirementMutation();
+  const { setApproved, isLoading: isApproving } = useAssetApproval(detail.id, 'voice');
 
   const voices = useMemo(
     () => (catalog?.voices || []).filter((voice) => !voice.is_custom),
     [catalog],
   );
 
-  const audioSrc = draft.replacedAudioUrl || detail.audioPath;
+  const approved = detail.statuses.voice === 'approved';
+  const audioSrc = detail.audioPath;
 
   const applySpeed = (next: number) => {
     setSpeed(next);
@@ -97,28 +98,41 @@ const VoiceTab = ({
     try {
       const res = await regenerateVoice(detail.id).unwrap();
       if (res?.success) toast.success(res.message || 'Re-narration queued');
-      dispatch(markVoiceRegenerated({ id: detail.id }));
-    } catch {
-      toast.error('Could not queue re-narration');
+    } catch (error) {
+      toast.error(apiErrorMessage(error, 'Could not queue re-narration'));
     }
   };
 
-  const handleReplaceAudio = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleReplaceAudio = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    if (fileInputRef.current) fileInputRef.current.value = '';
     if (!file) return;
     if (file.size > MAX_AUDIO_BYTES) {
       toast.error('File size exceeds the 50 MB limit.');
       return;
     }
-    if (draft.replacedAudioUrl) URL.revokeObjectURL(draft.replacedAudioUrl);
-    dispatch(setReplacedAudio({ id: detail.id, url: URL.createObjectURL(file), name: file.name }));
-    toast.success('Playing your file locally — upload needs a backend endpoint');
-    if (fileInputRef.current) fileInputRef.current.value = '';
+    try {
+      const res = await replaceAudio({ storyId: detail.id, file }).unwrap();
+      if (res?.success) toast.success(res.message || 'Narration replaced');
+    } catch (error) {
+      toast.error(apiErrorMessage(error, 'Could not upload the audio'));
+    }
   };
 
-  const clearReplacedAudio = () => {
-    if (draft.replacedAudioUrl) URL.revokeObjectURL(draft.replacedAudioUrl);
-    dispatch(setReplacedAudio({ id: detail.id, url: null, name: null }));
+  const toggleApproved = async () => {
+    await setApproved(!approved);
+  };
+
+  const handleNoVoiceChange = async (checked: boolean) => {
+    try {
+      const res = await setVoiceRequirement({
+        storyId: detail.id,
+        voiceNotRequired: checked,
+      }).unwrap();
+      if (res?.success) toast.success(res.message || 'Saved');
+    } catch (error) {
+      toast.error(apiErrorMessage(error, 'Could not update the voice requirement'));
+    }
   };
 
   return (
@@ -175,20 +189,13 @@ const VoiceTab = ({
             </p>
           )}
 
-          {draft.replacedAudioName ? (
-            <p className="flex items-center gap-2 text-[11px] text-[#8A6E5F]">
-              Playing {draft.replacedAudioName} from this browser
-              <button
-                type="button"
-                onClick={clearReplacedAudio}
-                className="inline-flex cursor-pointer items-center gap-1 font-semibold text-[#BF7758]"
-              >
-                <Undo2 size={11} /> revert
-              </button>
+          {detail.statuses.voice === 'in_progress' ? (
+            <p className="text-[11px] text-[#8A6E5F]">
+              New narration is being produced. Refresh in a moment to hear it.
             </p>
           ) : null}
 
-          <dl className="grid grid-cols-2 gap-3 border-t border-[#F0EAE5] pt-3 sm:grid-cols-3">
+          <dl className="grid grid-cols-2 gap-3 border-t border-[#F0EAE5] pt-3">
             <div>
               <dt className={labelClass}>Selected voice</dt>
               <dd className="text-sm text-[#4A3B32]">
@@ -197,11 +204,9 @@ const VoiceTab = ({
             </div>
             <div>
               <dt className={labelClass}>Duration</dt>
-              <dd className="text-sm text-[#4A3B32]">{duration || '—'}</dd>
-            </div>
-            <div>
-              <dt className={labelClass}>Date generated</dt>
-              <dd className="text-sm text-[#4A3B32]">{generatedLabel || '—'}</dd>
+              <dd className="text-sm text-[#4A3B32]">
+                {formatDuration(detail.audioDurationSeconds)}
+              </dd>
             </div>
           </dl>
         </div>
@@ -284,40 +289,30 @@ const VoiceTab = ({
             {isRegenerating ? 'Queuing…' : 'Regenerate voice'}
           </Button>
 
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="inline-flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md border border-[#E1D7CE] bg-white px-3 py-2 text-sm font-medium text-[#5C3A21] hover:bg-[#F5F0EB]"
-            >
-              <Upload size={14} /> Replace / upload
-            </button>
-            <DraftBadge />
-          </div>
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            className="inline-flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-md border border-[#E1D7CE] bg-white px-3 py-2 text-sm font-medium text-[#5C3A21] hover:bg-[#F5F0EB] disabled:opacity-60"
+          >
+            {isUploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+            Replace / upload
+          </button>
 
-          <div className="flex items-center gap-2 border-t border-[#F0EAE5] pt-3">
+          <div className="border-t border-[#F0EAE5] pt-3">
             <button
               type="button"
-              disabled={draft.hasNoVoice}
-              onClick={() =>
-                dispatch(
-                  setApproval({
-                    id: detail.id,
-                    key: 'voiceApproved',
-                    value: !draft.voiceApproved,
-                  }),
-                )
-              }
-              className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-                draft.voiceApproved
+              disabled={detail.voiceNotRequired || isApproving}
+              onClick={toggleApproved}
+              className={`inline-flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-md px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                approved
                   ? 'bg-[#149443] text-white'
                   : 'border border-[#B9D9C4] bg-white text-[#149443] hover:bg-[#F1FAF4]'
               }`}
             >
-              <Check size={14} />
-              {draft.voiceApproved ? 'Audio approved' : 'Approve audio'}
+              {isApproving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+              {approved ? 'Audio approved' : 'Approve audio'}
             </button>
-            <DraftBadge />
           </div>
         </div>
 
@@ -329,15 +324,13 @@ const VoiceTab = ({
             <input
               type="checkbox"
               className="mt-1"
-              checked={draft.hasNoVoice}
-              onChange={(event) =>
-                dispatch(setNoVoice({ id: detail.id, value: event.target.checked }))
-              }
+              disabled={isSettingRequirement}
+              checked={detail.voiceNotRequired}
+              onChange={(event) => handleNoVoiceChange(event.target.checked)}
             />
             This publication intentionally has no voice
           </label>
           <p className="text-[11px] text-[#8A6E5F]">Removes voice from the publish requirements.</p>
-          <DraftBadge />
         </div>
       </div>
     </div>

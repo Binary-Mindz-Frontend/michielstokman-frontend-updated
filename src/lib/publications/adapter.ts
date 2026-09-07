@@ -1,11 +1,11 @@
 import {
-  emptyPublicationDraft,
+  type PublicationContact,
   type PublicationDetail,
-  type PublicationDraft,
   type PublicationRow,
   type PublicationType,
 } from '@/types/publication.types';
-import { derivePublicationStatuses, normalizeModerationStatus } from './status';
+import { resolveMediaUrl } from './media';
+import { normalizeModerationStatus, readPublicationStatuses } from './status';
 
 type Raw = Record<string, unknown>;
 
@@ -15,6 +15,11 @@ const str = (value: unknown): string => {
 };
 
 const nullableStr = (value: unknown): string | null => str(value) || null;
+
+const nullableInt = (value: unknown): number | null => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
 
 /** Tags and growth areas arrive as arrays, JSON strings or comma strings. */
 export const asStringList = (value: unknown): string[] => {
@@ -62,8 +67,9 @@ export const PUBLICATION_TYPE_LABEL: Record<PublicationType, string> = {
 const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
 
 /**
- * The queue serialises dates as `"07 Sep 26"` and the voice list as ISO, so both
- * need to survive the trip to a sortable number.
+ * `submitted_at` and `updated_at` are ISO, but `created_at` is still the legacy
+ * `"07 Sep 26"` display string, so both shapes need to survive the trip to a
+ * sortable number.
  */
 export const parseApiDate = (value: unknown): number => {
   const raw = str(value);
@@ -94,119 +100,58 @@ export const formatDateLabel = (value: unknown): string => {
   return DATE_LABEL.format(new Date(epoch));
 };
 
-type QueueItem = {
-  id: string;
-  title: string;
-  type: PublicationType;
-  coverImageUrl: string | null;
-  accountEmail: string;
-  pseudonym: string;
-  submittedLabel: string;
-  submittedAt: number;
-  moderationStatus: ReturnType<typeof normalizeModerationStatus>;
-};
-
-const mapQueueItem = (raw: Raw): QueueItem | null => {
+const mapQueueItem = (raw: Raw): PublicationRow | null => {
   const id = str(raw.id);
   if (!id) return null;
 
+  const type = normalizePublicationType(raw.story_type);
+  const pseudonym = str(raw.first_name);
+  const accountEmail = str(raw.author);
+  const submittedSource = raw.submitted_at ?? raw.created_at;
+  const submittedAt = parseApiDate(submittedSource);
+  const updatedAt = parseApiDate(raw.updated_at);
+
   return {
+    ...readPublicationStatuses(raw),
     id,
     title: str(raw.title) || 'Untitled',
-    type: normalizePublicationType(raw.story_type),
-    coverImageUrl: nullableStr(raw.cover_image_url),
-    accountEmail: str(raw.author),
-    // Not in the queue payload today; read it anyway so the fallback disappears
-    // the moment the backend adds it.
-    pseudonym: str(raw.first_name),
-    submittedLabel: formatDateLabel(raw.created_at),
-    submittedAt: parseApiDate(raw.created_at),
+    type,
+    typeLabel: PUBLICATION_TYPE_LABEL[type],
+    coverImageUrl: resolveMediaUrl(str(raw.cover_image_url)),
+    author: pseudonym || accountEmail || '—',
+    authorIsAccountEmail: !pseudonym && Boolean(accountEmail),
+    submittedLabel: formatDateLabel(submittedSource),
+    submittedAt,
+    updatedLabel: raw.updated_at ? formatDateLabel(raw.updated_at) : null,
+    updatedAt: updatedAt || submittedAt,
     moderationStatus: normalizeModerationStatus(raw.moderation_status),
+    audioPath: resolveMediaUrl(str(raw.audio_path)),
+    audioDuration: nullableStr(raw.audio_duration),
+    voiceName: nullableStr(raw.voice_name),
+    voiceNotRequired: Boolean(raw.voice_not_required),
+    hasText: Boolean(raw.has_text),
+    explicit: Boolean(raw.high_intensity),
   };
 };
 
-/** The half of a publication that only the voice-review endpoint knows about. */
-export type PublicationVoiceMeta = {
-  audioPath: string | null;
-  audioDuration: string | null;
-  voiceName: string | null;
-  updatedLabel: string | null;
-  updatedAt: number;
-};
-
-const mapVoiceItem = (raw: Raw): PublicationVoiceMeta => ({
-  audioPath: nullableStr(raw.audio_path),
-  audioDuration: nullableStr(raw.audio_duration),
-  voiceName: nullableStr(raw.voice_name),
-  updatedLabel: raw.updated_at ? formatDateLabel(raw.updated_at) : null,
-  updatedAt: parseApiDate(raw.updated_at),
-});
-
-export const indexVoiceItems = (items: unknown): Map<string, PublicationVoiceMeta> => {
-  const map = new Map<string, PublicationVoiceMeta>();
-  if (!Array.isArray(items)) return map;
-  for (const entry of items) {
-    if (!entry || typeof entry !== 'object') continue;
-    const raw = entry as Raw;
-    const id = str(raw.id);
-    if (id) map.set(id, mapVoiceItem(raw));
-  }
-  return map;
-};
-
-/**
- * Merge the moderation queue with the voice-review list into one row per publication.
- * The voice list is the only place audio, duration and `updated_at` exist today.
- */
-export const buildPublicationRows = ({
-  queueItems,
-  voiceItems,
-  drafts,
-}: {
-  queueItems: unknown;
-  voiceItems: unknown;
-  drafts: Record<string, PublicationDraft | undefined>;
-}): PublicationRow[] => {
+/** One row per publication, straight off the queue payload. */
+export const buildPublicationRows = (queueItems: unknown): PublicationRow[] => {
   if (!Array.isArray(queueItems)) return [];
-  const voices = indexVoiceItems(voiceItems);
 
   return queueItems.flatMap((entry) => {
     if (!entry || typeof entry !== 'object') return [];
-    const item = mapQueueItem(entry as Raw);
-    if (!item) return [];
-
-    const voice = voices.get(item.id);
-    const draft = drafts[item.id] ?? emptyPublicationDraft();
-    const audioPath = voice?.audioPath ?? null;
-
-    const statuses = derivePublicationStatuses({
-      moderationStatus: item.moderationStatus,
-      coverImageUrl: item.coverImageUrl,
-      audioPath,
-      draft,
-    });
-
-    const row: PublicationRow = {
-      ...statuses,
-      id: item.id,
-      title: item.title,
-      type: item.type,
-      typeLabel: PUBLICATION_TYPE_LABEL[item.type],
-      coverImageUrl: draft.replacedCoverUrl ?? item.coverImageUrl,
-      author: item.pseudonym || item.accountEmail || '—',
-      authorIsAccountEmail: !item.pseudonym && Boolean(item.accountEmail),
-      submittedLabel: item.submittedLabel,
-      submittedAt: item.submittedAt,
-      updatedLabel: voice?.updatedLabel ?? null,
-      updatedAt: voice?.updatedAt || item.submittedAt,
-      moderationStatus: item.moderationStatus,
-      audioPath,
-      audioDuration: voice?.audioDuration ?? null,
-      voiceName: voice?.voiceName ?? null,
-      hasNoVoice: draft.hasNoVoice,
-    };
-    return [row];
+    const row = mapQueueItem(entry as Raw);
+    return row ? [row] : [];
   });
+};
+
+const mapContact = (raw: unknown): PublicationContact | null => {
+  if (!raw || typeof raw !== 'object') return null;
+  const record = raw as Raw;
+  const email = str(record.email);
+  const trueName = str(record.true_name);
+  if (!email && !trueName) return null;
+  return { email, trueName };
 };
 
 export const mapPublicationDetail = (raw: Raw | undefined): PublicationDetail | null => {
@@ -229,56 +174,40 @@ export const mapPublicationDetail = (raw: Raw | undefined): PublicationDetail | 
     heroTagline: str(raw.hero_tagline),
     editorialBrief: str(raw.editorial_brief),
 
-    coverImageUrl: nullableStr(raw.cover_image_url),
+    coverImageUrl: resolveMediaUrl(str(raw.cover_image_url)),
     pseudonym: str(raw.first_name),
     age: raw.age === null || raw.age === undefined ? '' : str(raw.age),
     gender: str(raw.gender),
     sexualOrientation: str(raw.sexual_orientation),
     occupation: str(raw.occupation),
-    location: str(raw.location),
+    city: str(raw.city),
+    country: str(raw.country),
     explicit: Boolean(raw.high_intensity),
     tags: asStringList(raw.tags),
     growthAreas: asStringList(raw.growth_areas),
     lifePhase: str(raw.life_phase),
 
-    audioPath: nullableStr(raw.audio_path),
+    audioPath: resolveMediaUrl(str(raw.audio_path)),
+    audioDurationSeconds: nullableInt(raw.audio_duration_seconds),
     voiceName: str(raw.voice_name),
     voiceId: nullableStr(raw.voice_id),
     submissionMode,
     isHumanNarrated: submissionMode === 'human_ready',
+    voiceNotRequired: Boolean(raw.voice_not_required),
 
     background: str(raw.background),
     personality: str(raw.personality),
     lifestyle: str(raw.lifestyle),
     situation: str(raw.situation),
 
-    accountEmail: str(raw.author),
+    contact: mapContact(raw.contact),
+
+    statuses: readPublicationStatuses(raw),
+    publishBlockers: asStringList(raw.publish_blockers),
+    publishedAt: nullableStr(raw.published_at),
 
     moderationStatus: normalizeModerationStatus(raw.moderation_status),
     moderationNotes: str(raw.moderation_notes),
-    submittedLabel: formatDateLabel(raw.created_at),
+    submittedLabel: formatDateLabel(raw.submitted_at ?? raw.created_at),
   };
 };
-
-/**
- * Backend keeps one `location` column. The card editor shows city and country
- * separately, so split on the last comma and rejoin on save.
- */
-export const splitLocation = (
-  location: string,
-  draft: PublicationDraft,
-): { city: string; country: string } => {
-  if (draft.city !== null || draft.country !== null) {
-    return { city: draft.city ?? '', country: draft.country ?? '' };
-  }
-  const parts = location
-    .split(',')
-    .map((part) => part.trim())
-    .filter(Boolean);
-  if (parts.length === 0) return { city: '', country: '' };
-  if (parts.length === 1) return { city: parts[0], country: '' };
-  return { city: parts.slice(0, -1).join(', '), country: parts[parts.length - 1] };
-};
-
-export const joinLocation = (city: string, country: string): string =>
-  [city.trim(), country.trim()].filter(Boolean).join(', ');

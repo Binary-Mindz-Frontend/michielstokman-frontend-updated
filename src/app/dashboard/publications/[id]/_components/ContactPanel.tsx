@@ -1,7 +1,7 @@
 'use client';
 
 import type { PublicationDetail } from '@/types/publication.types';
-import { ChevronDown, EyeOff, Mail } from 'lucide-react';
+import { ChevronDown, EyeOff, Mail, User } from 'lucide-react';
 import { useState } from 'react';
 
 /**
@@ -35,22 +35,34 @@ const ContactPanel = ({ detail }: { detail: PublicationDetail }) => {
             <span className="text-[10px] font-bold tracking-wider text-[#A08170] uppercase">
               Account email
             </span>
-            {detail.accountEmail ? (
+            {detail.contact?.email ? (
               <a
-                href={`mailto:${detail.accountEmail}`}
+                href={`mailto:${detail.contact.email}`}
                 className="flex items-center gap-1.5 text-sm break-all text-[#4A3B32] hover:underline"
               >
-                <Mail size={13} className="shrink-0" /> {detail.accountEmail}
+                <Mail size={13} className="shrink-0" /> {detail.contact.email}
               </a>
             ) : (
               <p className="text-sm text-[#8A6E5F]">No account on this submission</p>
             )}
           </div>
 
+          <div className="space-y-1">
+            <span className="text-[10px] font-bold tracking-wider text-[#A08170] uppercase">
+              Real name
+            </span>
+            {detail.contact?.trueName ? (
+              <p className="flex items-center gap-1.5 text-sm text-[#4A3B32]">
+                <User size={13} className="shrink-0" /> {detail.contact.trueName}
+              </p>
+            ) : (
+              <p className="text-sm text-[#8A6E5F]">Not provided</p>
+            )}
+          </div>
+
           <p className="border-t border-[#F0EAE5] pt-3 text-[11px] text-[#8A6E5F]">
-            The account email is the only contact field the admin API returns today. Phone and any
-            other submitted contact details need to be exposed by the backend before they can appear
-            here.
+            The pseudonym on the story card is the only name shown publicly. These details stay in
+            this workspace.
           </p>
         </div>
       ) : null}

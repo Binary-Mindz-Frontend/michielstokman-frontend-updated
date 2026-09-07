@@ -1,11 +1,11 @@
 'use client';
 
-import { joinLocation, splitLocation } from '@/lib/publications/adapter';
+import { apiErrorMessage } from '@/lib/publications/apiError';
 import {
   useUpdateStoryMutation,
   type ModerationStoryUpdate,
 } from '@/redux/features/admin/adminModeration/adminModeration.api';
-import type { PublicationDetail, PublicationDraft } from '@/types/publication.types';
+import type { PublicationDetail } from '@/types/publication.types';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -31,8 +31,7 @@ export type WorkspaceForm = {
   voiceName: string;
 };
 
-const formFromDetail = (detail: PublicationDetail, draft: PublicationDraft): WorkspaceForm => {
-  const { city, country } = splitLocation(detail.location, draft);
+const formFromDetail = (detail: PublicationDetail): WorkspaceForm => {
   return {
     title: detail.title === 'Untitled' ? '' : detail.title,
     storyType: detail.type,
@@ -41,8 +40,8 @@ const formFromDetail = (detail: PublicationDetail, draft: PublicationDraft): Wor
     heroTagline: detail.heroTagline,
     editorialBrief: detail.editorialBrief,
     pseudonym: detail.pseudonym,
-    city,
-    country,
+    city: detail.city,
+    country: detail.country,
     gender: detail.gender,
     sexualOrientation: detail.sexualOrientation,
     occupation: detail.occupation,
@@ -55,8 +54,8 @@ const formFromDetail = (detail: PublicationDetail, draft: PublicationDraft): Wor
   };
 };
 
-export const useWorkspaceDraft = (detail: PublicationDetail, draft: PublicationDraft) => {
-  const initial = useMemo(() => formFromDetail(detail, draft), [detail, draft]);
+export const useWorkspaceDraft = (detail: PublicationDetail) => {
+  const initial = useMemo(() => formFromDetail(detail), [detail]);
   const [form, setForm] = useState<WorkspaceForm>(initial);
   const detailId = useRef(detail.id);
 
@@ -98,7 +97,8 @@ export const useWorkspaceDraft = (detail: PublicationDetail, draft: PublicationD
       hero_tagline: form.heroTagline,
       editorial_brief: form.editorialBrief,
       first_name: form.pseudonym,
-      location: joinLocation(form.city, form.country),
+      city: form.city,
+      country: form.country,
       gender: form.gender,
       sexual_orientation: form.sexualOrientation,
       occupation: form.occupation,
@@ -119,11 +119,7 @@ export const useWorkspaceDraft = (detail: PublicationDetail, draft: PublicationD
         if (!silent && res?.success) toast.success('Saved');
         return true;
       } catch (error) {
-        const message =
-          error && typeof error === 'object' && 'data' in error
-            ? (error as { data?: { message?: string } }).data?.message
-            : undefined;
-        toast.error(message || 'Failed to save');
+        toast.error(apiErrorMessage(error, 'Failed to save'));
         return false;
       }
     },

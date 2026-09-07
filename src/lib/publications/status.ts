@@ -1,6 +1,5 @@
 import type {
   ModerationStatus,
-  PublicationDraft,
   PublicationStatus,
   PublicationStatuses,
 } from '@/types/publication.types';
@@ -52,85 +51,33 @@ export const normalizeModerationStatus = (value: unknown): ModerationStatus => {
   return 'pending';
 };
 
-type DeriveInput = {
-  moderationStatus: ModerationStatus;
-  coverImageUrl: string | null;
-  audioPath: string | null;
-  draft: PublicationDraft;
-  /** Undefined when the payload does not carry the text (the queue list does not). */
-  hasText?: boolean;
-  /** Undefined when we cannot compare the edited text against the submission. */
-  textEdited?: boolean;
+const KNOWN_STATUSES = new Set<string>(STATUS_ORDER);
+
+/**
+ * Read one asset status off the API payload. The server owns these values, so an
+ * unrecognised one means the two sides have drifted — fall back to the safest
+ * reading rather than inventing a rung.
+ */
+export const normalizePublicationStatus = (
+  value: unknown,
+  fallback: PublicationStatus = 'pending',
+): PublicationStatus => {
+  const raw = String(value ?? '')
+    .toLowerCase()
+    .replace('assetreviewstatus.', '')
+    .trim();
+  return KNOWN_STATUSES.has(raw) ? (raw as PublicationStatus) : fallback;
 };
 
-const deriveText = ({
-  moderationStatus,
-  draft,
-  hasText,
-  textEdited,
-}: DeriveInput): PublicationStatus => {
-  if (moderationStatus === 'rejected') return 'rejected';
-  if (hasText === false) return 'missing';
-  if (draft.contentApproved || moderationStatus === 'approved') return 'approved';
-  if (moderationStatus === 'flagged' || textEdited) return 'ready_for_review';
-  return 'pending';
-};
-
-const deriveCover = ({ coverImageUrl, draft }: DeriveInput): PublicationStatus => {
-  if (draft.coverApproved) return 'approved';
-  if (draft.coverRegeneratedAt) return 'in_progress';
-  if (!coverImageUrl && !draft.replacedCoverUrl) return 'missing';
-  return 'ready_for_review';
-};
-
-const deriveVoice = ({ audioPath, draft }: DeriveInput): PublicationStatus => {
-  if (draft.voiceApproved) return 'approved';
-  if (draft.voiceRegeneratedAt) return 'in_progress';
-  if (!audioPath && !draft.replacedAudioUrl) return 'missing';
-  return 'ready_for_review';
-};
-
-/** Assets that must be approved before this publication may go live. */
-const requiredAssets = (statuses: Omit<PublicationStatuses, 'overall'>, draft: PublicationDraft) =>
-  draft.hasNoVoice
-    ? [statuses.text, statuses.cover]
-    : [statuses.text, statuses.cover, statuses.voice];
-
-export const derivePublicationStatuses = (input: DeriveInput): PublicationStatuses => {
-  const text = deriveText(input);
-  const cover = deriveCover(input);
-  const voice = deriveVoice(input);
-  const assets = { text, cover, voice };
-
-  const overall = ((): PublicationStatus => {
-    if (input.moderationStatus === 'rejected') return 'rejected';
-    // `/approve` is what exposes a story publicly today, so approved == published.
-    if (input.moderationStatus === 'approved') return 'published';
-
-    const required = requiredAssets(assets, input.draft);
-    if (required.every((status) => status === 'approved')) return 'ready_for_review';
-    if (required.some((status) => status === 'missing')) return 'missing';
-    if (required.some((status) => status === 'approved' || status === 'in_progress')) {
-      return 'in_progress';
-    }
-    if (input.moderationStatus === 'flagged') return 'ready_for_review';
-    return 'pending';
-  })();
-
-  return { ...assets, overall };
-};
-
-/** Human-readable reasons the Publish button is disabled. Empty array means publishable. */
-export const publishBlockers = (
-  statuses: PublicationStatuses,
-  draft: PublicationDraft,
-): string[] => {
-  if (statuses.overall === 'published') return ['Already published'];
-  if (statuses.overall === 'rejected') return ['This publication was rejected'];
-
-  const blockers: string[] = [];
-  if (statuses.text !== 'approved') blockers.push('Written content is not approved');
-  if (statuses.cover !== 'approved') blockers.push('Story card is not approved');
-  if (!draft.hasNoVoice && statuses.voice !== 'approved') blockers.push('Voice is not approved');
-  return blockers;
-};
+/** Pull the three asset statuses and the overall rung out of an API payload. */
+export const readPublicationStatuses = (raw: {
+  content_status?: unknown;
+  cover_status?: unknown;
+  voice_status?: unknown;
+  publication_status?: unknown;
+}): PublicationStatuses => ({
+  text: normalizePublicationStatus(raw.content_status),
+  cover: normalizePublicationStatus(raw.cover_status, 'missing'),
+  voice: normalizePublicationStatus(raw.voice_status, 'missing'),
+  overall: normalizePublicationStatus(raw.publication_status),
+});

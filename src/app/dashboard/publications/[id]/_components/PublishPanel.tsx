@@ -9,40 +9,34 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { publishBlockers } from '@/lib/publications/status';
-import { useApproveStoryMutation } from '@/redux/features/admin/adminModeration/adminModeration.api';
-import type { PublicationDraft, PublicationStatuses } from '@/types/publication.types';
+import { usePublishPublicationMutation } from '@/redux/features/admin/adminModeration/adminModeration.api';
+import type { PublicationStatuses } from '@/types/publication.types';
 import { CheckCircle2, Globe2, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
 /**
- * The final gate. Blocked until content, story card and voice are all approved
- * (voice excepted when the publication intentionally has none).
- *
- * `POST /approve` is what actually exposes a story publicly today, so this button
- * does real, visible work even while the per-asset approvals are review-only.
+ * The final gate. The server decides whether this publication may go live and
+ * names anything outstanding, so the button only mirrors that verdict.
  */
 const PublishPanel = ({
   id,
   statuses,
-  draft,
+  blockers,
   isDirty,
   onSaveFirst,
 }: {
   id: string;
   statuses: PublicationStatuses;
-  draft: PublicationDraft;
+  blockers: string[];
   isDirty: boolean;
   onSaveFirst: () => Promise<boolean>;
 }) => {
   const [open, setOpen] = useState(false);
-  const [note, setNote] = useState('');
-  const [approveStory, { isLoading }] = useApproveStoryMutation();
+  const [publishPublication, { isLoading }] = usePublishPublicationMutation();
 
-  const blockers = publishBlockers(statuses, draft);
   const published = statuses.overall === 'published';
-  const canPublish = blockers.length === 0;
+  const canPublish = blockers.length === 0 && !published;
 
   const handlePublish = async () => {
     if (isDirty) {
@@ -50,8 +44,8 @@ const PublishPanel = ({
       if (!saved) return;
     }
     try {
-      const res = await approveStory({ storyId: id, notes: note.trim() || undefined }).unwrap();
-      if (res?.success) toast.success(res.message || 'Published');
+      const res = await publishPublication(id).unwrap();
+      if (res?.success) toast.success(res.message || 'Publication is live');
       setOpen(false);
     } catch (error) {
       const message =
@@ -89,7 +83,7 @@ const PublishPanel = ({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        disabled={!canPublish || published || isLoading}
+        disabled={!canPublish || isLoading}
         className="bg-primary mt-3 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
       >
         {isLoading ? <Loader2 size={14} className="animate-spin" /> : <Globe2 size={14} />}
@@ -105,17 +99,6 @@ const PublishPanel = ({
               the member sees it as approved.
             </DialogDescription>
           </DialogHeader>
-
-          <label className="block space-y-1">
-            <span className="text-[11px] font-bold tracking-wider text-[#A08170] uppercase">
-              Note to member (optional)
-            </span>
-            <textarea
-              value={note}
-              onChange={(event) => setNote(event.target.value)}
-              className="min-h-20 w-full rounded-md border border-[#E1D7CE] bg-white px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[#BF7758]/40"
-            />
-          </label>
 
           {isDirty ? (
             <p className="text-xs text-[#A2673F]">Unsaved edits will be saved before publishing.</p>
