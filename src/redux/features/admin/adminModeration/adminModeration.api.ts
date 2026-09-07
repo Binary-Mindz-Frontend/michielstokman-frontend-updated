@@ -45,7 +45,7 @@ const adminModerationApi = apiClient.injectEndpoints({
       providesTags: ['ModerationQueue'],
     }),
 
-    getStoryDetails: builder.query({
+    getModerationStoryDetails: builder.query({
       query: (storyId) => ({
         url: `/admin/moderation/story/${storyId}`,
         method: 'GET',
@@ -128,7 +128,7 @@ const adminModerationApi = apiClient.injectEndpoints({
 
 export const {
   useGetModerationQueueQuery,
-  useGetStoryDetailsQuery,
+  useGetModerationStoryDetailsQuery,
   useUpdateStoryMutation,
   useSuggestStoryFieldMutation,
   useRequestStoryChangesMutation,

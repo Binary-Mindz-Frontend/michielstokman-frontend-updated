@@ -5,7 +5,7 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import {
   useUpdateStoryMutation,
-  useGetStoryDetailsQuery,
+  useGetModerationStoryDetailsQuery,
 } from '@/redux/features/admin/adminModeration/adminModeration.api';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -28,7 +28,7 @@ interface IEditForm {
 }
 
 const EditAction: React.FC<EditActionProps> = ({ id, onSuccess }) => {
-  const { data: storyData, isLoading: isFetching } = useGetStoryDetailsQuery(id);
+  const { data: storyData, isLoading: isFetching } = useGetModerationStoryDetailsQuery(id);
   const [updateStory, { isLoading: isUpdating }] = useUpdateStoryMutation();
 
   const {

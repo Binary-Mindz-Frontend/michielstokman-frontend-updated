@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useGetVoicesQuery } from '@/redux/features/aiStory/aiStory.api';
 import {
   useApproveStoryMutation,
-  useGetStoryDetailsQuery,
+  useGetModerationStoryDetailsQuery,
   useRequestStoryChangesMutation,
   useSuggestStoryFieldMutation,
   useUpdateStoryMutation,
@@ -237,7 +237,7 @@ function AiCard({
 }
 
 export const ReviewDetails = ({ id, onClose }: ReviewDetailsProps) => {
-  const { data, isLoading } = useGetStoryDetailsQuery(id);
+  const { data, isLoading } = useGetModerationStoryDetailsQuery(id);
   const story = data?.data as Record<string, unknown> | undefined;
 
   if (isLoading || !story) {
