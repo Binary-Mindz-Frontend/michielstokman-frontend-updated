@@ -7,7 +7,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { FileText, LayoutGrid, LibraryBig, MessageSquare, Route } from 'lucide-react';
+import { FileText, LayoutGrid, LibraryBig, MessageSquare, Route, Users } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -20,6 +20,7 @@ function SidebarContentSection() {
       items: [
         { title: 'Dashboard', url: '/dashboard/overview', icon: LayoutGrid },
         { title: 'Publications', url: '/dashboard/publications', icon: LibraryBig },
+        { title: 'Users', url: '/dashboard/users', icon: Users },
         { title: 'Metrics Chat', url: '/dashboard/metrics-chat', icon: MessageSquare },
         { title: 'Liberations', url: '/dashboard/journey-management', icon: Route },
         { title: 'Order History', url: '/dashboard/order-history', icon: FileText },

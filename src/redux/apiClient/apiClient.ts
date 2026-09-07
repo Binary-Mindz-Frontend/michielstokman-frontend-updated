@@ -25,6 +25,7 @@ export const apiClient = createApi({
   tagTypes: [
     'PROFILE',
     'AdminStats',
+    'AdminUsers',
     'ModerationQueue',
     'Story',
     'Discovery_Feed',
