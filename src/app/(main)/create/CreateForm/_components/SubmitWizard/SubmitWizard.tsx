@@ -31,7 +31,8 @@ const schema = z.object({
   title: z.string().min(1, 'Title is required'),
   body: z.string().min(1, 'This field is required'),
   name: z.string().min(1, 'Name is required'),
-  location: z.string(),
+  city: z.string(),
+  country: z.string(),
   gender: z.string(),
   sexualOrientation: z.string(),
   occupation: z.string(),
@@ -47,6 +48,7 @@ const schema = z.object({
   personality: z.string(),
   lifestyle: z.string(),
   situation: z.string(),
+  highIntensity: z.boolean(),
   voiceName: z.string(),
   editorialConsent: z.boolean(),
   termsAccepted: z.boolean(),
@@ -98,7 +100,8 @@ export default function SubmitWizard({ category }: { category: string }) {
       title: '',
       body: '',
       name: '',
-      location: '',
+      city: '',
+      country: '',
       gender: '',
       sexualOrientation: '',
       occupation: '',
@@ -107,6 +110,7 @@ export default function SubmitWizard({ category }: { category: string }) {
       personality: '',
       lifestyle: '',
       situation: '',
+      highIntensity: false,
       voiceName: '',
       editorialConsent: false,
       termsAccepted: false,
@@ -224,7 +228,12 @@ export default function SubmitWizard({ category }: { category: string }) {
       story_type: isConfession ? 'confession' : 'meditation',
       title: data.title,
       first_name: data.name.trim(),
-      location: optionalText(data.location),
+      city: optionalText(data.city),
+      country: optionalText(data.country),
+      // Joined for older API deployments that still only read `location`.
+      location:
+        [optionalText(data.city), optionalText(data.country)].filter(Boolean).join(', ') ||
+        undefined,
       gender: optionalText(data.gender),
       sexual_orientation: optionalText(data.sexualOrientation),
       occupation: optionalText(data.occupation),
@@ -233,6 +242,7 @@ export default function SubmitWizard({ category }: { category: string }) {
       personality: optionalText(data.personality),
       lifestyle: optionalText(data.lifestyle),
       situation: optionalText(data.situation),
+      high_intensity: data.highIntensity,
       submission_mode: data.submissionMode,
       image_mode: 'ai_generated',
     };
@@ -432,7 +442,7 @@ export default function SubmitWizard({ category }: { category: string }) {
         ) : null}
 
         {step === 2 ? (
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div className="space-y-2">
               <h3 className="font-sans text-sm font-bold text-[#1A1A1A]">
                 {isConfession
@@ -440,82 +450,130 @@ export default function SubmitWizard({ category }: { category: string }) {
                   : 'Who is this meditation about?'}
               </h3>
               <p className="font-sans text-sm leading-relaxed text-[#666]">
-                Used to create the cover and bring this person to life. Name is required. Skip
-                anything you don’t want to share.
+                Name is required. Skip anything you don’t want to share.
               </p>
             </div>
-            <InputField
-              label="Name"
-              name="name"
-              placeholder="First name or pseudonym"
-              control={control}
-              error={errors.name?.message}
-              required
-            />
-            <InputField
-              label="Location"
-              name="location"
-              placeholder="Place the story started or is set"
-              control={control}
-              error={errors.location?.message}
-            />
-            <InputField
-              label="Gender / sex"
-              name="gender"
-              placeholder="e.g. Woman"
-              control={control}
-              error={errors.gender?.message}
-            />
-            <InputField
-              label="Sexual orientation"
-              name="sexualOrientation"
-              placeholder="e.g. Queer, bisexual"
-              control={control}
-              error={errors.sexualOrientation?.message}
-            />
-            <InputField
-              label="Occupation"
-              name="occupation"
-              placeholder="e.g. Mother, teacher"
-              control={control}
-              error={errors.occupation?.message}
-            />
-            <InputField
-              label="Age"
-              name="age"
-              type="number"
-              placeholder="e.g. 37"
-              control={control}
-              error={errors.age?.message}
-            />
-            <TextAreaField
-              label="Background"
-              name="background"
-              placeholder="What should we know about their history?"
-              control={control}
-              rows={3}
-            />
-            <TextAreaField
-              label="Personality"
-              name="personality"
-              placeholder="How they come across"
-              control={control}
-              rows={3}
-            />
-            <TextAreaField
-              label="Lifestyle"
-              name="lifestyle"
-              placeholder="How they live day to day"
-              control={control}
-              rows={3}
-            />
-            <TextAreaField
-              label="Situation"
-              name="situation"
-              placeholder="Where they are right now"
-              control={control}
-              rows={3}
-            />
+
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <h4 className="font-sans text-xs font-bold tracking-wider text-[#8A6E5F] uppercase">
+                  On the story card
+                </h4>
+                <p className="font-sans text-xs leading-relaxed text-[#888]">
+                  Shown publicly on the finished confession or meditation.
+                </p>
+              </div>
+              <InputField
+                label="Name"
+                name="name"
+                placeholder="First name or pseudonym"
+                control={control}
+                error={errors.name?.message}
+                required
+              />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <InputField
+                  label="City"
+                  name="city"
+                  placeholder="e.g. Amsterdam"
+                  control={control}
+                  error={errors.city?.message}
+                />
+                <InputField
+                  label="Country"
+                  name="country"
+                  placeholder="e.g. Netherlands"
+                  control={control}
+                  error={errors.country?.message}
+                />
+              </div>
+              <InputField
+                label="Gender / sex"
+                name="gender"
+                placeholder="e.g. Woman"
+                control={control}
+                error={errors.gender?.message}
+              />
+              <InputField
+                label="Sexual orientation"
+                name="sexualOrientation"
+                placeholder="e.g. Queer, bisexual"
+                control={control}
+                error={errors.sexualOrientation?.message}
+              />
+              <InputField
+                label="Occupation"
+                name="occupation"
+                placeholder="e.g. Mother, teacher"
+                control={control}
+                error={errors.occupation?.message}
+              />
+              <InputField
+                label="Age"
+                name="age"
+                type="number"
+                placeholder="e.g. 37"
+                control={control}
+                error={errors.age?.message}
+              />
+              <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-[#B39B7F] p-4">
+                <input
+                  type="checkbox"
+                  className="mt-1 size-4 accent-[#301C05]"
+                  checked={watch('highIntensity')}
+                  onChange={(event) => setValue('highIntensity', event.target.checked)}
+                />
+                <span className="space-y-1">
+                  <span className="block font-sans text-sm font-bold text-[#1A1A1A]">
+                    Mark as explicit
+                  </span>
+                  <span className="block font-sans text-xs leading-relaxed text-[#666]">
+                    Turn this on when the piece includes explicit sexual language or themes. Readers
+                    can filter explicit stories out.
+                  </span>
+                </span>
+              </label>
+            </div>
+
+            <div className="space-y-4 border-t border-[#E8DFD4] pt-5">
+              <div className="space-y-1">
+                <h4 className="font-sans text-xs font-bold tracking-wider text-[#8A6E5F] uppercase">
+                  Character notes
+                </h4>
+                <p className="font-sans text-xs leading-relaxed text-[#888]">
+                  Optional. Used to create the cover and help editorial — never shown on the public
+                  card.
+                </p>
+              </div>
+              <TextAreaField
+                label="Background"
+                name="background"
+                placeholder="What should we know about their history?"
+                control={control}
+                rows={3}
+              />
+              <TextAreaField
+                label="Personality"
+                name="personality"
+                placeholder="How they come across"
+                control={control}
+                rows={3}
+              />
+              <TextAreaField
+                label="Lifestyle"
+                name="lifestyle"
+                placeholder="How they live day to day"
+                control={control}
+                rows={3}
+              />
+              <TextAreaField
+                label="Situation"
+                name="situation"
+                placeholder="Where they are right now"
+                control={control}
+                rows={3}
+              />
+            </div>
           </div>
         ) : null}
 
