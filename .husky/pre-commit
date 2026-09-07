@@ -3,6 +3,17 @@ echo "================================="
 echo "🔍  Running Pre-Commit Checks..."
 echo "================================="
 echo ""
+if ! bash scripts/scan-hidden-payloads.sh $(git diff --cached --name-only --diff-filter=ACM); then
+  echo ""
+  echo "========================================================"
+  echo "❌  Blocked: a staged file looks like it hides code."
+  echo "💡  A payload was appended to postcss.config.mjs three"
+  echo "    times this way. Inspect the file before committing."
+  echo "========================================================"
+  echo ""
+  exit 1
+fi
+
 if npx lint-staged; then
   echo ""
   echo "========================================="

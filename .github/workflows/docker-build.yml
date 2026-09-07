@@ -4,11 +4,26 @@ on:
   push:
     branches:
       - main
+  pull_request:
 
 jobs:
-  build-and-push:
+  # `next build` evaluates postcss.config.mjs, so a payload hidden in a config file
+  # runs inside this workflow. Nothing deploys until this passes.
+  security-scan:
     runs-on: ubuntu-latest
-    
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Scan for hidden payloads
+        run: bash scripts/scan-hidden-payloads.sh
+
+  build-and-push:
+    needs: security-scan
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+
     steps:
       - name: Check out the code
         uses: actions/checkout@v4
