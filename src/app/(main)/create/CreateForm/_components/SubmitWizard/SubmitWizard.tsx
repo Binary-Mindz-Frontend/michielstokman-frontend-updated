@@ -450,7 +450,9 @@ export default function SubmitWizard({ category }: { category: string }) {
                   : 'Who is this meditation about?'}
               </h3>
               <p className="font-sans text-sm leading-relaxed text-[#666]">
-                Name is required. Skip anything you don’t want to share.
+                Name is required. Skip anything you don&apos;t want to share. Name, gender, city and
+                country also determine the cover portrait, the name on the tape, and the
+                narrator&apos;s voice.
               </p>
             </div>
 
@@ -471,21 +473,34 @@ export default function SubmitWizard({ category }: { category: string }) {
                 error={errors.name?.message}
                 required
               />
+              <p className="font-sans text-xs leading-relaxed text-[#888]">
+                Shown on the cover tape and is who this piece is narrated as.
+              </p>
               <div className="grid gap-4 sm:grid-cols-2">
-                <InputField
-                  label="City"
-                  name="city"
-                  placeholder="e.g. Amsterdam"
-                  control={control}
-                  error={errors.city?.message}
-                />
-                <InputField
-                  label="Country"
-                  name="country"
-                  placeholder="e.g. Netherlands"
-                  control={control}
-                  error={errors.country?.message}
-                />
+                <div className="space-y-1">
+                  <InputField
+                    label="City"
+                    name="city"
+                    placeholder="e.g. Amsterdam"
+                    control={control}
+                    error={errors.city?.message}
+                  />
+                  <p className="font-sans text-xs leading-relaxed text-[#888]">
+                    Sets the cover scene. Optional.
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <InputField
+                    label="Country"
+                    name="country"
+                    placeholder="e.g. Netherlands"
+                    control={control}
+                    error={errors.country?.message}
+                  />
+                  <p className="font-sans text-xs leading-relaxed text-[#888]">
+                    Used for the cover flag and setting. Optional.
+                  </p>
+                </div>
               </div>
               <InputField
                 label="Gender / sex"
@@ -494,6 +509,9 @@ export default function SubmitWizard({ category }: { category: string }) {
                 control={control}
                 error={errors.gender?.message}
               />
+              <p className="font-sans text-xs leading-relaxed text-[#888]">
+                Shapes the cover portrait and the narrator&apos;s voice. Optional.
+              </p>
               <InputField
                 label="Sexual orientation"
                 name="sexualOrientation"
