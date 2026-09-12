@@ -1,0 +1,66 @@
+echo ""
+echo "================================="
+echo "🔍  Running Pre-Push Checks..."
+echo "================================="
+echo ""
+
+status=0
+
+# stdin is one line per ref: <local ref> <local sha> <remote ref> <remote sha>
+while read -r local_ref local_sha remote_ref remote_sha; do
+  # A branch deletion pushes the zero object.
+  case "$local_sha" in
+    0000000000000000000000000000000000000000) continue ;;
+  esac
+
+  case "$remote_sha" in
+    0000000000000000000000000000000000000000)
+      # New remote branch: there is nothing to diff against, so fall back to
+      # whatever main does not already have.
+      if git rev-parse --verify -q origin/main >/dev/null 2>&1; then
+        range="origin/main..$local_sha"
+      else
+        continue
+      fi
+      ;;
+    *)
+      range="$remote_sha..$local_sha"
+      ;;
+  esac
+
+  # This is the check pre-commit structurally cannot do. Every backdoor in this
+  # repo arrived through a merge commit, and a merge's payload is never staged,
+  # so `git diff --cached` never saw it. Verified against the commits being
+  # pushed instead of the index.
+  if ! bash scripts/check-merge-integrity.sh "$range"; then
+    status=1
+  fi
+
+  # Scan only the content this push introduces -- a full tree scan is slow on
+  # Windows and the staged files were already scanned at commit time.
+  changed=$(git diff --name-only --diff-filter=ACM "$range" 2>/dev/null)
+  if [ -n "$changed" ]; then
+    # shellcheck disable=SC2086
+    if ! bash scripts/scan-hidden-payloads.sh $changed; then
+      status=1
+    fi
+  fi
+done
+
+if [ "$status" -ne 0 ]; then
+  echo ""
+  echo "========================================================"
+  echo "❌  Blocked: this push looks like it carries a backdoor."
+  echo "    Merges in this repo have repeatedly re-added payloads"
+  echo "    that the branch had already removed. Inspect the"
+  echo "    output above before pushing."
+  echo "========================================================"
+  echo ""
+  exit 1
+fi
+
+echo ""
+echo "========================================="
+echo "✅  Pre-push checks passed!"
+echo "========================================="
+echo ""

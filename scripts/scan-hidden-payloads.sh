@@ -21,6 +21,12 @@ MAX_LINE_LENGTH=1200
 HIDDEN_TAIL_PATTERN='[^[:space:]][[:space:]]{30,}[^[:space:]]'
 
 # Substrings from the payloads seen in this repo and the backend one.
+#
+# These are the *durable* fragments only. The payload text, its obfuscation seed
+# and its trailing marker (`A8-4068`, `A8-4266`, `A8-4286-1`, `A8-1144-3`, ...)
+# are regenerated on every injection, so string matching alone always lags a
+# rotation. The structural checks above and check-merge-integrity.sh carry the
+# real weight; this list is a cheap extra net.
 BAD_PATTERNS=(
   'X-Payload-B64'
   'eth_getTransactionCount'
@@ -28,7 +34,19 @@ BAD_PATTERNS=(
   'stdio:"ignore"'
   "stdio: *'ignore'"
   'windowsHide'
+  # Trailing marker the family stamps on every variant.
+  "global\.i = 'A8-"
+  # Launcher idiom from the backend font dropper.
+  '_global\._t_u'
+  'run_loader'
+  # The payload hands require() to itself through a global.
+  "global\['r'\] *= *require"
 )
+
+# Joined into one ERE so the scan spawns one grep per file rather than one per
+# pattern. On Windows/Git-Bash each spawn costs ~60ms, and a per-pattern loop
+# over this many files turned a few seconds into three minutes.
+COMBINED_BAD_PATTERN=$(printf '%s\n' "${BAD_PATTERNS[@]}" | paste -sd'|' -)
 
 failed=0
 
@@ -52,9 +70,28 @@ for file in "${files[@]}"; do
 
   case "$file" in
     pnpm-lock.yaml | package-lock.json | *.min.js | *.min.css) continue ;;
-    *.svg | *.png | *.jpg | *.jpeg | *.webp | *.gif | *.ico) continue ;;
-    *.woff | *.woff2 | *.ttf | *.eot | *.mp3 | *.mp4 | *.pdf) continue ;;
-    scripts/scan-hidden-payloads.sh) continue ;;
+    # These exist to assert the malware is ABSENT, so they name its markers on
+    # purpose and must not be read as findings. Kept as an explicit list rather
+    # than a "the line looks like a negation" heuristic -- a payload could hide
+    # behind that, but it cannot add itself to this list without a reviewable
+    # commit.
+    scripts/scan-hidden-payloads.sh | scripts/verify-leftover-fixes.mjs) continue ;;
+    # SVG is legitimately text, so it stays skipped for the line checks below.
+    *.svg) continue ;;
+    # Everything here is *claimed* to be binary. A file behind one of these
+    # extensions that is really text is itself the finding -- the backend
+    # dropper shipped a JavaScript payload named fa-solid-500.woff2, so this
+    # skip list must not double as a hiding place.
+    *.png | *.jpg | *.jpeg | *.webp | *.gif | *.ico \
+    | *.woff | *.woff2 | *.ttf | *.otf | *.eot \
+    | *.mp3 | *.mp4 | *.pdf)
+      if LC_ALL=C grep -Iq . "$file" 2>/dev/null; then
+        report "Asset $file is text, not binary
+       Payloads have been smuggled behind font and image extensions before.
+       Inspect this file."
+      fi
+      continue
+      ;;
   esac
 
   # Skip anything that is not text.
@@ -81,11 +118,11 @@ for file in "${files[@]}"; do
       ;;
   esac
 
-  for pattern in "${BAD_PATTERNS[@]}"; do
-    if LC_ALL=C grep -nEq "$pattern" "$file" 2>/dev/null; then
-      report "Known malware marker '$pattern' found in $file"
-    fi
-  done
+  if LC_ALL=C grep -nEq "$COMBINED_BAD_PATTERN" "$file" 2>/dev/null; then
+    hit=$(LC_ALL=C grep -nEo "$COMBINED_BAD_PATTERN" "$file" 2>/dev/null | head -1)
+    report "Known malware marker found in $file
+       Matched: $hit"
+  fi
 done
 
 # postcss config is ESM, so a payload needs createRequire to reach require().
@@ -93,6 +130,18 @@ done
 if [ -f postcss.config.mjs ] && grep -q 'createRequire' postcss.config.mjs; then
   report "postcss.config.mjs uses createRequire
        The backdoor added this solely to hand require() to its payload."
+fi
+
+# An editor task pinned to folderOpen runs the moment anyone opens the repo, and
+# allowAutomaticTasks suppresses the confirmation prompt. Neither has a
+# legitimate use here -- the backend repo lost six rounds to exactly this.
+if [ -d .vscode ]; then
+  vscode_hits=$(LC_ALL=C grep -rInE 'folderOpen|allowAutomaticTasks|"runOn"' .vscode 2>/dev/null || true)
+  if [ -n "$vscode_hits" ]; then
+    report "Editor auto-run configuration found under .vscode:
+$vscode_hits
+       This executes on folder open, before any build or install."
+  fi
 fi
 
 if [ "$failed" -ne 0 ]; then
