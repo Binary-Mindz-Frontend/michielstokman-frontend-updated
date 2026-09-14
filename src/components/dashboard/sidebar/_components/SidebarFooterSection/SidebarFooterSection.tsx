@@ -7,7 +7,8 @@ import { cn } from '@/lib/utils';
 import { useAuthState } from '@/redux/features/auth/authSlice';
 import { useGetProfileQuery } from '@/redux/features/userProfile/userProfile.api';
 import { useAppSelector } from '@/redux/hooks';
-import { LogOut } from 'lucide-react';
+import { ChevronRight, LogOut } from 'lucide-react';
+import Link from 'next/link';
 
 function SidebarFooterSection({ state }: { state: string }) {
   const logOut = useLogout();
@@ -28,7 +29,11 @@ function SidebarFooterSection({ state }: { state: string }) {
       )}
     >
       {!collapsed ? (
-        <div className="flex items-center gap-2.5 rounded-md border border-[#E1D7CE] bg-white/70 px-2.5 py-2">
+        <Link
+          href="/profile"
+          className="group hover:border-primary/30 flex items-center gap-2.5 rounded-md border border-[#E1D7CE] bg-white/70 px-2.5 py-2 transition-colors hover:bg-white"
+          title="Open profile"
+        >
           <span
             className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-bold"
             aria-hidden
@@ -42,16 +47,24 @@ function SidebarFooterSection({ state }: { state: string }) {
             {email ? (
               <span className="text-secondary block truncate text-[11px]">{email}</span>
             ) : null}
+            <span className="text-primary mt-0.5 block text-[10px] font-semibold tracking-wide">
+              View profile
+            </span>
           </span>
-        </div>
+          <ChevronRight
+            size={14}
+            className="text-secondary/70 group-hover:text-primary shrink-0 transition-colors"
+          />
+        </Link>
       ) : (
-        <span
-          className="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-full text-xs font-bold"
-          title={displayName}
-          aria-label={displayName}
+        <Link
+          href="/profile"
+          className="bg-primary/10 text-primary hover:bg-primary/15 flex size-8 items-center justify-center rounded-full text-xs font-bold transition-colors"
+          title={`${displayName} — profile`}
+          aria-label={`Open profile for ${displayName}`}
         >
           {initial}
-        </span>
+        </Link>
       )}
 
       <Button

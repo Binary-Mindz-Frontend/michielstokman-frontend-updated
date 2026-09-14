@@ -18,6 +18,7 @@ import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils'
 
 import ProfileHero from './_components/ProfileHero';
 import ProfileDemographics from './_components/ProfileDemographics';
+import ProfileDisplayName from './_components/ProfileDisplayName';
 import ProfileRadarChart from './_components/ProfileRadarChart';
 import ProfileActions from './_components/ProfileActions';
 import {
@@ -185,6 +186,10 @@ export default function ProfilePage() {
           />
         </motion.div>
 
+        <motion.div variants={FADE_IN_UP_ITEM} className="w-full max-w-2xl">
+          <ProfileDisplayName trueName={profileData?.true_name} />
+        </motion.div>
+
         {/* SECTION 2: DEMOGRAPHICS GRID */}
         <motion.div variants={FADE_IN_UP_ITEM} className="w-full max-w-2xl">
           <ProfileDemographics personalDetails={personalDetails} />
@@ -198,6 +203,8 @@ export default function ProfilePage() {
         {/* ACTIONS: BUTTONS */}
         <motion.div variants={FADE_IN_UP_ITEM} className="w-full max-w-2xl">
           <ProfileActions
+            isAdmin={Boolean(user?.is_admin)}
+            onBackToDashboard={() => router.push('/dashboard/overview')}
             onUpdateFocus={() => router.push('/register/stepper')}
             onLogout={handleLogout}
           />
