@@ -1,6 +1,7 @@
 'use client';
 
 import { useSendMetricsChatMessageMutation } from '@/redux/features/admin/adminMetricsChat/adminMetricsChat.api';
+import { appToast } from '@/utils/appToast';
 import { Bot, Loader2, Send, Sparkles, User } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -10,8 +11,72 @@ interface IMessage {
   items?: string[];
 }
 
+type MetricsChatEnvelope = {
+  success?: boolean;
+  message?: string;
+  data?: {
+    answer?: string;
+    metrics_snapshot?: unknown;
+  } | null;
+};
+
+function extractAnswer(payload: unknown): string | null {
+  if (!payload || typeof payload !== 'object') return null;
+  const body = payload as MetricsChatEnvelope & { answer?: string };
+  const nested = body.data?.answer;
+  if (typeof nested === 'string' && nested.trim()) return nested.trim();
+  if (typeof body.answer === 'string' && body.answer.trim()) return body.answer.trim();
+  return null;
+}
+
+function extractErrorMessage(error: unknown): string {
+  if (!error || typeof error !== 'object') {
+    return 'Sorry, I encountered an issue retrieving those metrics. Please try again.';
+  }
+
+  const err = error as {
+    status?: number | string;
+    error?: string;
+    data?: { message?: string; detail?: string | { msg?: string }[]; success?: boolean };
+    message?: string;
+  };
+
+  const data = err.data;
+  if (typeof data?.message === 'string' && data.message.trim()) {
+    return data.message.trim();
+  }
+  if (typeof data?.detail === 'string' && data.detail.trim()) {
+    return data.detail.trim();
+  }
+  if (Array.isArray(data?.detail) && data.detail[0]?.msg) {
+    return String(data.detail[0].msg);
+  }
+  if (typeof err.message === 'string' && err.message.trim() && err.message !== 'Rejected') {
+    return err.message.trim();
+  }
+  if (err.status === 401 || err.status === 403) {
+    return 'Your admin session expired. Please sign in again.';
+  }
+  if (err.status === 422) {
+    return 'Ask a slightly longer question (at least a few words).';
+  }
+  if (err.status === 503) {
+    return 'The metrics AI service is temporarily unavailable. Try a standard question like “platform overview”.';
+  }
+  if (err.status === 'FETCH_ERROR') {
+    return 'Could not reach the metrics service. Check your connection and try again.';
+  }
+  if (err.status === 'TIMEOUT_ERROR') {
+    return 'The metrics request timed out. Please try again.';
+  }
+  if (err.status === 'PARSING_ERROR') {
+    return 'Received an unexpected response from the metrics service.';
+  }
+
+  return 'Sorry, I encountered an issue retrieving those metrics. Please try again.';
+}
+
 const ChatBox = () => {
-  // Correctly destructure RTK Mutation tuple
   const [sendMetricsChatMessage, { isLoading: isApiLoading }] = useSendMetricsChatMessageMutation();
 
   const [messages, setMessages] = useState<IMessage[]>([]);
@@ -24,11 +89,9 @@ const ChatBox = () => {
     }
   }, [messages, isApiLoading]);
 
-  // Helper function to turn API markdown **text** into clean HTML bold tags safely
   const renderFormattedContent = (content: string) => {
     if (!content) return '';
 
-    // Split lines to preserve layout, handle **bold**, and stitch back together
     return content.split('\n').map((line, index) => {
       const parts = line.split(/(\*\*.*?\*\*)/g);
       return (
@@ -49,40 +112,46 @@ const ChatBox = () => {
   };
 
   const handleSend = async () => {
-    if (!input.trim() || isApiLoading) return;
+    const trimmed = input.trim();
+    if (!trimmed || isApiLoading) return;
 
-    const userMessage: IMessage = { role: 'user', content: input };
+    if (trimmed.length < 3) {
+      appToast.error('Ask a slightly longer question (at least 3 characters).');
+      return;
+    }
+
+    const userMessage: IMessage = { role: 'user', content: trimmed };
     setMessages((prev) => [...prev, userMessage]);
-    const currentInput = input;
     setInput('');
 
     try {
-      // CHANGED: sending "query" instead of "message" to match your backend's expected schema
-      const response = await sendMetricsChatMessage({ query: currentInput }).unwrap();
+      const response = await sendMetricsChatMessage({ query: trimmed }).unwrap();
+      const answer = extractAnswer(response);
 
-      if (response?.success && response?.data?.answer) {
-        const aiMessage: IMessage = {
-          role: 'assistant',
-          content: response.data.answer,
-        };
-        setMessages((prev) => [...prev, aiMessage]);
-      } else {
-        throw new Error('Malformed data structure received');
+      if (!answer) {
+        const serverMessage =
+          typeof (response as MetricsChatEnvelope)?.message === 'string'
+            ? (response as MetricsChatEnvelope).message
+            : null;
+        throw new Error(serverMessage || 'No answer returned from metrics chat.');
       }
+
+      setMessages((prev) => [...prev, { role: 'assistant', content: answer }]);
     } catch (error) {
-      console.error('Failed to generate insights:', error);
+      const message = extractErrorMessage(error);
       setMessages((prev) => [
         ...prev,
         {
           role: 'assistant',
-          content: 'Sorry, I encountered an issue retrieving those metrics. Please try again.',
+          content: message,
         },
       ]);
+      appToast.error(message);
     }
   };
+
   return (
     <div className="border-primary/10 mx-auto flex h-[77vh] w-full flex-col overflow-hidden rounded-md border bg-[#FDFCFB]">
-      {/* Header */}
       <div className="border-primary/10 flex items-center justify-between border-b bg-white p-4">
         <div className="flex items-center gap-2">
           <div className="rounded-lg bg-[#F8F7F3] p-2">
@@ -101,7 +170,6 @@ const ChatBox = () => {
         </span>
       </div>
 
-      {/* Chat Messages Area */}
       <div
         ref={scrollRef}
         className="flex-1 space-y-6 overflow-y-auto scroll-smooth bg-[#F8F7F3]/40 p-6"
@@ -147,7 +215,6 @@ const ChatBox = () => {
           </div>
         ))}
 
-        {/* Typing Indicator */}
         {isApiLoading && (
           <div className="flex items-center justify-start gap-3">
             <div className="bg-primary flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white">
@@ -160,7 +227,6 @@ const ChatBox = () => {
         )}
       </div>
 
-      {/* Input Area */}
       <div className="border-primary/10 border-t bg-white p-6">
         <form
           onSubmit={(e) => {
@@ -174,7 +240,7 @@ const ChatBox = () => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={isApiLoading}
-            placeholder="Ask anything about this week's performance..."
+            placeholder="Try “platform overview” or ask about this week’s performance…"
             className="text-secondary placeholder:text-secondary flex-1 border-none bg-transparent px-2 py-2 outline-none disabled:cursor-not-allowed"
           />
           <button

@@ -10,14 +10,21 @@ import { useGenerateStoryMutation, useGetVoicesQuery } from '@/redux/features/ai
 import { appToast } from '@/utils/appToast';
 import { appendStoryPayloadToFormData } from '@/utils/storyGenerate.utils';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Pause, Play } from 'lucide-react';
+import { Mic, Pause, Play, Trash2, Upload } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import SuccessModal from '../SuccessModal/SuccessModal';
-import { countWords } from '../submitStory.utils';
+import {
+  clearSubmitWizardDraft,
+  countWords,
+  isSubmitWizardDraftDirty,
+  loadSubmitWizardDraft,
+  saveSubmitWizardDraft,
+  SUBMIT_WIZARD_DEFAULTS,
+} from '../submitStory.utils';
 
 const CONFESSION_MIN_WORDS = 1000;
 const CONFESSION_MAX_WORDS = 1800;
@@ -69,17 +76,37 @@ function optionalText(value: string) {
   return trimmed ? trimmed : undefined;
 }
 
-export default function SubmitWizard({ category }: { category: string }) {
+export default function SubmitWizard({
+  category,
+  basePath = '/create',
+  successHref,
+}: {
+  category: string;
+  basePath?: string;
+  successHref?: string;
+}) {
   const router = useRouter();
   const isConfession = category === 'Confessions';
+  const pieceLabel = isConfession ? 'confession' : 'meditation';
+  const otherTypeLabel = isConfession ? 'Meditation' : 'Confession';
+  const otherTypeParam = isConfession ? 'Meditation' : 'Confessions';
   const [step, setStep] = useState(0);
   const [isSuccess, setIsSuccess] = useState(false);
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [audioError, setAudioError] = useState<string | null>(null);
   const [playingName, setPlayingName] = useState<string | null>(null);
+  const [needsAudioRestore, setNeedsAudioRestore] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioInputRef = useRef<HTMLInputElement | null>(null);
+  const [draftReady, setDraftReady] = useState(false);
   const [generateStory, { isLoading: isGenerating }] = useGenerateStoryMutation();
-  const { data: voicesCatalog, isLoading: isVoicesLoading } = useGetVoicesQuery();
+  const {
+    data: voicesCatalog,
+    isLoading: isVoicesLoading,
+    isError: isVoicesError,
+    isFetching: isVoicesFetching,
+    refetch: refetchVoices,
+  } = useGetVoicesQuery();
 
   const voices = useMemo(
     () => (voicesCatalog?.voices ?? []).filter((voice) => !voice.is_custom).slice(0, 4),
@@ -93,37 +120,49 @@ export default function SubmitWizard({ category }: { category: string }) {
     setValue,
     watch,
     trigger,
+    reset,
+    getValues,
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: {
-      submissionMode: 'studio',
-      title: '',
-      body: '',
-      name: '',
-      city: '',
-      country: '',
-      gender: '',
-      sexualOrientation: '',
-      occupation: '',
-      age: '',
-      background: '',
-      personality: '',
-      lifestyle: '',
-      situation: '',
-      highIntensity: false,
-      voiceName: '',
-      editorialConsent: false,
-      termsAccepted: false,
-    },
+    defaultValues: SUBMIT_WIZARD_DEFAULTS,
   });
 
-  const bodyValue = watch('body') || '';
-  const voiceName = watch('voiceName');
-  const submissionMode = watch('submissionMode');
-  const editorialConsent = watch('editorialConsent');
-  const termsAccepted = watch('termsAccepted');
+  const formValues = watch();
+  const bodyValue = formValues.body || '';
+  const voiceName = formValues.voiceName;
+  const submissionMode = formValues.submissionMode;
+  const editorialConsent = formValues.editorialConsent;
+  const termsAccepted = formValues.termsAccepted;
   const isStudio = submissionMode === 'studio';
   const wordCount = countWords(bodyValue);
+  const voicesReady = !isVoicesLoading && !isVoicesError && voices.length > 0;
+  const canContinueVoiceStep = isStudio ? voicesReady && Boolean(voiceName) : Boolean(audioFile);
+  const voiceContinueHint = isVoicesLoading
+    ? 'Loading voices…'
+    : isVoicesError
+      ? 'Voices could not load — retry'
+      : !voices.length
+        ? 'No studio voices are available right now.'
+        : 'Choose a voice to continue.';
+
+  useEffect(() => {
+    const draft = loadSubmitWizardDraft(category);
+    if (draft) {
+      reset(draft.values);
+      setStep(Math.min(draft.step, STEP_LABELS.length - 1));
+      setNeedsAudioRestore(draft.hadAudio && draft.values.submissionMode === 'human_ready');
+    }
+    setDraftReady(true);
+  }, [category, reset]);
+
+  useEffect(() => {
+    if (!draftReady || isSuccess) return;
+    saveSubmitWizardDraft(category, {
+      step,
+      values: formValues,
+      hadAudio: Boolean(audioFile) || needsAudioRestore,
+    });
+  }, [audioFile, category, draftReady, formValues, isSuccess, needsAudioRestore, step]);
 
   useEffect(() => {
     if (!isStudio || !voices.length || voiceName) return;
@@ -176,6 +215,10 @@ export default function SubmitWizard({ category }: { category: string }) {
     }
     if (index === 3) {
       if (isStudio) {
+        if (isVoicesError || !voices.length) {
+          appToast.error('Voices could not load — retry');
+          return false;
+        }
         if (!voiceName) {
           appToast.error('Choose a voice for the finished piece.');
           return false;
@@ -197,6 +240,26 @@ export default function SubmitWizard({ category }: { category: string }) {
     const ok = await validateStep(step);
     if (!ok) return;
     setStep((current) => Math.min(current + 1, STEP_LABELS.length - 1));
+  };
+
+  const persistDraft = () => {
+    saveSubmitWizardDraft(category, {
+      step,
+      values: getValues(),
+      hadAudio: Boolean(audioFile) || needsAudioRestore,
+    });
+  };
+
+  const handleSwitchType = () => {
+    persistDraft();
+    const dirty = isSubmitWizardDraftDirty(getValues(), step) || Boolean(audioFile);
+    if (dirty) {
+      const confirmed = window.confirm(
+        `Your ${pieceLabel} draft is saved. You can come back to it. Switch to ${otherTypeLabel}?`,
+      );
+      if (!confirmed) return;
+    }
+    router.push(`${basePath}?type=${otherTypeParam}`);
   };
 
   const onSubmit = async (data: FormValues) => {
@@ -270,6 +333,7 @@ export default function SubmitWizard({ category }: { category: string }) {
       }
 
       if (res.success) {
+        clearSubmitWizardDraft(category);
         setIsSuccess(true);
       }
     } catch (error: any) {
@@ -301,16 +365,24 @@ export default function SubmitWizard({ category }: { category: string }) {
     if (!file) {
       setAudioFile(null);
       setAudioError(null);
+      if (audioInputRef.current) audioInputRef.current.value = '';
       return;
     }
     if (file.size > MAX_AUDIO_BYTES) {
       setAudioFile(null);
       setAudioError('Narration must be 10 MB or smaller.');
       appToast.error('Narration must be 10 MB or smaller.');
+      if (audioInputRef.current) audioInputRef.current.value = '';
       return;
     }
     setAudioFile(file);
     setAudioError(null);
+    setNeedsAudioRestore(false);
+  };
+
+  const formatAudioSize = (bytes: number) => {
+    if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
   const stepTitle = isConfession
@@ -330,19 +402,25 @@ export default function SubmitWizard({ category }: { category: string }) {
       ];
 
   const canSubmit = termsAccepted && (isStudio ? editorialConsent : true) && !isGenerating;
+  const continueDisabled = step === 3 && !canContinueVoiceStep;
 
   return (
     <>
-      <div className="mb-6 flex items-center justify-between gap-3">
-        <p className="font-sans text-xs font-semibold tracking-wide text-[#888] uppercase">
-          Step {step + 1} of {STEP_LABELS.length} · {stepTitle[step]}
-        </p>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <span className="rounded-full border border-[#EEA13D]/70 bg-[#EEA13D]/10 px-2.5 py-0.5 font-sans text-[10px] font-bold tracking-wider text-[#8A6E5F] uppercase">
+            {isConfession ? 'Confession' : 'Meditation'}
+          </span>
+          <p className="font-sans text-xs font-semibold tracking-wide text-[#888] uppercase">
+            Step {step + 1} of {STEP_LABELS.length} · {stepTitle[step]}
+          </p>
+        </div>
         <button
           type="button"
-          onClick={() => router.push('/create')}
+          onClick={handleSwitchType}
           className="font-sans text-xs font-semibold text-[#777] underline underline-offset-2 hover:text-[#503225]"
         >
-          Change type
+          Switch to {otherTypeLabel}
         </button>
       </div>
 
@@ -362,7 +440,7 @@ export default function SubmitWizard({ category }: { category: string }) {
         {step === 0 ? (
           <div className="space-y-4">
             <div className="space-y-2">
-              <h3 className="font-sans text-sm font-bold text-[#1A1A1A]">How you’ll submit</h3>
+              <h3 className="font-sans text-sm font-bold text-[#1A1A1A]">How you&apos;ll submit</h3>
               <p className="font-sans text-sm leading-relaxed text-[#666]">
                 Choose one path. You can still withdraw later from My Stories.
               </p>
@@ -376,11 +454,15 @@ export default function SubmitWizard({ category }: { category: string }) {
               )}
             >
               <span className="block font-sans text-sm font-bold text-[#1A1A1A]">
-                Confession/meditation + Studio Voice
+                We edit &amp; narrate
               </span>
-              <span className="mt-1 block font-sans text-sm leading-relaxed text-[#666]">
-                You submit the text. We edit it, then narrate the finished piece in one of our four
-                studio voices.
+              <span className="mt-2 block space-y-2 font-sans text-sm leading-relaxed text-[#666]">
+                <span className="block">You send the text.</span>
+                <span className="block">
+                  We rewrite it to our quality standard (this can take days or sometimes months).
+                  The heart of your story stays yours; we only make it stronger.
+                </span>
+                <span className="block">Then we record it in one of our four studio voices.</span>
               </span>
             </button>
             <button
@@ -391,13 +473,18 @@ export default function SubmitWizard({ category }: { category: string }) {
                 !isStudio ? 'border-[#EEA13D] bg-[#EEA13D]/10' : 'border-[#B39B7F]',
               )}
             >
-              <span className="block font-sans text-sm font-bold text-[#1A1A1A]">
-                Fully narrated confession/meditation
-              </span>
-              <span className="mt-1 block font-sans text-sm leading-relaxed text-[#666]">
-                You submit a complete script and a complete narration in your own voice. We do not
-                rewrite it or replace your voice. It is reviewed as submitted and either published
-                or not accepted.
+              <span className="block font-sans text-sm font-bold text-[#1A1A1A]">100% you</span>
+              <span className="mt-2 block space-y-2 font-sans text-sm leading-relaxed text-[#666]">
+                <span className="block">
+                  You send a finished script and a finished recording in your own voice.
+                </span>
+                <span className="block">
+                  We do not rewrite the text and we do not replace your voice. We only review it.
+                </span>
+                <span className="block">
+                  This option requires full effort from you. We keep the same high standard for
+                  readers, so only pieces that already meet it are published.
+                </span>
               </span>
             </button>
           </div>
@@ -462,7 +549,7 @@ export default function SubmitWizard({ category }: { category: string }) {
                   On the story card
                 </h4>
                 <p className="font-sans text-xs leading-relaxed text-[#888]">
-                  Shown publicly on the finished confession or meditation.
+                  Shown publicly on the finished {pieceLabel}.
                 </p>
               </div>
               <InputField
@@ -600,12 +687,44 @@ export default function SubmitWizard({ category }: { category: string }) {
             <div className="space-y-2">
               <h3 className="font-sans text-sm font-bold text-[#1A1A1A]">Who reads this</h3>
               <p className="font-sans text-sm leading-relaxed text-[#666]">
-                After editorial rewrite, we narrate the finished piece in one of our voices. Choose
-                one and listen first.
+                After editorial rewrite, we narrate the finished {pieceLabel} in one of our voices.
+                Choose one and listen first.
               </p>
             </div>
             {isVoicesLoading ? (
               <p className="font-sans text-xs text-[#888]">Loading voices…</p>
+            ) : isVoicesError ? (
+              <div className="space-y-3 rounded-lg border border-[#D22D4C]/40 bg-[#D22D4C]/5 p-4">
+                <p className="font-sans text-sm font-semibold text-[#D22D4C]">
+                  Voices could not load — retry
+                </p>
+                <p className="font-sans text-xs leading-relaxed text-[#666]">
+                  A studio voice is required to continue. Go Back if you need to change anything
+                  else.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => refetchVoices()}
+                  disabled={isVoicesFetching}
+                  className="rounded-none border-2 border-[#B39B7F] px-4 py-2 font-sans text-xs font-semibold text-[#503225] uppercase disabled:opacity-50"
+                >
+                  {isVoicesFetching ? 'Retrying…' : 'Retry'}
+                </button>
+              </div>
+            ) : !voices.length ? (
+              <div className="space-y-3 rounded-lg border border-[#D22D4C]/40 bg-[#D22D4C]/5 p-4">
+                <p className="font-sans text-sm font-semibold text-[#D22D4C]">
+                  No studio voices are available right now.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => refetchVoices()}
+                  disabled={isVoicesFetching}
+                  className="rounded-none border-2 border-[#B39B7F] px-4 py-2 font-sans text-xs font-semibold text-[#503225] uppercase disabled:opacity-50"
+                >
+                  {isVoicesFetching ? 'Retrying…' : 'Retry'}
+                </button>
+              </div>
             ) : (
               <div className="space-y-2">
                 {voices.map((voice) => {
@@ -614,16 +733,20 @@ export default function SubmitWizard({ category }: { category: string }) {
                   return (
                     <div
                       key={voice.name}
-                      className="flex items-center gap-3 rounded-md border border-[#B39B7F] px-4 py-3"
+                      className={cn(
+                        'flex items-center gap-3 rounded-lg border-2 px-4 py-3',
+                        selected ? 'border-[#EEA13D] bg-[#EEA13D]/10' : 'border-[#B39B7F]',
+                      )}
                     >
                       <button
                         type="button"
-                        onClick={() => setValue('voiceName', voice.name)}
-                        className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                        onClick={() => setValue('voiceName', voice.name, { shouldDirty: true })}
+                        aria-pressed={selected}
+                        className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 text-left"
                       >
                         <span
                           className={cn(
-                            'size-5 rounded-full border-2 border-[#EEA13D]',
+                            'size-5 shrink-0 rounded-full border-2 border-[#EEA13D]',
                             selected && 'bg-[#EEA13D]',
                           )}
                         />
@@ -649,7 +772,9 @@ export default function SubmitWizard({ category }: { category: string }) {
                 })}
               </div>
             )}
-            <p className="font-sans text-xs text-[#888]">Every voice has a Listen button.</p>
+            {voicesReady ? (
+              <p className="font-sans text-xs text-[#888]">Every voice has a Listen button.</p>
+            ) : null}
           </div>
         ) : null}
 
@@ -658,23 +783,81 @@ export default function SubmitWizard({ category }: { category: string }) {
             <div className="space-y-2">
               <h3 className="font-sans text-sm font-bold text-[#1A1A1A]">Your narration</h3>
               <p className="font-sans text-sm leading-relaxed text-[#666]">
-                Upload the complete recording in your own voice. This is the published narration. We
-                do not replace it with AI.
+                Upload the complete recording in your own voice. This is the published narration of
+                your {pieceLabel}. We do not replace it with AI.
               </p>
             </div>
+            {needsAudioRestore && !audioFile ? (
+              <p className="font-sans text-xs leading-relaxed text-[#8A6E5F]">
+                Upload your narration again. Audio files cannot be saved in the browser.
+              </p>
+            ) : null}
+
             <input
+              ref={audioInputRef}
               type="file"
               accept={AUDIO_ACCEPT}
+              className="hidden"
               onChange={(event) => handleAudioChange(event.target.files?.[0] ?? null)}
-              className="block w-full font-sans text-sm text-[#503225]"
             />
-            {audioFile ? <p className="font-sans text-xs text-[#666]">{audioFile.name}</p> : null}
+
+            {audioFile ? (
+              <div className="flex items-center gap-3 rounded-lg border-2 border-[#EEA13D] bg-[#EEA13D]/10 px-4 py-4">
+                <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-[#E8DFD4] text-[#301C05]">
+                  <Mic size={18} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-sans text-sm font-bold text-[#1A1A1A]">
+                    {audioFile.name}
+                  </p>
+                  <p className="mt-0.5 font-sans text-xs text-[#666]">
+                    {formatAudioSize(audioFile.size)} · Ready to submit
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => audioInputRef.current?.click()}
+                  className="shrink-0 font-sans text-xs font-semibold text-[#503225] underline underline-offset-2 hover:text-[#301C05]"
+                >
+                  Replace
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAudioChange(null)}
+                  className="flex size-9 shrink-0 items-center justify-center rounded-full text-[#D22D4C] hover:bg-[#D22D4C]/10"
+                  aria-label="Remove narration"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => audioInputRef.current?.click()}
+                className={cn(
+                  'flex w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed px-4 py-8 text-center transition-colors',
+                  audioError
+                    ? 'border-[#D22D4C]/50 bg-[#D22D4C]/5 hover:border-[#D22D4C]'
+                    : 'border-[#B39B7F] bg-[#FAF7F0] hover:border-[#EEA13D] hover:bg-[#EEA13D]/5',
+                )}
+              >
+                <span className="flex size-12 items-center justify-center rounded-full bg-[#E8DFD4] text-[#301C05]">
+                  <Upload size={20} />
+                </span>
+                <span className="space-y-1">
+                  <span className="block font-sans text-sm font-bold text-[#1A1A1A]">
+                    Choose your narration
+                  </span>
+                  <span className="block font-sans text-xs text-[#666]">
+                    Click to browse · mp3, wav, m4a, ogg or webm · up to 10 MB
+                  </span>
+                </span>
+              </button>
+            )}
+
             {audioError ? (
               <p className="font-sans text-xs font-semibold text-[#D22D4C]">{audioError}</p>
             ) : null}
-            <p className="font-sans text-xs text-[#888]">
-              mp3, wav, m4a, ogg or webm · up to 10 MB
-            </p>
           </div>
         ) : null}
 
@@ -684,7 +867,8 @@ export default function SubmitWizard({ category }: { category: string }) {
               <p className="font-sans text-sm font-bold text-[#D22D4C]">Explicit is welcome.</p>
               <p className="mt-2 font-sans text-sm leading-relaxed text-[#503225]">
                 You can use explicit language and describe consensual sexuality, desires and
-                fantasies. A meditation can also be sensual or explicitly sexual.
+                fantasies.
+                {isConfession ? null : ' A meditation can also be sensual or explicitly sexual.'}
               </p>
               <p className="mt-2 font-sans text-sm leading-relaxed text-[#503225]">
                 Consent is essential. No sexual violence, coercion or non-consensual sexual content.
@@ -712,8 +896,9 @@ export default function SubmitWizard({ category }: { category: string }) {
                     platform.
                   </span>
                   <span className="block">
-                    We may rewrite, shorten, restructure or substantially change your Confession or
-                    Meditation. We do this to create something we believe our audience will love.
+                    We may rewrite, shorten, restructure or substantially change your{' '}
+                    {isConfession ? 'Confession' : 'Meditation'}. We do this to create something we
+                    believe our audience will love.
                   </span>
                   <span className="block">
                     You may dislike some of our changes. That&apos;s okay. You can withdraw your
@@ -758,34 +943,51 @@ export default function SubmitWizard({ category }: { category: string }) {
           </div>
         ) : null}
 
-        <div className="flex gap-3 pt-2">
-          {step > 0 ? (
-            <button
-              type="button"
-              onClick={() => setStep((current) => current - 1)}
-              className="flex-1 rounded-none border-2 border-[#B39B7F] py-2.5 font-sans text-sm font-semibold text-[#503225] uppercase"
-            >
-              Back
-            </button>
+        <div className="space-y-2 pt-2">
+          {step === 3 && continueDisabled ? (
+            <p className="font-sans text-xs font-semibold text-[#D22D4C]">
+              {isStudio ? voiceContinueHint : 'Upload the finished narration to continue.'}
+            </p>
           ) : null}
-          {step < STEP_LABELS.length - 1 ? (
-            <div className="flex-1">
-              <DynamicActionButton text="Continue" onClick={goNext} fullWidth />
-            </div>
-          ) : (
-            <div className="flex-1">
-              <DynamicActionButton
-                text={isGenerating ? 'Submitting…' : 'Submit'}
-                type="submit"
-                disabled={!canSubmit}
-                fullWidth
-              />
-            </div>
-          )}
+          <div className="flex gap-3">
+            {step > 0 ? (
+              <button
+                type="button"
+                onClick={() => setStep((current) => current - 1)}
+                className="flex-1 rounded-none border-2 border-[#B39B7F] py-2.5 font-sans text-sm font-semibold text-[#503225] uppercase"
+              >
+                Back
+              </button>
+            ) : null}
+            {step < STEP_LABELS.length - 1 ? (
+              <div className="flex-1">
+                <DynamicActionButton
+                  text="Continue"
+                  onClick={goNext}
+                  disabled={continueDisabled}
+                  fullWidth
+                />
+              </div>
+            ) : (
+              <div className="flex-1">
+                <DynamicActionButton
+                  text={isGenerating ? 'Submitting…' : 'Submit'}
+                  type="submit"
+                  disabled={!canSubmit}
+                  fullWidth
+                />
+              </div>
+            )}
+          </div>
         </div>
       </form>
 
-      <SuccessModal isOpen={isSuccess} onClose={() => setIsSuccess(false)} category={category} />
+      <SuccessModal
+        isOpen={isSuccess}
+        onClose={() => setIsSuccess(false)}
+        category={category}
+        successHref={successHref}
+      />
     </>
   );
 }

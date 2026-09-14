@@ -11,7 +11,7 @@ import useExportData from '@/hooks/useExportData';
 import { PUBLICATION_TYPE_LABEL } from '@/lib/publications/adapter';
 import { STATUS_META, STATUS_ORDER } from '@/lib/publications/status';
 import type { PublicationRow, PublicationStatus, PublicationType } from '@/types/publication.types';
-import { ArrowRight, Images, Search, Upload } from 'lucide-react';
+import { ArrowRight, Images, Plus, Search, Upload } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -193,6 +193,18 @@ const PublicationsOverview = () => {
         </div>
 
         <div className="ms-auto flex flex-wrap items-center gap-2">
+          <Link
+            href="/dashboard/publications/create?type=Confessions"
+            className="text-secondary border-primary/20 inline-flex items-center gap-2 rounded-md border bg-white px-4 py-2.5 text-sm font-medium hover:bg-gray-50"
+          >
+            <Plus size={16} /> New confession
+          </Link>
+          <Link
+            href="/dashboard/publications/create?type=Meditation"
+            className="text-secondary border-primary/20 inline-flex items-center gap-2 rounded-md border bg-white px-4 py-2.5 text-sm font-medium hover:bg-gray-50"
+          >
+            <Plus size={16} /> New meditation
+          </Link>
           <Link
             href="/dashboard/publications/cover-library"
             className="text-secondary border-primary/20 inline-flex items-center gap-2 rounded-md border bg-white px-4 py-2.5 text-sm font-medium hover:bg-gray-50"

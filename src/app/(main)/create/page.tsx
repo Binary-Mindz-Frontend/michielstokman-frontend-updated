@@ -58,6 +58,7 @@ export default function CreateFormPage() {
               </div>
             ) : hasType ? (
               <SubmitWizard
+                key={wizardCategory}
                 category={wizardCategory === 'Meditation' ? 'Meditation' : 'Confessions'}
               />
             ) : (

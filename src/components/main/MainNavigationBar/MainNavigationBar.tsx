@@ -70,7 +70,10 @@ function MainNavigationBar() {
     { label: 'MEDITATIONS', href: '/meditations' },
     { label: 'LIBERATIONS', href: '/liberations' },
     { label: 'SAFETY', href: '/safety-freedom-rules' },
-    { label: 'SUBMIT', href: '/create' },
+    {
+      label: 'SUBMIT',
+      href: user?.is_admin ? '/dashboard/publications/create' : '/create',
+    },
   ];
 
   let redirectPath: string;

@@ -30,7 +30,7 @@ function SidebarContentSection() {
 
   return (
     <SidebarContent
-      className={`${state === 'expanded' ? 'ps-5 pr-2.5' : 'ps-2'} no-scrollbar pt-6`}
+      className={`${state === 'expanded' ? 'ps-3 pr-2.5' : 'ps-2'} no-scrollbar pt-3`}
     >
       <SidebarMenu className="gap-2">
         {currentSections.map((section: any) =>
