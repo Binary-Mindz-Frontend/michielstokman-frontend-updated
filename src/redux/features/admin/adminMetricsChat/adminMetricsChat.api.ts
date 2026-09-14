@@ -1,13 +1,22 @@
 import { apiClient } from '@/redux/apiClient/apiClient';
 
+export type MetricsChatRequest = {
+  query: string;
+};
+
+export type MetricsChatResponse = {
+  status: number;
+  success: boolean;
+  message: string;
+  data: {
+    answer: string;
+    metrics_snapshot?: Record<string, unknown> | null;
+  } | null;
+};
+
 const adminMetricsChatApi = apiClient.injectEndpoints({
   endpoints: (builder) => ({
-    /**
-     * Admin Metrics Chat
-     * Used for interacting with the metrics AI/Chat system.
-     * @param {Object} body - Usually contains the prompt/message and optional session context.
-     */
-    sendMetricsChatMessage: builder.mutation({
+    sendMetricsChatMessage: builder.mutation<MetricsChatResponse, MetricsChatRequest>({
       query: (payload) => ({
         url: '/admin/chat',
         method: 'POST',

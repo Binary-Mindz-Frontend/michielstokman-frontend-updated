@@ -3,6 +3,8 @@
 import btnBg from '@/assets/shared/btnBg.png';
 import submitSuccessBg from '@/assets/shared/submit-success.png';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { useCurrentUser } from '@/redux/features/auth/authSlice';
+import { useAppSelector } from '@/redux/hooks';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
@@ -10,15 +12,22 @@ interface SuccessModalProps {
   isOpen: boolean;
   onClose: () => void;
   category?: string;
+  /** When set (or when the user is admin), secondary CTA goes here instead of My Stories. */
+  successHref?: string;
 }
 
 export default function SuccessModal({
   isOpen,
   onClose,
   category = 'Confessions',
+  successHref,
 }: SuccessModalProps) {
   const router = useRouter();
+  const user = useAppSelector(useCurrentUser) as { is_admin?: boolean } | null;
+  const isAdmin = Boolean(user?.is_admin);
   const isConfession = category === 'Confessions';
+  const storiesHref = successHref || (isAdmin ? '/dashboard/publications' : '/user-dashboard');
+  const storiesLabel = successHref || isAdmin ? 'Back to Publications' : 'Go to My Stories';
 
   const handleRedirect = () => {
     onClose();
@@ -62,11 +71,11 @@ export default function SuccessModal({
               type="button"
               onClick={() => {
                 onClose();
-                router.push('/user-dashboard');
+                router.push(storiesHref);
               }}
               className="mt-3 font-sans text-xs font-semibold tracking-wider text-[#777] underline underline-offset-2 hover:text-[#503225]"
             >
-              Go to My Stories
+              {storiesLabel}
             </button>
           </div>
         </div>

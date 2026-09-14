@@ -35,6 +35,17 @@ export async function proxy(req: NextRequest) {
     return NextResponse.redirect(new URL('/user-dashboard', req.url));
   }
 
+  if (token && isAdmin && pathname.startsWith('/user-dashboard')) {
+    return NextResponse.redirect(new URL('/dashboard/publications', req.url));
+  }
+
+  if (token && isAdmin && (pathname === '/create' || pathname.startsWith('/create/'))) {
+    const target = new URL('/dashboard/publications/create', req.url);
+    const type = req.nextUrl.searchParams.get('type');
+    if (type) target.searchParams.set('type', type);
+    return NextResponse.redirect(target);
+  }
+
   return NextResponse.next();
 }
 
