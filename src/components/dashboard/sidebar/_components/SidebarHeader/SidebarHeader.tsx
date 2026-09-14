@@ -3,6 +3,7 @@
 import logoSvg from '@/assets/navbar/logo.svg';
 import { SidebarHeader } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
+import { ExternalLink } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -39,6 +40,25 @@ function SidebarHeaderSection({ state }: { state: string }) {
           </span>
         ) : null}
       </Link>
+
+      {collapsed ? (
+        <Link
+          href="/"
+          title="View site"
+          aria-label="View site"
+          className="text-secondary hover:text-primary hover:bg-primary/10 mt-1 inline-flex size-8 items-center justify-center rounded-md transition-colors"
+        >
+          <ExternalLink size={15} strokeWidth={1.75} />
+        </Link>
+      ) : (
+        <Link
+          href="/"
+          className="text-secondary hover:text-primary hover:bg-primary/10 mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-[11px] font-semibold tracking-wide transition-colors"
+        >
+          <ExternalLink size={13} strokeWidth={1.75} />
+          View site
+        </Link>
+      )}
     </SidebarHeader>
   );
 }

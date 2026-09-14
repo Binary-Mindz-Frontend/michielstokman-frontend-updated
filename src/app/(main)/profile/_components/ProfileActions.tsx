@@ -6,11 +6,18 @@ import { toast } from 'sonner';
 import { useUpdateAvatarMutation } from '@/redux/features/userProfile/userProfile.api';
 
 interface ProfileActionsProps {
+  isAdmin?: boolean;
+  onBackToDashboard?: () => void;
   onUpdateFocus: () => void;
   onLogout: () => void;
 }
 
-export default function ProfileActions({ onUpdateFocus, onLogout }: ProfileActionsProps) {
+export default function ProfileActions({
+  isAdmin,
+  onBackToDashboard,
+  onUpdateFocus,
+  onLogout,
+}: ProfileActionsProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [updateAvatar, { isLoading }] = useUpdateAvatarMutation();
   const [fileName, setFileName] = useState<string | null>(null);
@@ -48,6 +55,17 @@ export default function ProfileActions({ onUpdateFocus, onLogout }: ProfileActio
         className="hidden"
         onChange={onFileChange}
       />
+
+      {isAdmin && onBackToDashboard ? (
+        <button
+          type="button"
+          onClick={onBackToDashboard}
+          className="w-full cursor-pointer rounded-none border-2 border-[#D9305B]/30 bg-white py-4 text-center text-base font-bold text-[#D9305B] transition-colors hover:bg-[#FFF5F7]"
+        >
+          Back to dashboard
+        </button>
+      ) : null}
+
       <button
         type="button"
         disabled={isLoading}
