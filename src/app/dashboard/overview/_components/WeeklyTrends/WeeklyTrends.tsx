@@ -8,6 +8,11 @@ interface TrendItem {
   shares: number | string;
 }
 
+function toNumber(value: number | string | undefined) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
 function WeeklyTrends({ trends, isLoading }: { trends: TrendItem[]; isLoading: boolean }) {
   if (isLoading) {
     return <WeeklyTrendSkeleton />;
@@ -15,41 +20,74 @@ function WeeklyTrends({ trends, isLoading }: { trends: TrendItem[]; isLoading: b
 
   if (!trends || trends.length === 0) {
     return (
-      <div className="flex min-h-75 flex-col items-center justify-center rounded-md bg-[#F5F2F0] p-8">
-        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#EAE7E4]">
-          <TrendingUp className="h-8 w-8 text-[#A39F99]" />
+      <section className="flex min-h-75 flex-col items-center justify-center rounded-md bg-[#F5F2F0] p-8 text-center">
+        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#EAE7E4]">
+          <TrendingUp className="h-7 w-7 text-[#A39F99]" strokeWidth={1.5} />
         </div>
-        <h3 className="text-lg font-semibold text-[#333333]">No Trend Data Yet</h3>
-        <p className="mt-2 max-w-70 text-center text-sm leading-relaxed text-[#726E6A]">
-          {`It looks like there isn't enough data to calculate weekly trends for this period. Check
-          back later!`}
+        <h3 className="text-secondary text-lg font-semibold">No trend data yet</h3>
+        <p className="mt-2 max-w-70 text-sm leading-relaxed text-[#726E6A]">
+          There isn&apos;t enough activity yet to chart weekly performance. Check back after more
+          views land.
         </p>
-      </div>
+      </section>
     );
   }
 
+  const maxViews = Math.max(...trends.map((item) => toNumber(item.views)), 1);
+
   return (
-    <div className="rounded-md bg-[#F5F2F0] p-6">
-      <h2 className="text-secondary mb-0.5 text-xl font-semibold md:text-2xl">Weekly Trends</h2>
-      <p className="text-secondary text-sm sm:text-base">Performance over recent weeks</p>
+    <section className="rounded-md bg-[#F5F2F0] p-5 sm:p-6">
+      <header className="mb-5 flex items-start justify-between gap-3">
+        <div>
+          <h2 className="text-secondary text-xl font-semibold tracking-tight md:text-2xl">
+            Weekly Trends
+          </h2>
+          <p className="mt-0.5 text-sm text-[#726E6A]">Performance over recent weeks</p>
+        </div>
+        <span className="bg-primary/8 text-primary hidden h-9 w-9 shrink-0 items-center justify-center rounded-md sm:inline-flex">
+          <TrendingUp size={18} strokeWidth={1.5} />
+        </span>
+      </header>
 
-      <div>
-        {trends.map((item, index) => (
-          <div
-            key={index}
-            className="border-primary/20 flex flex-col justify-between gap-x-4 gap-y-0.5 border-b py-5 last:border-0 sm:flex-row sm:items-center"
-          >
-            <span className="text-secondary text-lg font-semibold sm:text-xl">{item?.label}</span>
+      <ul className="space-y-1">
+        {trends.map((item, index) => {
+          const views = toNumber(item.views);
+          const width = Math.max(8, Math.round((views / maxViews) * 100));
 
-            <div className="text-secondary flex gap-4 font-medium md:text-lg">
-              <span>{item?.views} views</span>
-              <span className="text-primary font-semibold">{item?.pulse} pulse</span>
-              <span>{item?.shares} shares</span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
+          return (
+            <li
+              key={`${item.label}-${index}`}
+              className="border-primary/10 border-b py-4 first:pt-0 last:border-0 last:pb-0"
+            >
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <span className="text-secondary text-base font-semibold sm:text-lg">
+                  {item.label}
+                </span>
+
+                <div className="text-secondary flex flex-wrap gap-2 text-sm font-medium">
+                  <span className="rounded-md bg-white/70 px-2.5 py-1 tabular-nums">
+                    {views} views
+                  </span>
+                  <span className="text-primary rounded-md bg-white/70 px-2.5 py-1 font-semibold tabular-nums">
+                    {item.pulse} pulse
+                  </span>
+                  <span className="rounded-md bg-white/70 px-2.5 py-1 tabular-nums">
+                    {item.shares} shares
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#EAE7E4]">
+                <div
+                  className="bg-primary/70 h-full rounded-full transition-[width] duration-500 ease-out"
+                  style={{ width: `${width}%` }}
+                />
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 }
 

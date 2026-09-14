@@ -35,7 +35,7 @@ export default function DashboardSummary({
 }) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-4">
         {[...Array(4)].map((_, i) => (
           <SummaryCardSkeleton key={i} />
         ))}
@@ -77,9 +77,9 @@ export default function DashboardSummary({
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
-      {statsData.map((stat, i) => (
-        <SummaryCard key={i} {...stat} />
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-4">
+      {statsData.map((stat) => (
+        <SummaryCard key={stat.title} {...stat} />
       ))}
     </div>
   );
