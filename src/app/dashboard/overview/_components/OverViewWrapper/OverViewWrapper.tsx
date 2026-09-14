@@ -5,9 +5,10 @@ import { useGetFigmaStatsQuery } from '@/redux/features/admin/overview/overview.
 import { useAuthState } from '@/redux/features/auth/authSlice';
 import { useAppSelector } from '@/redux/hooks';
 import DashboardSummary from '../DashboardSummary/DashboardSummary';
+import OverviewQuickActions from '../OverviewQuickActions/OverviewQuickActions';
 import TopResonanceContent from '../TopResonanceContent/TopResonanceContent';
-import WeeklyTrends from '../WeeklyTrends/WeeklyTrends';
 import UserDashboardHero from '../UserDashboardHero/UserDashboardHero';
+import WeeklyTrends from '../WeeklyTrends/WeeklyTrends';
 
 const OverViewWrapper = () => {
   const { user } = useAppSelector(useAuthState);
@@ -17,13 +18,20 @@ const OverViewWrapper = () => {
   const trends = overviewStats?.data?.weekly_trends;
   const topResonanceContent = overviewStats?.data?.top_resonance_content;
 
-  const isUserDashboard = !user?.is_admin;
+  const isAdmin = Boolean(user?.is_admin);
+  const isUserDashboard = !isAdmin;
 
   return (
     <div className="space-y-6">
-      <DynamicPageHeader title="Dashboard Overview" />
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <DynamicPageHeader
+          className="mb-0"
+          title="Dashboard Overview"
+          description="Views, resonance, and the stories landing hardest with your audience."
+        />
+        {isAdmin ? <OverviewQuickActions /> : null}
+      </div>
 
-      {/* User Dashboard Hero Section */}
       {isUserDashboard && (
         <UserDashboardHero
           confessionsCount={overviewStats?.data?.confessions_count}
@@ -32,7 +40,8 @@ const OverViewWrapper = () => {
       )}
 
       <DashboardSummary topStats={topStats} isLoading={isLoading} />
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:gap-6">
         <WeeklyTrends trends={trends} isLoading={isLoading} />
         <TopResonanceContent topResonanceContent={topResonanceContent} isLoading={isLoading} />
       </div>
