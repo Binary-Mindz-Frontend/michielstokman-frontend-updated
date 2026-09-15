@@ -11,8 +11,10 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'firebasestorage.googleapis.com' },
       { protocol: 'https', hostname: '**.googleusercontent.com' },
       { protocol: 'http', hostname: 'localhost' },
+      { protocol: 'https', hostname: 'localhost' },
     ],
     dangerouslyAllowSVG: true,
+    formats: ['image/avif', 'image/webp'],
   },
   // The moderation queue, voice review and photo management pages were merged into
   // the central publications dashboard. Kept as redirects so existing links survive.

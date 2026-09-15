@@ -23,7 +23,7 @@ import {
 } from '@/redux/features/memberStory/memberStory.api';
 import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
 import { hasProcessingStories, type SubmissionTab } from '@/utils/memberStory.utils';
-import { resolveStoryCoverSrc } from '@/utils/storyCover.utils';
+import { resolveStoryCoverSrc, STORY_CATALOG_GRID_CLASS } from '@/utils/storyCover.utils';
 import type { MemberStoryListItem, StoryType } from '@/types/memberStory.types';
 
 function mapStoryToCardItem(story: MemberStoryListItem): UserDashboardItem {
@@ -187,7 +187,7 @@ export default function UserDashboardPage() {
 
         <motion.div variants={FADE_IN_UP_ITEM} className="w-full">
           {isLoading ? (
-            <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            <div className={STORY_CATALOG_GRID_CLASS}>
               {Array(6)
                 .fill(null)
                 .map((_, idx) => (
@@ -196,7 +196,7 @@ export default function UserDashboardPage() {
             </div>
           ) : filteredItems.length > 0 ? (
             <>
-              <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              <div className={STORY_CATALOG_GRID_CLASS}>
                 {filteredItems.map((item) => (
                   <UserDashboardCard
                     key={item.id}

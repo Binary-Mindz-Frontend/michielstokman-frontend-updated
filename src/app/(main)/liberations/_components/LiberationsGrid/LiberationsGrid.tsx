@@ -4,7 +4,9 @@
 import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicActionButton';
 import ProductCardSkeleton from '@/components/main/Skeletons/ProductCardSkeleton';
 import { useGetDiscoveryFeedQuery } from '@/redux/features/discoveryFeed/discoveryFeed.api';
+import { resolveMediaUrl } from '@/lib/publications/media';
 import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
+import { STORY_CATALOG_GRID_CLASS } from '@/utils/storyCover.utils';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import LiberationsCard, { LiberationItem } from './_components/LiberationsCard/LiberationsCard';
@@ -32,7 +34,7 @@ export default function LiberationsGrid() {
     category: 'STORY',
     title: item.title,
     description: item.description,
-    image: item.cover_image_url || fallbackCardImage,
+    image: resolveMediaUrl(item.cover_image_url) || fallbackCardImage,
     price: item.price_display
       ? `€${item.price_display}`
       : item.rating
@@ -50,7 +52,7 @@ export default function LiberationsGrid() {
 
   if (isLoading) {
     return (
-      <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+      <div className={STORY_CATALOG_GRID_CLASS}>
         {Array(6)
           .fill(null)
           .map((_, idx) => (
@@ -68,11 +70,8 @@ export default function LiberationsGrid() {
       variants={FADE_IN_UP_CONTAINER}
       className="scroll-mt-24"
     >
-      {/* 3 Column Grid */}
-      <motion.div
-        variants={FADE_IN_UP_ITEM}
-        className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3"
-      >
+      {/* Catalog grid */}
+      <motion.div variants={FADE_IN_UP_ITEM} className={STORY_CATALOG_GRID_CLASS}>
         {visibleLiberations.length > 0 ? (
           visibleLiberations.map((item) => <LiberationsCard key={item.id} item={item} />)
         ) : (

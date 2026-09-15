@@ -26,6 +26,7 @@ import type {
 import Image, { StaticImageData } from 'next/image';
 import Link from 'next/link';
 import React from 'react';
+import { STORY_COVER_SIZES, shouldUnoptimizeStoryImage } from '@/utils/storyCover.utils';
 
 export interface UserDashboardItem {
   id: string;
@@ -143,16 +144,17 @@ const UserDashboardCard: React.FC<UserDashboardCardProps> = ({
   const duration = formatAudioDuration(item.audio_duration_seconds);
 
   return (
-    <div className="relative flex flex-col justify-between rounded-md bg-[#F8F3ED] p-4 transition-all hover:shadow-xs">
+    <div className="relative flex flex-col justify-between rounded-md bg-[#F8F3ED] p-3 transition-all hover:shadow-xs sm:p-4">
       <div>
-        <div className="relative mb-4 h-60 w-full overflow-hidden rounded-md sm:h-64">
+        <div className="relative mb-3 aspect-square w-full overflow-hidden rounded-md bg-[#E8DFD4] ring-1 ring-[#DDD2C4]/90 sm:mb-4">
           <Image
             src={item.image}
             alt={item.title}
             fill
-            unoptimized={typeof item.image === 'string'}
-            className="object-cover object-center"
-            priority
+            sizes={STORY_COVER_SIZES}
+            quality={90}
+            unoptimized={shouldUnoptimizeStoryImage(item.image)}
+            className="object-contain object-center"
           />
 
           <div className="absolute top-3 left-3 z-20 flex max-w-[70%] flex-col gap-1">

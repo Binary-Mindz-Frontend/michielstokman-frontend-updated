@@ -3,6 +3,7 @@
 import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicActionButton';
 import { cn } from '@/lib/utils';
 import { formatListenLength } from '@/utils/memberStory.utils';
+import { STORY_COVER_SIZES, shouldUnoptimizeStoryImage } from '@/utils/storyCover.utils';
 import { storyIdentityLines } from '@/utils/storyIdentity.utils';
 import Image, { StaticImageData } from 'next/image';
 import Link from 'next/link';
@@ -39,6 +40,8 @@ interface StoryListingCardProps {
   selectedTag?: string | null;
   // eslint-disable-next-line no-unused-vars -- callback prop type
   onTagClick?: (nextTag: string) => void;
+  /** Only the first visible cards should load eagerly. */
+  priority?: boolean;
 }
 
 const StoryListingCard: React.FC<StoryListingCardProps> = ({
@@ -50,7 +53,8 @@ const StoryListingCard: React.FC<StoryListingCardProps> = ({
   ctaText = 'Start Listening',
   selectedTag,
   onTagClick,
-}) => {
+  priority = false,
+}: StoryListingCardProps) => {
   const { nameLine, detailLine } = storyIdentityLines(item);
   const duration = formatListenLength(item.durationSeconds);
   const stats = [
@@ -65,22 +69,24 @@ const StoryListingCard: React.FC<StoryListingCardProps> = ({
   return (
     <Link
       href={href}
-      className="group flex h-full flex-col justify-between rounded-md bg-[#F8F3ED] p-4 transition-shadow hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2"
+      className="group flex h-full flex-col justify-between rounded-md bg-[#F8F3ED] p-3 transition-shadow hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 sm:p-4"
       style={{ outlineColor: accentColor }}
     >
       <div>
-        <div className="relative mb-4 h-60 w-full overflow-hidden rounded-md sm:h-64">
+        <div className="relative mb-3 aspect-square w-full overflow-hidden rounded-md bg-[#E8DFD4] ring-1 ring-[#DDD2C4]/90 sm:mb-4">
           <Image
             src={item.image}
             alt={item.title}
             fill
-            unoptimized={typeof item.image === 'string'}
-            className="object-cover object-center transition-transform duration-300 group-hover:scale-[1.03]"
-            priority
+            sizes={STORY_COVER_SIZES}
+            quality={90}
+            unoptimized={shouldUnoptimizeStoryImage(item.image)}
+            className="object-contain object-center"
+            priority={priority}
           />
 
           {item.rating ? (
-            <div className="absolute right-6 bottom-3 flex h-6.5 w-12 items-center justify-center">
+            <div className="absolute right-3 bottom-3 flex h-6.5 w-12 items-center justify-center drop-shadow-sm">
               <div className="absolute inset-0 h-full w-full">
                 <Image src={ratingBadge} alt="" fill className="object-fill" />
               </div>
