@@ -69,11 +69,12 @@ const StoryListingCard: React.FC<StoryListingCardProps> = ({
       style={{ outlineColor: accentColor }}
     >
       <div>
-        <div className="relative mb-4 h-60 w-full overflow-hidden rounded-md sm:h-64">
+        <div className="relative mb-4 aspect-square w-full overflow-hidden rounded-md">
           <Image
             src={item.image}
             alt={item.title}
             fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             unoptimized={typeof item.image === 'string'}
             className="object-cover object-center transition-transform duration-300 group-hover:scale-[1.03]"
             priority

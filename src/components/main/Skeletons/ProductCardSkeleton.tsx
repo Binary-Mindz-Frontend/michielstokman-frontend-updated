@@ -5,7 +5,7 @@ const ProductCardSkeleton = () => {
     <div className="flex h-full flex-col justify-between rounded-md bg-[#F8F3ED] p-4">
       <div className="animate-pulse">
         {/* Top Image Box */}
-        <div className="relative mb-4 h-60 w-full overflow-hidden rounded-md bg-[#EADED5] sm:h-64" />
+        <div className="relative mb-4 aspect-square w-full overflow-hidden rounded-md bg-[#EADED5]" />
 
         {/* Category Label */}
         <div className="mb-2 h-3 w-20 rounded bg-[#EADED5]" />

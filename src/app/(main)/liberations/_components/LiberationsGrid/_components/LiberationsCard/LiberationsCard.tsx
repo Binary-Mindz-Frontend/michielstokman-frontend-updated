@@ -26,11 +26,12 @@ const LiberationsCard: React.FC<LiberationsCardProps> = ({ item }) => {
     <div className="flex flex-col justify-between rounded-md bg-[#F8F3ED] p-4 transition-all hover:shadow-xs">
       {/* Top Image Box with Price/Rating Badge */}
       <div>
-        <div className="relative mb-4 h-60 w-full overflow-hidden rounded-md sm:h-64">
+        <div className="relative mb-4 aspect-square w-full overflow-hidden rounded-md">
           <Image
             src={item.image}
             alt={item.title}
             fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             unoptimized={typeof item.image === 'string'}
             className="object-cover object-center"
             priority
