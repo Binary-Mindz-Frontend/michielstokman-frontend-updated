@@ -1,8 +1,11 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
+
+import arrowBlack from '@/assets/shared/arrow-black.png';
 
 export interface DynamicSkipButtonProps {
   text?: string;
@@ -14,6 +17,7 @@ export interface DynamicSkipButtonProps {
   bgColor?: string;
   className?: string;
   fullWidth?: boolean;
+  showArrow?: boolean;
 }
 
 const DynamicSkipButton: React.FC<DynamicSkipButtonProps> = ({
@@ -25,6 +29,7 @@ const DynamicSkipButton: React.FC<DynamicSkipButtonProps> = ({
   bgColor = 'white',
   className = '',
   fullWidth = true,
+  showArrow = false,
 }) => {
   const router = useRouter();
 
@@ -47,11 +52,26 @@ const DynamicSkipButton: React.FC<DynamicSkipButtonProps> = ({
   const content = (
     <div
       style={{ ...borderStyle, ...textStyle, backgroundColor: bgColor }}
-      className={`flex cursor-pointer items-center justify-center border-2 ${roundedClass} px-6 py-2.5 text-center font-sans text-sm font-semibold text-nowrap uppercase transition-all duration-300 hover:bg-[#FFF5F7] active:scale-95 ${
+      className={`flex cursor-pointer items-center justify-center gap-3 border-2 ${roundedClass} px-6 py-2.5 text-center font-sans text-sm font-semibold text-nowrap uppercase transition-all duration-300 hover:bg-[#FFF5F7] active:scale-95 ${
         fullWidth ? 'w-full' : 'w-auto'
       } ${className}`}
     >
       <span>{text}</span>
+      {showArrow ? (
+        <Image
+          src={arrowBlack}
+          alt=""
+          width={28}
+          height={12}
+          className="inline-block shrink-0 object-contain"
+          style={{
+            filter:
+              textColor === 'white' || textColor.includes('white')
+                ? 'invert(1) brightness(2)'
+                : 'none',
+          }}
+        />
+      ) : null}
     </div>
   );
 

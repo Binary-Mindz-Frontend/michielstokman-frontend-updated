@@ -12,6 +12,8 @@ interface IStoryPlayerProps {
   onNext?: () => void;
   hasPrev?: boolean;
   hasNext?: boolean;
+  /** Fired when the audio track finishes playing. */
+  onEnded?: () => void;
 }
 
 // 75 dense waveform heights matching design screenshot
@@ -29,6 +31,7 @@ export default function StoryPlayer({
   onNext,
   hasPrev = false,
   hasNext = false,
+  onEnded,
 }: IStoryPlayerProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const progressBarRef = useRef<HTMLDivElement | null>(null);
@@ -177,6 +180,7 @@ export default function StoryPlayer({
       setCurrentTime(dur);
       onTimeUpdateCallback(dur, dur, speed);
     }
+    onEnded?.();
   };
 
   const formatTime = (time: number) => {
