@@ -207,6 +207,14 @@ export default function SignIn() {
             {errors.password && (
               <span className="text-error text-xs">{errors.password.message}</span>
             )}
+            <div className="flex justify-end pt-1">
+              <Link
+                href="/forgot-password"
+                className="text-primary text-xs font-semibold hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
           </div>
 
           {/* Submit Button */}

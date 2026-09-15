@@ -17,7 +17,14 @@ export async function proxy(req: NextRequest) {
     pathname.startsWith('/create') ||
     isLiberationFlow;
 
-  if (token && !isGuest && (pathname.startsWith('/login') || pathname.startsWith('/register'))) {
+  if (
+    token &&
+    !isGuest &&
+    (pathname.startsWith('/login') ||
+      pathname.startsWith('/register') ||
+      pathname.startsWith('/forgot-password') ||
+      pathname.startsWith('/reset-password'))
+  ) {
     return NextResponse.redirect(new URL('/', req.url));
   }
 
@@ -55,6 +62,8 @@ export const config = {
     '/user-dashboard/:path*',
     '/login',
     '/register',
+    '/forgot-password',
+    '/reset-password',
     '/profile',
     '/profile/:path*',
     '/create',
