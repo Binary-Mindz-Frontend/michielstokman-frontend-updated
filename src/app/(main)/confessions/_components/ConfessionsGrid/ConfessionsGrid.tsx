@@ -2,13 +2,14 @@
 
 import ProductCardSkeleton from '@/components/main/Skeletons/ProductCardSkeleton';
 import StoryCatalogGrid from '@/components/main/StoryCatalogGrid/StoryCatalogGrid';
+import { STORY_CATALOG_GRID_CLASS } from '@/utils/storyCover.utils';
 import { Suspense } from 'react';
 
 export default function ConfessionsGrid() {
   return (
     <Suspense
       fallback={
-        <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+        <div className={STORY_CATALOG_GRID_CLASS}>
           {Array(6)
             .fill(null)
             .map((_, idx) => (

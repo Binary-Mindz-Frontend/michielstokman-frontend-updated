@@ -4,7 +4,7 @@ import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicAc
 import { useGetDiscoveryFeedQuery } from '@/redux/features/discoveryFeed/discoveryFeed.api';
 import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
 import { formatListenLength } from '@/utils/memberStory.utils';
-import { resolveStoryCoverSrc } from '@/utils/storyCover.utils';
+import { resolveStoryCoverSrc, shouldUnoptimizeStoryImage } from '@/utils/storyCover.utils';
 import { publicDisplayName, storyIdentityLines } from '@/utils/storyIdentity.utils';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
@@ -81,6 +81,7 @@ const LatestConfessions = () => {
                 index: number,
               ) => {
                 const theme = CARD_THEMES[index % CARD_THEMES.length];
+                const coverSrc = resolveStoryCoverSrc(item.cover_image_url, 'confession');
                 const { nameLine, detailLine } = storyIdentityLines({
                   authorName: publicDisplayName(item.author_name),
                   location: item.location,
@@ -120,13 +121,15 @@ const LatestConfessions = () => {
                       </div>
                     </div>
 
-                    <div className="relative my-auto h-32 w-[40%] shrink-0 overflow-hidden rounded-md sm:h-38 lg:h-38 lg:w-[38%] xl:h-42">
+                    <div className="relative my-auto h-32 w-[40%] shrink-0 overflow-hidden rounded-md bg-[#E8DFD4] sm:h-38 lg:h-38 lg:w-[38%] xl:h-42">
                       <Image
-                        src={resolveStoryCoverSrc(item.cover_image_url, 'confession')}
+                        src={coverSrc}
                         alt={item.title || 'Confession'}
                         fill
-                        unoptimized={typeof item.cover_image_url === 'string'}
-                        className="object-cover object-center transition-transform duration-300 group-hover:scale-[1.04]"
+                        sizes="(max-width: 1024px) 40vw, 20vw"
+                        quality={90}
+                        unoptimized={shouldUnoptimizeStoryImage(coverSrc)}
+                        className="object-cover object-center transition-transform duration-300 group-hover:scale-[1.03]"
                       />
                     </div>
                   </Link>

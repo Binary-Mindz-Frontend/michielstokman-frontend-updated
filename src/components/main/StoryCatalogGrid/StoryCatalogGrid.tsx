@@ -9,7 +9,7 @@ import StoryListingCard, {
 } from '@/components/main/StoryListingCard/StoryListingCard';
 import { useGetDiscoveryFeedQuery } from '@/redux/features/discoveryFeed/discoveryFeed.api';
 import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
-import { resolveStoryCoverSrc } from '@/utils/storyCover.utils';
+import { resolveStoryCoverSrc, STORY_CATALOG_GRID_CLASS } from '@/utils/storyCover.utils';
 import { publicDisplayName } from '@/utils/storyIdentity.utils';
 import {
   cardMoodTags,
@@ -167,7 +167,7 @@ export default function StoryCatalogGrid({
       />
 
       {isLoading ? (
-        <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+        <div className={STORY_CATALOG_GRID_CLASS}>
           {Array(6)
             .fill(null)
             .map((_, idx) => (
@@ -176,12 +176,9 @@ export default function StoryCatalogGrid({
         </div>
       ) : (
         <>
-          <motion.div
-            variants={FADE_IN_UP_ITEM}
-            className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3"
-          >
+          <motion.div variants={FADE_IN_UP_ITEM} className={STORY_CATALOG_GRID_CLASS}>
             {visibleItems.length > 0 ? (
-              visibleItems.map((item) => (
+              visibleItems.map((item, index) => (
                 <StoryListingCard
                   key={item.id}
                   item={item}
@@ -189,6 +186,7 @@ export default function StoryCatalogGrid({
                   accentColor={accentColor}
                   buttonBg={buttonBg}
                   ratingColor={ratingColor}
+                  priority={index < 3}
                   selectedTag={tag}
                   onTagClick={(nextTag) =>
                     replaceParams((params) => {
