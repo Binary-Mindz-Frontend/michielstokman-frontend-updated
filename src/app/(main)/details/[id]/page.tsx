@@ -28,6 +28,7 @@ import confessionsHero from '@/assets/shared/confessions-hero.png';
 import pinkHeartDrawn from '@/assets/shared/pink-heart-drawn.png';
 import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
 import { resolveStoryCoverSrc } from '@/utils/storyCover.utils';
+import { firstHookSentence, publicTaglineLines } from '@/utils/storyHero.utils';
 
 function BrushTagline({
   tagline,
@@ -413,6 +414,8 @@ export default function StoryDetailPage() {
     : feedData?.cover_image_url
       ? feedData.cover_image_url
       : confessionsHero;
+  const heroTagLines = publicTaglineLines(feedData?.hero_tagline);
+  const heroHookLine = firstHookSentence(feedData?.hero_hook);
 
   return (
     <div className="min-h-screen">
@@ -455,9 +458,9 @@ export default function StoryDetailPage() {
           initial="hidden"
           animate="visible"
           variants={FADE_IN_UP_CONTAINER}
-          className="flex w-full flex-col items-center justify-between gap-8 md:flex-row md:items-center"
+          className="flex w-full flex-col items-center justify-between gap-8 md:flex-row md:items-start"
         >
-          {/* LEFT COLUMN: Brush title, right-aligned identity, hook */}
+          {/* LEFT COLUMN: brush title, pink public taglines, hook teaser */}
           <motion.div variants={FADE_IN_UP_ITEM} className="flex w-full flex-col md:w-1/2">
             <div className="flex w-full flex-col items-stretch gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
               <div className="relative flex min-h-18 w-full max-w-[280px] shrink-0 -rotate-2 transform items-center justify-center sm:min-h-22.5 sm:max-w-[320px]">
@@ -465,43 +468,29 @@ export default function StoryDetailPage() {
                   <Image src={brushTextBg} alt="" fill className="object-fill" />
                 </div>
                 <h1 className="relative z-10 px-4 py-2 text-center font-sans text-xs font-medium tracking-wide text-white uppercase sm:px-6 sm:text-sm">
-                  <BrushTagline
-                    tagline={feedData?.hero_tagline}
-                    title={feedData?.title}
-                    isMeditation={isMeditation}
-                  />
+                  <BrushTagline title={feedData?.title} isMeditation={isMeditation} />
                 </h1>
               </div>
 
-              {(feedData?.author_name ||
-                feedData?.location ||
-                feedData?.gender ||
-                feedData?.sexual_orientation ||
-                feedData?.occupation ||
-                feedData?.age) && (
+              {heroTagLines.length > 0 ? (
                 <div
                   className="min-w-0 flex-1 text-right font-serif text-lg leading-snug italic sm:text-xl"
                   style={{ color: themeColor }}
                 >
-                  {feedData?.author_name ? <p>{feedData.author_name}</p> : null}
-                  {feedData?.location ? <p>{feedData.location}</p> : null}
-                  {feedData?.gender ? <p>{feedData.gender}</p> : null}
-                  {feedData?.sexual_orientation ? <p>{feedData.sexual_orientation}</p> : null}
-                  {feedData?.occupation ? <p>{feedData.occupation}</p> : null}
-                  {feedData?.age !== null && feedData?.age !== undefined ? (
-                    <p>{feedData.age}</p>
-                  ) : null}
+                  {heroTagLines.map((line) => (
+                    <p key={line}>{line}</p>
+                  ))}
                 </div>
-              )}
+              ) : null}
             </div>
 
-            {feedData?.hero_hook ? (
+            {heroHookLine ? (
               <div className="mt-6 flex items-start gap-3 sm:mt-8">
                 <div className="relative mt-1 h-7 w-7 shrink-0 sm:h-9 sm:w-9">
                   <Image src={pinkHeartDrawn} alt="" fill className="object-contain" />
                 </div>
                 <p className="max-w-lg font-serif text-base leading-relaxed text-[#1A1A1A] italic sm:text-lg">
-                  {feedData.hero_hook}
+                  {heroHookLine}
                 </p>
               </div>
             ) : (
@@ -511,10 +500,10 @@ export default function StoryDetailPage() {
             )}
           </motion.div>
 
-          {/* RIGHT COLUMN: Cover, with a heart like the client mock */}
+          {/* RIGHT COLUMN: Cover sits 8px below the pink tagline row */}
           <motion.div
             variants={FADE_IN_UP_ITEM}
-            className="relative flex w-full justify-center md:w-1/2"
+            className="relative mt-2 flex w-full justify-center md:w-1/2"
           >
             <div className="absolute top-8 -left-2 hidden h-8 w-8 md:block lg:top-12 lg:-left-4">
               <Image src={pinkHeartDrawn} alt="" fill className="object-contain" />
