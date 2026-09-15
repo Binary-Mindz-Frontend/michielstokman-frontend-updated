@@ -37,6 +37,20 @@ const authManagementApi = apiClient.injectEndpoints({
       },
       invalidatesTags: ['PROFILE', 'Discovery_Feed', 'Liberations'],
     }),
+    forgotPassword: builder.mutation({
+      query: (data: { email: string }) => ({
+        url: '/auth/forgot-password',
+        method: 'POST',
+        body: data,
+      }),
+    }),
+    resetPassword: builder.mutation({
+      query: (data: { token: string; password: string }) => ({
+        url: '/auth/reset-password',
+        method: 'POST',
+        body: data,
+      }),
+    }),
     guestLogin: builder.mutation({
       query: () => {
         return {
@@ -83,5 +97,7 @@ export const {
   useGetUserProfileQuery,
   useSocialLoginMutation,
   useGuestLoginMutation,
+  useForgotPasswordMutation,
+  useResetPasswordMutation,
   useSignOutMutation,
 } = authManagementApi;
