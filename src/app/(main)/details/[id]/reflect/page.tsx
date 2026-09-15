@@ -27,7 +27,6 @@ import { useAppSelector } from '@/redux/hooks';
 import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
 
 import LoginRequiredModal from '@/app/(main)/create/CreateForm/_components/LoginRequiredModal/LoginRequiredModal';
-import ShareSection from './_components/ShareSection/ShareSection';
 
 import brushTextBg from '@/assets/shared/brush-text-bg.png';
 import reflectCollageImg from '@/assets/reflect/reflect-object.png';
@@ -168,7 +167,7 @@ export default function ResonanceReflection() {
 
       if (res.success) {
         toast.success(res.message || 'Feedback submitted successfully!');
-        router.push(`/details/${storyId}`);
+        router.push(`/details/${storyId}/share`);
       }
     } catch (error: any) {
       toast.error(error?.data?.message || 'Something went wrong. Please try again.');
@@ -407,17 +406,12 @@ export default function ResonanceReflection() {
             <div className="w-48 sm:w-56">
               <DynamicSkipButton
                 text="Skip"
-                onClick={() => router.back()}
+                onClick={() => router.push(`/details/${storyId}/share`)}
                 borderColor={themeColor}
                 textColor={themeColor}
                 fullWidth
               />
             </div>
-          </motion.div>
-
-          {/* Social Share Section */}
-          <motion.div variants={FADE_IN_UP_ITEM}>
-            <ShareSection />
           </motion.div>
         </form>
       </motion.section>

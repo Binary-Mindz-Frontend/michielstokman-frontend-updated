@@ -146,6 +146,19 @@ export default function StoryDetailPage() {
     }
   };
 
+  const goToReflect = () => {
+    if (!isAuthenticated || user?.is_guest) {
+      setPendingRedirectUrl(`/details/${storyId}/reflect`);
+      setShowLoginModal(true);
+      return;
+    }
+    router.push(`/details/${storyId}/reflect`);
+  };
+
+  const handleAudioEnded = () => {
+    goToReflect();
+  };
+
   // Fetch all feed items to support previous / next story navigation
   const { data: feedResponse } = useGetDiscoveryFeedQuery([]);
 
@@ -607,6 +620,7 @@ export default function StoryDetailPage() {
             onNext={handleNext}
             hasPrev={hasPrev}
             hasNext={hasNext}
+            onEnded={handleAudioEnded}
           />
 
           {/* Paragraphs and Typewriter Effect*/}
@@ -645,15 +659,23 @@ export default function StoryDetailPage() {
           </div>
 
           <div className="flex justify-center pt-10 pb-20">
-            <div className="w-56 sm:w-64">
+            <div className="w-56 space-y-2 sm:w-64">
               <DynamicActionButton
-                text="Rate This Story"
-                href={`/details/${storyId}/reflect`}
-                onClick={handleReflectClick}
+                text="Rate & Reflect"
+                onClick={(e) => {
+                  if (!isAuthenticated || user?.is_guest) {
+                    handleReflectClick(e);
+                    return;
+                  }
+                  router.push(`/details/${storyId}/reflect`);
+                }}
                 bgColor={themeColor}
                 textColor="white"
                 fullWidth
               />
+              <p className="text-secondary text-center text-xs sm:text-sm">
+                Share and continue after you rate
+              </p>
             </div>
           </div>
         </div>
