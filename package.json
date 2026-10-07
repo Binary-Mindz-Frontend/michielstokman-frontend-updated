@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node api.js && next dev",
-    "build": "node api.js && next build",
-    "start": "node api.js && next start",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "postinstall": "node -e \"const fs=require('fs'); fs.mkdirSync('./src/app', {recursive: true}); fs.copyFileSync('./node_modules/tw-animate-css/dist/tw-animate.css', './src/app/tw-animate.css')\"",
     "update-deps": "npx npm-check-updates -u && pnpm install",
     "lint": "eslint .",
