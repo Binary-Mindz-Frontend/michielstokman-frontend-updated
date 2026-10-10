@@ -2,6 +2,7 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   output: 'standalone',
   reactCompiler: true,
+  allowedDevOrigins: ['10.10.23.28'],
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'transformtoliberation.com' },
