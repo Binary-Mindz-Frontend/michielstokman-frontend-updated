@@ -180,9 +180,11 @@ export default function EmotionalSearch({
                       <Link
                         key={id}
                         href={`/details/${id}`}
-                        className="inline-flex items-center gap-1 rounded-md border border-[#D9CDB8] bg-white px-2.5 py-1 text-xs font-semibold text-[#503225] hover:border-[#503225]"
+                        className="inline-flex items-center gap-1.5 rounded-md border border-[#D9CDB8] bg-white px-2.5 py-1 text-xs font-semibold text-[#503225] transition-colors hover:border-[#503225] hover:bg-[#FAF7F2]"
                       >
-                        <span>Listen to track</span>
+                        <span className="capitalize">
+                          {id.replace(/^(track|story)-/, '').replace(/-/g, ' ')}
+                        </span>
                         <ArrowRight size={11} />
                       </Link>
                     ))}

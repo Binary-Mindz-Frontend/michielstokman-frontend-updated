@@ -87,12 +87,15 @@ export default function StoryCatalogGrid({
 
     // Filter by AI Pinecone semantic matches if an emotional search is active
     if (aiMatchedTrackIds && aiMatchedTrackIds.length > 0) {
-      items = items.filter(
+      const filtered = items.filter(
         (item: any) =>
           aiMatchedTrackIds.includes(String(item.id)) ||
           aiMatchedTrackIds.includes(String(item.track_id)) ||
           aiMatchedTrackIds.includes(String(item.journey_code)),
       );
+      if (filtered.length > 0) {
+        items = filtered;
+      }
     }
 
     // Idempotent with the API: still works against an older feed that ignores query params.
