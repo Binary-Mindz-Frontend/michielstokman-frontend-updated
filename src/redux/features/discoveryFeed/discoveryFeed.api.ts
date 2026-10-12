@@ -63,6 +63,15 @@ const discoveryFeedApi = apiClient.injectEndpoints({
 
       invalidatesTags: (result, error, { storyId }) => [{ type: 'Discovery_Feed', id: storyId }],
     }),
+
+    searchTracks: builder.query<{ track_ids: string[] }, string>({
+      query: (searchQuery: string) => ({
+        url: `/ai/search?q=${encodeURIComponent(searchQuery)}`,
+        method: 'GET',
+      }),
+      transformResponse: (response: { data?: { track_ids: string[] } }) =>
+        response?.data ?? { track_ids: [] },
+    }),
   }),
 });
 
@@ -71,4 +80,6 @@ export const {
   useGetStoryDetailsQuery,
   useGetLiberationDetailsQuery,
   useSubmitStoryFeedbackMutation,
+  useSearchTracksQuery,
+  useLazySearchTracksQuery,
 } = discoveryFeedApi;

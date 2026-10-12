@@ -22,6 +22,7 @@ import { StoryDetailSkeleton } from '@/components/main/Skeletons/StoryDetailSkel
 import { useCurrentUser, useIsAuthenticated } from '@/redux/features/auth/authSlice';
 import { useAppSelector } from '@/redux/hooks';
 import StoryPlayer from '../StoryPlayer/StoryPlayer';
+import TapeStickerOverlay from '@/components/main/TapeStickerOverlay/TapeStickerOverlay';
 
 import brushTextBg from '@/assets/shared/brush-text-bg.png';
 import confessionsHero from '@/assets/shared/confessions-hero.png';
@@ -528,6 +529,7 @@ export default function StoryDetailPage() {
                 priority
                 unoptimized={typeof feedData?.cover_image_url === 'string'}
               />
+              <TapeStickerOverlay />
             </div>
           </motion.div>
         </motion.div>
