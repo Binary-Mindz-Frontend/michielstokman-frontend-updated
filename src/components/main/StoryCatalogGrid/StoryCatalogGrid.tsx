@@ -2,6 +2,7 @@
 'use client';
 
 import CatalogBrowseBar from '@/components/main/CatalogBrowseBar/CatalogBrowseBar';
+import EmotionalSearch from '@/components/main/EmotionalSearch/EmotionalSearch';
 import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicActionButton';
 import ProductCardSkeleton from '@/components/main/Skeletons/ProductCardSkeleton';
 import StoryListingCard, {
@@ -48,6 +49,7 @@ export default function StoryCatalogGrid({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [visibleCount, setVisibleCount] = useState(8);
+  const [aiMatchedTrackIds, setAiMatchedTrackIds] = useState<string[] | null>(null);
 
   const sort = parseSort(searchParams.get('sort'));
   const hideExplicit = searchParams.get('hide_explicit') === '1';
@@ -82,6 +84,19 @@ export default function StoryCatalogGrid({
         item.card_type === storyType ||
         (item.card_type === 'story' && item.story_type === storyType),
     );
+
+    // Filter by AI Pinecone semantic matches if an emotional search is active
+    if (aiMatchedTrackIds && aiMatchedTrackIds.length > 0) {
+      const filtered = items.filter(
+        (item: any) =>
+          aiMatchedTrackIds.includes(String(item.id)) ||
+          aiMatchedTrackIds.includes(String(item.track_id)) ||
+          aiMatchedTrackIds.includes(String(item.journey_code)),
+      );
+      if (filtered.length > 0) {
+        items = filtered;
+      }
+    }
 
     // Idempotent with the API: still works against an older feed that ignores query params.
     if (hideExplicit) {
@@ -121,7 +136,15 @@ export default function StoryCatalogGrid({
       durationSeconds: item.audio_duration_seconds,
       tags: cardMoodTags(item.tags),
     }));
-  }, [feedResponse?.data?.items, growthArea, hideExplicit, sort, storyType, tag]);
+  }, [
+    aiMatchedTrackIds,
+    feedResponse?.data?.items,
+    growthArea,
+    hideExplicit,
+    sort,
+    storyType,
+    tag,
+  ]);
 
   const visibleItems = catalogItems.slice(0, visibleCount);
   const hasMore = catalogItems.length > visibleCount;
@@ -135,6 +158,11 @@ export default function StoryCatalogGrid({
       variants={FADE_IN_UP_CONTAINER}
       className="scroll-mt-24"
     >
+      <EmotionalSearch
+        accentColor={accentColor}
+        onFilterByTrackIds={(ids) => setAiMatchedTrackIds(ids)}
+      />
+
       <CatalogBrowseBar
         sort={sort}
         hideExplicit={hideExplicit}

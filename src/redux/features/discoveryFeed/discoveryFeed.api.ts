@@ -46,6 +46,15 @@ const discoveryFeedApi = apiClient.injectEndpoints({
       providesTags: (result, error, id) => [{ type: 'Discovery_Feed', id }],
     }),
 
+    getLiberationCatalog: builder.query({
+      query: (params?: { limit?: number; offset?: number }) => ({
+        url: '/liberation/catalog',
+        method: 'GET',
+        params,
+      }),
+      providesTags: ['Liberations'],
+    }),
+
     getLiberationDetails: builder.query({
       query: (journey_code) => ({
         url: `/liberation/catalog/${journey_code}`,
@@ -63,12 +72,24 @@ const discoveryFeedApi = apiClient.injectEndpoints({
 
       invalidatesTags: (result, error, { storyId }) => [{ type: 'Discovery_Feed', id: storyId }],
     }),
+
+    searchTracks: builder.query<{ track_ids: string[] }, string>({
+      query: (searchQuery: string) => ({
+        url: `/ai/search?q=${encodeURIComponent(searchQuery)}`,
+        method: 'GET',
+      }),
+      transformResponse: (response: { data?: { track_ids: string[] } }) =>
+        response?.data ?? { track_ids: [] },
+    }),
   }),
 });
 
 export const {
   useGetDiscoveryFeedQuery,
   useGetStoryDetailsQuery,
+  useGetLiberationCatalogQuery,
   useGetLiberationDetailsQuery,
   useSubmitStoryFeedbackMutation,
+  useSearchTracksQuery,
+  useLazySearchTracksQuery,
 } = discoveryFeedApi;

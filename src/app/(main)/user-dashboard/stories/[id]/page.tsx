@@ -211,6 +211,21 @@ function MemberStoryDetailPage() {
                     .filter(Boolean)
                     .join(' · ')}
                 </p>
+                {story.first_name ||
+                story.location ||
+                story.gender ||
+                story.occupation ||
+                story.age ? (
+                  <div className="mt-2.5 flex flex-wrap items-center gap-1.5 rounded-lg border border-[#EBE4D5] bg-white/80 px-2.5 py-1.5 text-[11px] text-[#503225]">
+                    {story.first_name ? (
+                      <span className="font-semibold text-gray-900">{story.first_name}</span>
+                    ) : null}
+                    {story.age ? <span>· {story.age} yrs</span> : null}
+                    {story.gender ? <span>· {story.gender}</span> : null}
+                    {story.location ? <span>· {story.location}</span> : null}
+                    {story.occupation ? <span>· {story.occupation}</span> : null}
+                  </div>
+                ) : null}
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
