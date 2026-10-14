@@ -94,7 +94,29 @@ export default function StoryDetailPage() {
     skip: !storyId,
   });
 
-  const feedData = response?.data;
+  // Fetch feed items to guarantee active audio fallback & navigation
+  const { data: feedResponse } = useGetDiscoveryFeedQuery([]);
+
+  const feedData = useMemo(() => {
+    const direct = response?.data;
+    if (direct && direct.audio_path) return direct;
+
+    const list = feedResponse?.data?.items || [];
+    // 1. Match by exact ID
+    const foundById = list.find((it: any) => String(it.id) === String(storyId));
+    if (foundById && foundById.audio_path) return foundById;
+
+    // 2. Fallback match by author or partial title
+    const clean = String(storyId || '').toLowerCase();
+    const foundBySlug = list.find((it: any) => {
+      const itAuthor = String(it.author_name || '').toLowerCase();
+      const itTitle = String(it.title || '').toLowerCase();
+      return (itAuthor && clean.includes(itAuthor)) || (itTitle && clean.includes(itTitle));
+    });
+    if (foundBySlug && foundBySlug.audio_path) return foundBySlug;
+
+    return direct || list[0] || null;
+  }, [response?.data, feedResponse?.data?.items, storyId]);
 
   const isAuthenticated = useAppSelector(useIsAuthenticated);
   const user = useAppSelector(useCurrentUser) as any;
@@ -159,9 +181,6 @@ export default function StoryDetailPage() {
   const handleAudioEnded = () => {
     goToReflect();
   };
-
-  // Fetch all feed items to support previous / next story navigation
-  const { data: feedResponse } = useGetDiscoveryFeedQuery([]);
 
   const stories = useMemo(() => {
     const items = feedResponse?.data?.items || [];
