@@ -161,6 +161,7 @@ export default function LiberationsGrid() {
     >
       {/* AI Semantic Search */}
       <EmotionalSearch
+        category="liberation"
         accentColor="#4A229D"
         title="Find by How You Feel (AI Journey Search)"
         description="Describe how you are feeling or what transformation you crave. Pinecone will find matching liberation paths."

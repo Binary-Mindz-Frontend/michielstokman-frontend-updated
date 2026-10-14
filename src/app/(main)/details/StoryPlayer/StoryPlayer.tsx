@@ -14,6 +14,7 @@ interface IStoryPlayerProps {
   hasNext?: boolean;
   /** Fired when the audio track finishes playing. */
   onEnded?: () => void;
+  accentColor?: string;
 }
 
 // 75 dense waveform heights matching design screenshot
@@ -32,6 +33,7 @@ export default function StoryPlayer({
   hasPrev = false,
   hasNext = false,
   onEnded,
+  accentColor = '#E81A66',
 }: IStoryPlayerProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const progressBarRef = useRef<HTMLDivElement | null>(null);
@@ -202,6 +204,7 @@ export default function StoryPlayer({
   };
 
   const progressPercent = (currentTime / duration) * 100 || 0;
+  const inactiveWaveColor = accentColor === '#E81A66' ? '#FCA5C5' : `${accentColor}55`;
 
   return (
     <div className="w-full space-y-4 pt-6 md:space-y-6 md:pt-8">
@@ -222,10 +225,12 @@ export default function StoryPlayer({
           return (
             <div
               key={index}
-              style={{ height: `${heightPercent}%` }}
-              className={`w-[2.5px] shrink-0 rounded-full transition-all duration-100 ease-out sm:w-1 ${
-                isActive ? 'bg-[#E81A66]' : 'bg-[#FCA5C5] opacity-60'
-              }`}
+              style={{
+                height: `${heightPercent}%`,
+                backgroundColor: isActive ? accentColor : inactiveWaveColor,
+                opacity: isActive ? 1 : 0.6,
+              }}
+              className="w-[2.5px] shrink-0 rounded-full transition-all duration-100 ease-out sm:w-1"
             />
           );
         })}
@@ -240,17 +245,17 @@ export default function StoryPlayer({
         >
           {/* Gray Background Track */}
           <div className="h-2.5 w-full overflow-hidden rounded-full bg-[#D9D9D9]">
-            {/* Pink Progress Fill */}
+            {/* Progress Fill */}
             <div
-              className="h-full bg-[#E81A66] transition-[width] duration-100 ease-linear"
-              style={{ width: `${progressPercent}%` }}
+              className="h-full transition-[width] duration-100 ease-linear"
+              style={{ width: `${progressPercent}%`, backgroundColor: accentColor }}
             />
           </div>
 
-          {/* Solid Pink Knob / Thumb */}
+          {/* Solid Knob / Thumb */}
           <div
-            className="absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#E81A66] shadow-sm transition-[left] duration-100 ease-linear hover:scale-110"
-            style={{ left: `${progressPercent}%` }}
+            className="absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full shadow-sm transition-[left] duration-100 ease-linear hover:scale-110"
+            style={{ left: `${progressPercent}%`, backgroundColor: accentColor }}
           />
         </div>
 
@@ -280,7 +285,8 @@ export default function StoryPlayer({
         {/* Play/Pause Button */}
         <button
           onClick={togglePlay}
-          className="flex h-14 w-14 shrink-0 cursor-pointer items-center justify-center rounded-full bg-[#E81A66] text-white shadow-md transition-transform hover:scale-105 active:scale-95"
+          style={{ backgroundColor: accentColor }}
+          className="flex h-14 w-14 shrink-0 cursor-pointer items-center justify-center rounded-full text-white shadow-md transition-transform hover:scale-105 active:scale-95"
           aria-label={isPlaying ? 'Pause' : 'Play'}
         >
           {isPlaying ? (

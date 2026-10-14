@@ -16,6 +16,7 @@ export interface EmotionalSearchProps {
   presetEmotions?: string[];
   targetPathPrefix?: string;
   itemTypeLabel?: string;
+  category?: 'confession' | 'meditation' | 'liberation';
   // eslint-disable-next-line no-unused-vars
   getLinkHref?: (id: string) => string;
 }
@@ -28,6 +29,30 @@ const DEFAULT_PRESET_EMOTIONS = [
   'Grounded body & deep breath',
 ];
 
+const CATEGORY_PRESET_MAP: Record<string, string[]> = {
+  confession: [
+    'Heartbreak & letting go',
+    'Overwhelmed by expectations',
+    'Secrets I never told',
+    'Guilt & self-forgiveness',
+    'Craving authentic love',
+  ],
+  meditation: [
+    'Morning anxiety in the chest',
+    'Grounded body & deep breath',
+    'Inner stillness & peace',
+    'Quiet sanctuary & release',
+    'Contact with the trees',
+  ],
+  liberation: [
+    'Breaking rigid habits',
+    'Vitality & energy reset',
+    'Overcoming hesitation',
+    'Finding emotional stillness',
+    'Reclaiming self-trust',
+  ],
+};
+
 export default function EmotionalSearch({
   accentColor = '#EB2874',
   onFilterByTrackIds,
@@ -35,11 +60,17 @@ export default function EmotionalSearch({
   title = 'Find by How You Feel (AI Semantic Search)',
   description = 'Describe your present emotional state or what you are seeking. Pinecone will retrieve resonant matches.',
   placeholder = 'e.g. I feel overwhelmed by responsibility and crave silent reassurance...',
-  presetEmotions = DEFAULT_PRESET_EMOTIONS,
+  presetEmotions,
   targetPathPrefix = '/details',
   itemTypeLabel = 'recommendations',
+  category,
   getLinkHref,
 }: EmotionalSearchProps) {
+  const activePresets =
+    presetEmotions ||
+    (category ? CATEGORY_PRESET_MAP[category] : undefined) ||
+    DEFAULT_PRESET_EMOTIONS;
+
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [matchedIds, setMatchedIds] = useState<string[] | null>(null);
@@ -53,7 +84,7 @@ export default function EmotionalSearch({
 
     setHasSearched(true);
     try {
-      const response = await triggerSearch(searchText).unwrap();
+      const response = await triggerSearch({ query: searchText, category }).unwrap();
       const ids = response?.track_ids || [];
       setMatchedIds(ids);
       if (onFilterByTrackIds) {
@@ -167,7 +198,7 @@ export default function EmotionalSearch({
           {/* Quick emotion pills */}
           <div className="flex flex-wrap items-center gap-1.5 pt-1">
             <span className="font-sans text-[11px] font-medium text-[#8A7464]">Try:</span>
-            {presetEmotions.map((preset) => (
+            {activePresets.map((preset) => (
               <button
                 key={preset}
                 type="button"

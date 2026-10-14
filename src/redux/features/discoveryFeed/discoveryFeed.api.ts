@@ -73,11 +73,22 @@ const discoveryFeedApi = apiClient.injectEndpoints({
       invalidatesTags: (result, error, { storyId }) => [{ type: 'Discovery_Feed', id: storyId }],
     }),
 
-    searchTracks: builder.query<{ track_ids: string[] }, string>({
-      query: (searchQuery: string) => ({
-        url: `/ai/search?q=${encodeURIComponent(searchQuery)}`,
-        method: 'GET',
-      }),
+    searchTracks: builder.query<
+      { track_ids: string[] },
+      { query: string; category?: string } | string
+    >({
+      query: (arg) => {
+        const searchQuery = typeof arg === 'string' ? arg : arg.query;
+        const category = typeof arg === 'object' ? arg.category : undefined;
+        let url = `/ai/search?q=${encodeURIComponent(searchQuery)}`;
+        if (category) {
+          url += `&category=${encodeURIComponent(category)}`;
+        }
+        return {
+          url,
+          method: 'GET',
+        };
+      },
       transformResponse: (response: { data?: { track_ids: string[] } }) =>
         response?.data ?? { track_ids: [] },
     }),
