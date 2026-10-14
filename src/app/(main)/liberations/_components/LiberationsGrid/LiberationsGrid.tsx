@@ -3,7 +3,7 @@
 
 import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicActionButton';
 import ProductCardSkeleton from '@/components/main/Skeletons/ProductCardSkeleton';
-import { useGetDiscoveryFeedQuery } from '@/redux/features/discoveryFeed/discoveryFeed.api';
+import { useGetLiberationCatalogQuery } from '@/redux/features/discoveryFeed/discoveryFeed.api';
 import { resolveMediaUrl } from '@/lib/publications/media';
 import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
 import { STORY_CATALOG_GRID_CLASS } from '@/utils/storyCover.utils';
@@ -16,31 +16,26 @@ import fallbackCardImage from '@/assets/shared/confession-card-1.png';
 
 export default function LiberationsGrid() {
   const [visibleCount, setVisibleCount] = useState(8);
-  const { data: feedResponse, isLoading } = useGetDiscoveryFeedQuery([]);
+  const { data: catalogResponse, isLoading } = useGetLiberationCatalogQuery(undefined);
 
-  const rawItems = feedResponse?.data?.items || [];
+  const definitions = catalogResponse?.data?.definitions || [];
 
-  // Filter for liberations (card_type === 'liberation_journey' or story_type === 'liberation')
-  const liberationItems = rawItems.filter(
-    (item: any) =>
-      item.card_type === 'liberation_journey' ||
-      item.card_type === 'liberation' ||
-      item.story_type === 'liberation',
-  );
-
-  const liberationsData: LiberationItem[] = liberationItems.map((item: any) => ({
+  const liberationsData: LiberationItem[] = definitions.map((item: any) => ({
     id: item.id || item.journey_code,
     journeyCode: item.journey_code,
-    category: 'STORY',
+    category: 'LIBERATION',
     title: item.title,
-    description: item.description,
+    description: item.description || `A ${item.total_days || 7}-day path to transformation.`,
     image: resolveMediaUrl(item.cover_image_url) || fallbackCardImage,
-    price: item.price_display
-      ? `€${item.price_display}`
-      : item.rating
-        ? item.rating.toString()
-        : '€47',
-    totalDays: item.total_days ?? null,
+    price:
+      item.price !== undefined && item.price !== null
+        ? `€${item.price}`
+        : item.price_cents
+          ? `€${item.price_cents / 100}`
+          : item.rating
+            ? item.rating.toString()
+            : '€47',
+    totalDays: item.total_days ?? 7,
   }));
 
   const visibleLiberations = liberationsData.slice(0, visibleCount);

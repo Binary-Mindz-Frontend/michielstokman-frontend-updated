@@ -51,11 +51,11 @@ const LiberationsCard: React.FC<LiberationsCardProps> = ({ item }) => {
 
         {/* Category Label */}
         <span className="font-sans text-xs font-semibold tracking-widest text-[#301C05] uppercase">
-          {item.category}
+          {item.category || 'LIBERATION'}
         </span>
 
         {/* Title */}
-        <h3 className="font-edo mt-1 text-lg font-medium tracking-wide text-[#4A229D] capitalize sm:text-xl">
+        <h3 className="font-playpen mt-1 text-lg font-bold tracking-wide text-[#4A229D] uppercase sm:text-xl">
           {item.title}
         </h3>
 
