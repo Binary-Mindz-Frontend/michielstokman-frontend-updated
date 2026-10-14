@@ -5,6 +5,12 @@ import { Sparkles, Search, X, Loader2, ArrowRight } from 'lucide-react';
 import { useLazySearchTracksQuery } from '@/redux/features/discoveryFeed/discoveryFeed.api';
 import Link from 'next/link';
 
+export interface ActiveMatchItem {
+  id: string;
+  title: string;
+  href?: string;
+}
+
 export interface EmotionalSearchProps {
   accentColor?: string;
   // eslint-disable-next-line no-unused-vars
@@ -19,6 +25,7 @@ export interface EmotionalSearchProps {
   category?: 'confession' | 'meditation' | 'liberation';
   // eslint-disable-next-line no-unused-vars
   getLinkHref?: (id: string) => string;
+  activeMatchedItems?: ActiveMatchItem[];
 }
 
 const DEFAULT_PRESET_EMOTIONS = [
@@ -65,6 +72,7 @@ export default function EmotionalSearch({
   itemTypeLabel = 'recommendations',
   category,
   getLinkHref,
+  activeMatchedItems,
 }: EmotionalSearchProps) {
   const activePresets =
     presetEmotions ||
@@ -132,7 +140,9 @@ export default function EmotionalSearch({
             onClick={handleClear}
             className="font-playpen inline-flex items-center gap-1 text-[11px] font-semibold text-[#8A7464] hover:text-[#301C05]"
           >
-            <X size={12} /> Clear search ({matchedIds.length} found)
+            <X size={12} /> Clear search (
+            {activeMatchedItems !== undefined ? activeMatchedItems.length : matchedIds.length}{' '}
+            found)
           </button>
         ) : (
           <button
@@ -216,51 +226,68 @@ export default function EmotionalSearch({
           {/* Results summary */}
           {hasSearched && !isLoading ? (
             <div className="mt-3 rounded-lg border border-[#E0D5C3] bg-white/70 p-3">
-              {matchedIds && matchedIds.length > 0 ? (
+              {(activeMatchedItems !== undefined
+                ? activeMatchedItems.length
+                : (matchedIds?.length ?? 0)) > 0 ? (
                 <div className="space-y-2">
                   <p className="font-playpen text-xs font-bold text-[#149443]">
-                    Found {matchedIds.length} emotionally resonant {itemTypeLabel} in Pinecone:
+                    Found{' '}
+                    {activeMatchedItems !== undefined
+                      ? activeMatchedItems.length
+                      : matchedIds!.length}{' '}
+                    emotionally resonant {itemTypeLabel}:
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {matchedIds.map((id) => {
-                      const clean = id.toLowerCase().trim();
-                      const isJourney =
-                        clean.startsWith('track-') ||
-                        clean.startsWith('journey-') ||
-                        [
-                          'morning-anxiety-relief',
-                          'quiet-sanctuary',
-                          'inner-confidence',
-                          'grounded-body',
-                          'heartbreak-healing',
-                        ].includes(clean);
+                    {activeMatchedItems !== undefined
+                      ? activeMatchedItems.map((item) => (
+                          <Link
+                            key={item.id}
+                            href={item.href || `${targetPathPrefix}/${item.id}`}
+                            className="inline-flex items-center gap-1.5 rounded-md border border-[#D9CDB8] bg-white px-2.5 py-1 text-xs font-semibold text-[#503225] transition-colors hover:border-[#503225] hover:bg-[#FAF7F2]"
+                          >
+                            <span className="capitalize">{item.title}</span>
+                            <ArrowRight size={11} />
+                          </Link>
+                        ))
+                      : (matchedIds || []).map((id) => {
+                          const clean = id.toLowerCase().trim();
+                          const isJourney =
+                            clean.startsWith('track-') ||
+                            clean.startsWith('journey-') ||
+                            [
+                              'morning-anxiety-relief',
+                              'quiet-sanctuary',
+                              'inner-confidence',
+                              'grounded-body',
+                              'heartbreak-healing',
+                            ].includes(clean);
 
-                      const href = getLinkHref
-                        ? getLinkHref(id)
-                        : isJourney
-                          ? `/journeys/${clean.replace(/^(track|journey)-/, '')}`
-                          : `${targetPathPrefix}/${id}`;
+                          const href = getLinkHref
+                            ? getLinkHref(id)
+                            : isJourney
+                              ? `/journeys/${clean.replace(/^(track|journey)-/, '')}`
+                              : `${targetPathPrefix}/${id}`;
 
-                      return (
-                        <Link
-                          key={id}
-                          href={href}
-                          className="inline-flex items-center gap-1.5 rounded-md border border-[#D9CDB8] bg-white px-2.5 py-1 text-xs font-semibold text-[#503225] transition-colors hover:border-[#503225] hover:bg-[#FAF7F2]"
-                        >
-                          <span className="capitalize">
-                            {id.replace(/^(track|story|journey)-/, '').replace(/-/g, ' ')}
-                          </span>
-                          <ArrowRight size={11} />
-                        </Link>
-                      );
-                    })}
+                          return (
+                            <Link
+                              key={id}
+                              href={href}
+                              className="inline-flex items-center gap-1.5 rounded-md border border-[#D9CDB8] bg-white px-2.5 py-1 text-xs font-semibold text-[#503225] transition-colors hover:border-[#503225] hover:bg-[#FAF7F2]"
+                            >
+                              <span className="capitalize">
+                                {id.replace(/^(track|story|journey)-/, '').replace(/-/g, ' ')}
+                              </span>
+                              <ArrowRight size={11} />
+                            </Link>
+                          );
+                        })}
                   </div>
                 </div>
               ) : (
                 <p className="font-sans text-xs text-[#8A7464]">
                   {isError
                     ? 'AI search service is temporarily offline. Showing general catalog.'
-                    : 'No direct vector matches for this specific query. Try adjusting your emotional keywords.'}
+                    : `No active ${itemTypeLabel} matched this specific query. Try adjusting your emotional keywords or clear search.`}
                 </p>
               )}
             </div>

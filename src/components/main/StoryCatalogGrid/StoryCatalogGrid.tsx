@@ -92,28 +92,40 @@ export default function StoryCatalogGrid({
         'story-136-jonas': 'contact with the trees',
         'story-201-desiree': 'growing toward the light',
         'story-204-jasna': 'the first time we shared',
-        'story-028-lars': 'the night she took the lead',
+        'story-028-lars': 'two men and nia',
       };
 
       const filtered = items.filter((item: any) => {
-        const itemId = String(item.id || '').toLowerCase();
-        const trackId = String(item.track_id || '').toLowerCase();
-        const journeyCode = String(item.journey_code || '').toLowerCase();
-        const itemTitle = String(item.title || '').toLowerCase();
-        const author = String(item.author_name || '').toLowerCase();
+        const itemId = String(item.id || '')
+          .toLowerCase()
+          .trim();
+        const trackId = String(item.track_id || '')
+          .toLowerCase()
+          .trim();
+        const journeyCode = String(item.journey_code || '')
+          .toLowerCase()
+          .trim();
+        const itemTitle = String(item.title || '')
+          .toLowerCase()
+          .trim();
+        const author = String(item.author_name || '')
+          .toLowerCase()
+          .trim();
 
         return aiMatchedTrackIds.some((trackIdOrSlug) => {
           const needle = trackIdOrSlug.toLowerCase().trim();
+          if (!needle) return false;
           const mappedTitle = SLUG_TITLE_MAP[needle];
 
           return (
-            itemId === needle ||
-            trackId === needle ||
-            journeyCode === needle ||
-            needle.includes(journeyCode) ||
-            (mappedTitle && itemTitle.includes(mappedTitle)) ||
-            (itemTitle && needle.includes(itemTitle)) ||
-            (author && needle.includes(author))
+            (itemId && (itemId === needle || needle.includes(itemId) || itemId.includes(needle))) ||
+            (trackId && (trackId === needle || needle.includes(trackId))) ||
+            (journeyCode && (journeyCode === needle || needle.includes(journeyCode))) ||
+            (mappedTitle &&
+              itemTitle &&
+              (itemTitle.includes(mappedTitle) || mappedTitle.includes(itemTitle))) ||
+            (itemTitle && (itemTitle.includes(needle) || needle.includes(itemTitle))) ||
+            (author && (needle.includes(author) || author === needle))
           );
         });
       });
@@ -173,6 +185,15 @@ export default function StoryCatalogGrid({
   const hasMore = catalogItems.length > visibleCount;
   const hasActiveFilters = hideExplicit || Boolean(growthArea) || Boolean(tag) || sort !== 'newest';
 
+  const activeMatchedPills = useMemo(() => {
+    if (!aiMatchedTrackIds) return undefined;
+    return catalogItems.map((item) => ({
+      id: String(item.id),
+      title: item.title || 'Untitled Story',
+      href: `/details/${item.id}`,
+    }));
+  }, [aiMatchedTrackIds, catalogItems]);
+
   return (
     <motion.section
       id="stories"
@@ -192,6 +213,7 @@ export default function StoryCatalogGrid({
         }
         itemTypeLabel={noun.toLowerCase()}
         onFilterByTrackIds={(ids) => setAiMatchedTrackIds(ids)}
+        activeMatchedItems={activeMatchedPills}
       />
 
       <CatalogBrowseBar

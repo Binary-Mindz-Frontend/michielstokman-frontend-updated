@@ -137,6 +137,15 @@ export default function LiberationsGrid() {
     setVisibleCount(8);
   };
 
+  const activeLiberationPills = useMemo(() => {
+    if (!aiMatchedTrackIds) return undefined;
+    return filteredLiberations.map((item) => ({
+      id: String(item.id || item.journeyCode),
+      title: item.title,
+      href: `/journeys/${item.journeyCode || item.id}`,
+    }));
+  }, [aiMatchedTrackIds, filteredLiberations]);
+
   const isLoading = isCatalogLoading && isFeedLoading && liberationsData.length === 0;
 
   if (isLoading) {
@@ -170,6 +179,7 @@ export default function LiberationsGrid() {
         targetPathPrefix="/journeys"
         itemTypeLabel="journeys"
         getLinkHref={(id) => `/journeys/${id}`}
+        activeMatchedItems={activeLiberationPills}
         onFilterByTrackIds={(ids) => {
           setAiMatchedTrackIds(ids);
           setVisibleCount(8);
