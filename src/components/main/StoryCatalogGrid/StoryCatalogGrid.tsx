@@ -87,12 +87,37 @@ export default function StoryCatalogGrid({
 
     // Filter by AI Pinecone semantic matches if an emotional search is active
     if (aiMatchedTrackIds && aiMatchedTrackIds.length > 0) {
-      const filtered = items.filter(
-        (item: any) =>
-          aiMatchedTrackIds.includes(String(item.id)) ||
-          aiMatchedTrackIds.includes(String(item.track_id)) ||
-          aiMatchedTrackIds.includes(String(item.journey_code)),
-      );
+      const SLUG_TITLE_MAP: Record<string, string> = {
+        'story-132-joanna': 'back to the current',
+        'story-136-jonas': 'contact with the trees',
+        'story-201-desiree': 'growing toward the light',
+        'story-204-jasna': 'the first time we shared',
+        'story-028-lars': 'the night she took the lead',
+      };
+
+      const filtered = items.filter((item: any) => {
+        const itemId = String(item.id || '').toLowerCase();
+        const trackId = String(item.track_id || '').toLowerCase();
+        const journeyCode = String(item.journey_code || '').toLowerCase();
+        const itemTitle = String(item.title || '').toLowerCase();
+        const author = String(item.author_name || '').toLowerCase();
+
+        return aiMatchedTrackIds.some((trackIdOrSlug) => {
+          const needle = trackIdOrSlug.toLowerCase().trim();
+          const mappedTitle = SLUG_TITLE_MAP[needle];
+
+          return (
+            itemId === needle ||
+            trackId === needle ||
+            journeyCode === needle ||
+            needle.includes(journeyCode) ||
+            (mappedTitle && itemTitle.includes(mappedTitle)) ||
+            (itemTitle && needle.includes(itemTitle)) ||
+            (author && needle.includes(author))
+          );
+        });
+      });
+
       if (filtered.length > 0) {
         items = filtered;
       }

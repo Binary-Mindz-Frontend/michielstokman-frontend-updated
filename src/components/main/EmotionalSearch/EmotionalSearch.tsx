@@ -192,7 +192,24 @@ export default function EmotionalSearch({
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {matchedIds.map((id) => {
-                      const href = getLinkHref ? getLinkHref(id) : `${targetPathPrefix}/${id}`;
+                      const clean = id.toLowerCase().trim();
+                      const isJourney =
+                        clean.startsWith('track-') ||
+                        clean.startsWith('journey-') ||
+                        [
+                          'morning-anxiety-relief',
+                          'quiet-sanctuary',
+                          'inner-confidence',
+                          'grounded-body',
+                          'heartbreak-healing',
+                        ].includes(clean);
+
+                      const href = getLinkHref
+                        ? getLinkHref(id)
+                        : isJourney
+                          ? `/journeys/${clean.replace(/^(track|journey)-/, '')}`
+                          : `${targetPathPrefix}/${id}`;
+
                       return (
                         <Link
                           key={id}
