@@ -39,7 +39,7 @@ export default function ConfessionsHero() {
           </div>
 
           <p className="relative z-10 px-4 py-2 text-center font-sans text-xs font-medium text-white uppercase sm:px-6 sm:text-sm">
-            A SPACE TO SAY WHAT <br /> YOU&apos;VE <span className="text-[#E81A66]">NEVER </span>
+            A SPACE TO SAY WHAT <br /> YOU&apos;VE <span className="text-[#D22D4C]">NEVER </span>
             DARED TO SAY.
           </p>
         </div>

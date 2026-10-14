@@ -28,8 +28,8 @@ export default function CreateFormCategoryTabs({ selected }: { selected: string 
         <button
           type="button"
           onClick={() => handleCategoryChange('Confessions')}
-          className={`flex cursor-pointer items-center justify-center gap-2.5 rounded-md border-2 bg-transparent px-6 py-3 font-sans text-sm font-semibold tracking-wider text-[#EB2874] uppercase transition-all ${
-            isConfession ? 'border-[#EB2874]/80' : 'border-[#EBE4D5] hover:border-[#EB2874]/50'
+          className={`flex cursor-pointer items-center justify-center gap-2.5 rounded-md border-2 bg-transparent px-6 py-3 font-sans text-sm font-semibold tracking-wider text-[#D22D4C] uppercase transition-all ${
+            isConfession ? 'border-[#D22D4C]/80' : 'border-[#EBE4D5] hover:border-[#D22D4C]/50'
           }`}
         >
           <div className="relative h-5 w-5 shrink-0">

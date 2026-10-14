@@ -38,13 +38,13 @@ export default function SubmitTypeChoice({ basePath = '/create' }: { basePath?: 
         <button
           type="button"
           onClick={() => router.push(`${basePath}?type=Confessions`)}
-          className="flex cursor-pointer flex-col items-start gap-3 rounded-lg border-2 border-[#EB2874]/40 bg-transparent p-5 text-left transition-colors hover:border-[#EB2874]"
+          className="flex cursor-pointer flex-col items-start gap-3 rounded-lg border-2 border-[#D22D4C]/40 bg-transparent p-5 text-left transition-colors hover:border-[#D22D4C]"
         >
           <div className="flex items-center gap-2.5">
             <div className="relative h-6 w-6 shrink-0">
               <Image src={iconHeartPink} alt="" fill className="object-contain" />
             </div>
-            <span className="font-sans text-sm font-bold tracking-wider text-[#EB2874] uppercase">
+            <span className="font-sans text-sm font-bold tracking-wider text-[#D22D4C] uppercase">
               Confession
             </span>
           </div>
@@ -53,7 +53,7 @@ export default function SubmitTypeChoice({ basePath = '/create' }: { basePath?: 
             loud.
           </p>
           {hasConfessionDraft ? (
-            <p className="font-sans text-xs font-semibold text-[#EB2874]">
+            <p className="font-sans text-xs font-semibold text-[#D22D4C]">
               You have a saved confession draft.
             </p>
           ) : null}

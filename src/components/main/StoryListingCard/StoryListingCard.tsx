@@ -120,7 +120,10 @@ const StoryListingCard: React.FC<StoryListingCardProps> = ({
         {(nameLine || detailLine) && (
           <div className="mt-3 space-y-0.5">
             {nameLine ? (
-              <p className="font-serif text-sm leading-snug italic" style={{ color: accentColor }}>
+              <p
+                className="font-serif text-sm leading-snug font-semibold italic"
+                style={{ color: accentColor }}
+              >
                 {nameLine}
               </p>
             ) : null}

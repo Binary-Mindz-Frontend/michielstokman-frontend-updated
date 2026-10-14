@@ -61,7 +61,7 @@ const CATEGORY_PRESET_MAP: Record<string, string[]> = {
 };
 
 export default function EmotionalSearch({
-  accentColor = '#EB2874',
+  accentColor: accentColorProp,
   onFilterByTrackIds,
   className = '',
   title = 'Find by How You Feel (AI Semantic Search)',
@@ -74,6 +74,10 @@ export default function EmotionalSearch({
   getLinkHref,
   activeMatchedItems,
 }: EmotionalSearchProps) {
+  const accentColor =
+    accentColorProp ||
+    (category === 'confession' ? '#D22D4C' : category === 'meditation' ? '#EEA13D' : '#D22D4C');
+
   const activePresets =
     presetEmotions ||
     (category ? CATEGORY_PRESET_MAP[category] : undefined) ||

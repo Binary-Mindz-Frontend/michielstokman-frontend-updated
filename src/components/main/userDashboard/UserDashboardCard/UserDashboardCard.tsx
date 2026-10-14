@@ -139,7 +139,7 @@ const UserDashboardCard: React.FC<UserDashboardCardProps> = ({
 }) => {
   const isConfession = item.story_type === 'confession';
   const isMeditation = item.story_type === 'meditation';
-  const primaryColor = isMeditation ? '#EEA13D' : '#EB2874';
+  const primaryColor = isMeditation ? '#EEA13D' : '#D22D4C';
   const buttonBgColor = isMeditation ? '#EEA13D' : '#D22D4C';
   const duration = formatAudioDuration(item.audio_duration_seconds);
 
