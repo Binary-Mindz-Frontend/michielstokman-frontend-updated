@@ -31,6 +31,7 @@ const journeySchema = z.object({
     .min(1, 'Price is required')
     .refine((val) => !isNaN(Number(val)), 'Price must be a valid number'),
   description: z.string().optional(),
+  coverImageUrl: z.string().optional(),
   whatToExpect: z.array(z.string()).optional(),
   days: z
     .array(
@@ -88,6 +89,7 @@ export default function JourneyForm() {
       title: '',
       price: '',
       description: '',
+      coverImageUrl: '',
       whatToExpect: [],
       days: Array(7).fill({ dayTitle: '', whatToDo: '', whyThisExercise: '', imageUrl: '' }),
     },
@@ -100,6 +102,7 @@ export default function JourneyForm() {
         title: singleData?.data.title || '',
         price: String(singleData?.data.price || ''),
         description: singleData?.data.description || '',
+        coverImageUrl: singleData?.data.cover_image_url || '',
         whatToExpect: singleData?.data.what_to_expect || [],
         days: Array(7)
           .fill(null)
@@ -124,6 +127,7 @@ export default function JourneyForm() {
         title: data.title,
         description: data.description || '',
         price: Number(data.price),
+        cover_image_url: data.coverImageUrl || data.days[0]?.imageUrl || '',
         what_to_expect:
           data.whatToExpect && data.whatToExpect.length > 0 ? data.whatToExpect : [''],
         days: data.days.map((dayItem, index) => ({
@@ -244,6 +248,18 @@ export default function JourneyForm() {
                         ? errors.whatToExpect[0]?.message
                         : (errors.whatToExpect as { message?: string } | undefined)?.message
                     }
+                  />
+                )}
+              />
+              <Controller
+                name="coverImageUrl"
+                control={control}
+                render={({ field }) => (
+                  <DayImageUpload
+                    label="Storefront Card Cover Image (Optional: Defaults to Day 1 Image)"
+                    value={field.value ?? ''}
+                    onChange={field.onChange}
+                    uploadFn={uploadDayImage}
                   />
                 )}
               />
