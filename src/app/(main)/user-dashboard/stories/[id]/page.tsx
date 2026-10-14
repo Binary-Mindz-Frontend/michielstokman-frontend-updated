@@ -132,7 +132,7 @@ function MemberStoryDetailPage() {
   const showCoverPlaceholder = !hasStoryCover(story.cover_image_url);
   const duration = formatAudioDuration(story.audio_duration_seconds);
   const isConfession = story.story_type === 'confession';
-  const accent = isConfession ? '#EB2874' : '#EEA13D';
+  const accent = isConfession ? '#D22D4C' : '#EEA13D';
 
   const tabs: { key: ContentTab; label: string }[] = [
     { key: 'listen', label: 'Listen' },

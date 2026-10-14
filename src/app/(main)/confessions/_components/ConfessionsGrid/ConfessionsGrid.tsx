@@ -21,9 +21,9 @@ export default function ConfessionsGrid() {
       <StoryCatalogGrid
         storyType="confession"
         noun="confessions"
-        accentColor="#EB2874"
+        accentColor="#D22D4C"
         buttonBg="#D22D4C"
-        ratingColor="#EB2874"
+        ratingColor="#D22D4C"
       />
     </Suspense>
   );

@@ -16,9 +16,9 @@ const ConfessionsCard: React.FC<ConfessionsCardProps> = ({ item }) => {
     <StoryListingCard
       item={item}
       href={`/details/${item.id}`}
-      accentColor="#EB2874"
+      accentColor="#D22D4C"
       buttonBg="#D22D4C"
-      ratingColor="#EB2874"
+      ratingColor="#D22D4C"
     />
   );
 };

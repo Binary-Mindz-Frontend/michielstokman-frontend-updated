@@ -39,7 +39,7 @@ function BrushTagline({
   title?: string | null;
   isMeditation: boolean;
 }) {
-  const accent = isMeditation ? 'text-[#E9A139]' : 'text-[#E81A66]';
+  const accent = isMeditation ? 'text-[#E9A139]' : 'text-[#D22D4C]';
   const raw = (tagline || title || '').trim();
 
   if (!raw) {
