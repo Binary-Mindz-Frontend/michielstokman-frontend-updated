@@ -5,14 +5,22 @@ import { Sparkles, Search, X, Loader2, ArrowRight } from 'lucide-react';
 import { useLazySearchTracksQuery } from '@/redux/features/discoveryFeed/discoveryFeed.api';
 import Link from 'next/link';
 
-interface EmotionalSearchProps {
+export interface EmotionalSearchProps {
   accentColor?: string;
   // eslint-disable-next-line no-unused-vars
   onFilterByTrackIds?: (trackIds: string[] | null) => void;
   className?: string;
+  title?: string;
+  description?: string;
+  placeholder?: string;
+  presetEmotions?: string[];
+  targetPathPrefix?: string;
+  itemTypeLabel?: string;
+  // eslint-disable-next-line no-unused-vars
+  getLinkHref?: (id: string) => string;
 }
 
-const PRESET_EMOTIONS = [
+const DEFAULT_PRESET_EMOTIONS = [
   'Overwhelmed & seeking quiet',
   'Heartbreak & letting go',
   'Morning anxiety in the chest',
@@ -24,6 +32,13 @@ export default function EmotionalSearch({
   accentColor = '#EB2874',
   onFilterByTrackIds,
   className = '',
+  title = 'Find by How You Feel (AI Semantic Search)',
+  description = 'Describe your present emotional state or what you are seeking. Pinecone will retrieve resonant matches.',
+  placeholder = 'e.g. I feel overwhelmed by responsibility and crave silent reassurance...',
+  presetEmotions = DEFAULT_PRESET_EMOTIONS,
+  targetPathPrefix = '/details',
+  itemTypeLabel = 'recommendations',
+  getLinkHref,
 }: EmotionalSearchProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -46,6 +61,9 @@ export default function EmotionalSearch({
       }
     } catch {
       setMatchedIds([]);
+      if (onFilterByTrackIds) {
+        onFilterByTrackIds(null);
+      }
     }
   };
 
@@ -74,7 +92,7 @@ export default function EmotionalSearch({
           >
             <Sparkles size={13} />
           </span>
-          <span>Find by How You Feel (AI Semantic Search)</span>
+          <span>{title}</span>
         </button>
 
         {matchedIds !== null ? (
@@ -98,10 +116,7 @@ export default function EmotionalSearch({
 
       {isOpen ? (
         <div className="mt-4 space-y-3 pt-2">
-          <p className="font-sans text-xs text-[#666]">
-            Describe your present emotional state or what you are seeking. SuperGrok and Pinecone
-            will retrieve resonant stories.
-          </p>
+          <p className="font-sans text-xs text-[#666]">{description}</p>
 
           <form
             onSubmit={(e) => {
@@ -115,7 +130,7 @@ export default function EmotionalSearch({
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="e.g. I feel overwhelmed by responsibility and crave silent reassurance..."
+                placeholder={placeholder}
                 className="w-full rounded-lg border border-[#DDD2C4] bg-white px-3.5 py-2.5 pr-9 font-sans text-xs text-[#2A2A2A] placeholder:text-gray-400 focus:border-[#503225] focus:ring-1 focus:ring-[#503225] focus:outline-none"
               />
               {query ? (
@@ -152,7 +167,7 @@ export default function EmotionalSearch({
           {/* Quick emotion pills */}
           <div className="flex flex-wrap items-center gap-1.5 pt-1">
             <span className="font-sans text-[11px] font-medium text-[#8A7464]">Try:</span>
-            {PRESET_EMOTIONS.map((preset) => (
+            {presetEmotions.map((preset) => (
               <button
                 key={preset}
                 type="button"
@@ -173,21 +188,24 @@ export default function EmotionalSearch({
               {matchedIds && matchedIds.length > 0 ? (
                 <div className="space-y-2">
                   <p className="font-playpen text-xs font-bold text-[#149443]">
-                    Found {matchedIds.length} emotionally resonant recommendations in Pinecone:
+                    Found {matchedIds.length} emotionally resonant {itemTypeLabel} in Pinecone:
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {matchedIds.map((id) => (
-                      <Link
-                        key={id}
-                        href={`/details/${id}`}
-                        className="inline-flex items-center gap-1.5 rounded-md border border-[#D9CDB8] bg-white px-2.5 py-1 text-xs font-semibold text-[#503225] transition-colors hover:border-[#503225] hover:bg-[#FAF7F2]"
-                      >
-                        <span className="capitalize">
-                          {id.replace(/^(track|story)-/, '').replace(/-/g, ' ')}
-                        </span>
-                        <ArrowRight size={11} />
-                      </Link>
-                    ))}
+                    {matchedIds.map((id) => {
+                      const href = getLinkHref ? getLinkHref(id) : `${targetPathPrefix}/${id}`;
+                      return (
+                        <Link
+                          key={id}
+                          href={href}
+                          className="inline-flex items-center gap-1.5 rounded-md border border-[#D9CDB8] bg-white px-2.5 py-1 text-xs font-semibold text-[#503225] transition-colors hover:border-[#503225] hover:bg-[#FAF7F2]"
+                        >
+                          <span className="capitalize">
+                            {id.replace(/^(track|story|journey)-/, '').replace(/-/g, ' ')}
+                          </span>
+                          <ArrowRight size={11} />
+                        </Link>
+                      );
+                    })}
                   </div>
                 </div>
               ) : (
