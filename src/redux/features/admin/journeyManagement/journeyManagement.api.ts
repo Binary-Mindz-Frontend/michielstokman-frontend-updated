@@ -62,6 +62,15 @@ export const adminLiberationApi = apiClient.injectEndpoints({
       }),
       invalidatesTags: ['Liberations'],
     }),
+
+    // Delete Liberation (Only Admin)
+    deleteLiberation: builder.mutation({
+      query: (id: string) => ({
+        url: `/admin/liberation/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Liberations'],
+    }),
   }),
 });
 
@@ -71,5 +80,6 @@ export const {
   useUploadDayImageMutation,
   useDeactivateLiberationMutation,
   useUpdateLiberationMutation,
+  useDeleteLiberationMutation,
   useGetSingleLiberationQuery,
 } = adminLiberationApi;

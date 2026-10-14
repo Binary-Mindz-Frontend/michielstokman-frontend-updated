@@ -5,15 +5,24 @@ import DynamicPageHeader from '@/components/dashboard/DynamicPageHeader/DynamicP
 import InputField from '@/components/dashboard/Fields/InputField/InputField';
 import TextAreaField from '@/components/dashboard/Fields/TextAreaField/TextAreaField';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import {
   useCreateLiberationMutation,
+  useDeleteLiberationMutation,
   useGetSingleLiberationQuery,
   useUpdateLiberationMutation,
   useUploadDayImageMutation,
 } from '@/redux/features/admin/journeyManagement/journeyManagement.api';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Trash2 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -74,8 +83,27 @@ export default function JourneyForm() {
   // Mutation & Query Hooks
   const [createLiberation, { isLoading: isCreating }] = useCreateLiberationMutation();
   const [updateLiberation, { isLoading: isUpdating }] = useUpdateLiberationMutation();
+  const [deleteLiberation, { isLoading: isDeleting }] = useDeleteLiberationMutation();
   const [uploadDayImage] = useUploadDayImageMutation();
   const { data: singleData } = useGetSingleLiberationQuery(id);
+
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+
+  const handleDelete = async () => {
+    const toastId = toast.loading('Deleting journey...');
+    try {
+      const response = await deleteLiberation(id).unwrap();
+      if (response.success || response.status === 200) {
+        toast.success(response.message || 'Journey deleted successfully!', { id: toastId });
+        setIsDeleteOpen(false);
+        router.push('/dashboard/journey-management');
+      } else {
+        toast.error(response.message || 'Failed to delete journey', { id: toastId });
+      }
+    } catch (error: any) {
+      toast.error(error?.data?.message || 'Failed to delete journey', { id: toastId });
+    }
+  };
 
   const {
     control,
@@ -318,17 +346,63 @@ export default function JourneyForm() {
                 </div>
               ),
           )}
-          {/* ── Action Button ── */}
-          {isLastTab ? (
-            <Button type="submit" className="btn-styles" disabled={isLoading}>
-              {isLoading ? 'Submitting...' : isEditMode ? 'Update Journey' : 'Submit Journey'}
-            </Button>
-          ) : (
-            <Button type="button" onClick={handleNext} className="btn-styles">
-              Next
-            </Button>
-          )}
+          {/* ── Action Buttons ── */}
+          <div className="flex items-center justify-between border-t border-[#EAE3DC] pt-6">
+            {isEditMode ? (
+              <button
+                type="button"
+                onClick={() => setIsDeleteOpen(true)}
+                className="flex cursor-pointer items-center gap-2 rounded-md border border-red-200 bg-red-50/70 px-4 py-2 text-sm font-medium text-red-600 transition-all hover:bg-red-100 hover:text-red-700"
+              >
+                <Trash2 size={16} /> Delete Journey
+              </button>
+            ) : (
+              <div />
+            )}
+
+            <div>
+              {isLastTab ? (
+                <Button type="submit" className="btn-styles" disabled={isLoading}>
+                  {isLoading ? 'Submitting...' : isEditMode ? 'Update Journey' : 'Submit Journey'}
+                </Button>
+              ) : (
+                <Button type="button" onClick={handleNext} className="btn-styles">
+                  Next
+                </Button>
+              )}
+            </div>
+          </div>
         </form>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Delete this Liberation Journey?</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete{' '}
+                <span className="font-semibold text-black">
+                  &quot;{singleData?.data?.title}&quot;
+                </span>
+                ? This will permanently remove the journey and its 7 days from the catalog. This
+                action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+
+            <DialogFooter className="mt-4 flex gap-2 sm:justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setIsDeleteOpen(false)}
+                disabled={isDeleting}
+              >
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
+                {isDeleting ? 'Deleting...' : 'Delete permanently'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </section>
   );
