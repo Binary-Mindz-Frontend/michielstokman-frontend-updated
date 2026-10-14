@@ -22,11 +22,11 @@ import { StoryDetailSkeleton } from '@/components/main/Skeletons/StoryDetailSkel
 import { useCurrentUser, useIsAuthenticated } from '@/redux/features/auth/authSlice';
 import { useAppSelector } from '@/redux/hooks';
 import StoryPlayer from '../StoryPlayer/StoryPlayer';
-import TapeStickerOverlay from '@/components/main/TapeStickerOverlay/TapeStickerOverlay';
 
 import brushTextBg from '@/assets/shared/brush-text-bg.png';
 import confessionsHero from '@/assets/shared/confessions-hero.png';
 import pinkHeartDrawn from '@/assets/shared/pink-heart-drawn.png';
+import amberHeartDrawn from '@/assets/shared/amber-heart-drawn.png';
 import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
 import { resolveStoryCoverSrc } from '@/utils/storyCover.utils';
 
@@ -406,6 +406,7 @@ export default function StoryDetailPage() {
 
   const isMeditation = feedData?.story_type === 'meditation';
   const themeColor = isMeditation ? '#E9A139' : '#D22D4C';
+  const heartIcon = isMeditation ? amberHeartDrawn : pinkHeartDrawn;
   const heroImageSrc = feedData?.story_type
     ? resolveStoryCoverSrc(
         feedData.cover_image_url,
@@ -499,7 +500,7 @@ export default function StoryDetailPage() {
             {feedData?.hero_hook ? (
               <div className="mt-6 flex items-start gap-3 sm:mt-8">
                 <div className="relative mt-1 h-7 w-7 shrink-0 sm:h-9 sm:w-9">
-                  <Image src={pinkHeartDrawn} alt="" fill className="object-contain" />
+                  <Image src={heartIcon} alt="" fill className="object-contain" />
                 </div>
                 <p className="max-w-lg font-serif text-base leading-relaxed text-[#1A1A1A] italic sm:text-lg">
                   {feedData.hero_hook}
@@ -507,7 +508,7 @@ export default function StoryDetailPage() {
               </div>
             ) : (
               <div className="relative mt-6 h-7 w-7 sm:h-9 sm:w-9">
-                <Image src={pinkHeartDrawn} alt="" fill className="object-contain" />
+                <Image src={heartIcon} alt="" fill className="object-contain" />
               </div>
             )}
           </motion.div>
@@ -518,7 +519,7 @@ export default function StoryDetailPage() {
             className="relative flex w-full justify-center md:w-1/2"
           >
             <div className="absolute top-8 -left-2 hidden h-8 w-8 md:block lg:top-12 lg:-left-4">
-              <Image src={pinkHeartDrawn} alt="" fill className="object-contain" />
+              <Image src={heartIcon} alt="" fill className="object-contain" />
             </div>
             <div className="relative h-80 w-full max-w-85 shrink-0 sm:h-112.5 sm:max-w-125 md:max-w-150 lg:h-120 lg:max-w-170 xl:h-150 xl:max-w-187.5">
               <Image
@@ -529,7 +530,6 @@ export default function StoryDetailPage() {
                 priority
                 unoptimized={typeof feedData?.cover_image_url === 'string'}
               />
-              <TapeStickerOverlay />
             </div>
           </motion.div>
         </motion.div>
@@ -560,7 +560,10 @@ export default function StoryDetailPage() {
               </p>
 
               {feedData?.avg_rating && (
-                <span className="rounded-sm bg-[#D22D4C] px-3 py-1 text-xs font-medium text-white uppercase">
+                <span
+                  className="rounded-sm px-3 py-1 text-xs font-medium text-white uppercase"
+                  style={{ backgroundColor: themeColor }}
+                >
                   {feedData?.avg_rating} ★ (
                   {feedData?.total_ratings || feedData?.total_reflections || 0} RATINGS)
                 </span>
@@ -615,6 +618,7 @@ export default function StoryDetailPage() {
 
           <StoryPlayer
             story={feedData?.audio_path || ''}
+            accentColor={themeColor}
             onTimeUpdateCallback={(current, duration, speed) =>
               setAudioProgress({ current, duration, speed: speed || 1 })
             }

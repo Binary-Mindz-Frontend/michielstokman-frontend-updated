@@ -118,9 +118,7 @@ export default function StoryCatalogGrid({
         });
       });
 
-      if (filtered.length > 0) {
-        items = filtered;
-      }
+      items = filtered;
     }
 
     // Idempotent with the API: still works against an older feed that ignores query params.
@@ -185,6 +183,14 @@ export default function StoryCatalogGrid({
     >
       <EmotionalSearch
         accentColor={accentColor}
+        category={storyType}
+        title={`Find ${noun} by How You Feel (AI Search)`}
+        placeholder={
+          storyType === 'confession'
+            ? 'e.g. Heartbreak, secrets never told, craving vulnerability...'
+            : 'e.g. Morning anxiety, inner peace, grounded breath...'
+        }
+        itemTypeLabel={noun.toLowerCase()}
         onFilterByTrackIds={(ids) => setAiMatchedTrackIds(ids)}
       />
 

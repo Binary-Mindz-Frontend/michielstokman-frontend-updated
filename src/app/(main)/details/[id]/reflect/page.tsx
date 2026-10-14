@@ -210,10 +210,13 @@ export default function ResonanceReflection() {
             <div className="font-edo relative leading-none font-medium uppercase">
               <h1 className="-rotate-3 transform text-3xl tracking-wider sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl">
                 <span className="block text-[#4D6E26]">RESONANCE</span>
-                <span className="relative block text-[#E81A66]">
+                <span className="relative block" style={{ color: themeColor }}>
                   REFLECTION
-                  {/* Decorative drawn white heart */}
-                  <span className="absolute -top-3 -right-6 font-sans text-2xl font-light text-[#E81A66] sm:-top-5 sm:-right-8 sm:text-4xl">
+                  {/* Decorative drawn heart */}
+                  <span
+                    className="absolute -top-3 -right-6 font-sans text-2xl font-light sm:-top-5 sm:-right-8 sm:text-4xl"
+                    style={{ color: themeColor }}
+                  >
                     ♡
                   </span>
                 </span>

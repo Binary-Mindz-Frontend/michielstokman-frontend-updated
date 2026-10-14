@@ -68,7 +68,9 @@ export default function StorySharePage() {
             <div className="font-edo relative inline-block leading-none font-medium uppercase">
               <h1 className="-rotate-2 transform text-3xl tracking-wider sm:text-4xl md:text-5xl">
                 <span className="block text-[#4D6E26]">THANK YOU</span>
-                <span className="relative block text-[#E81A66]">FOR LISTENING</span>
+                <span className="relative block" style={{ color: themeColor }}>
+                  FOR LISTENING
+                </span>
               </h1>
               <div className="relative mx-auto mt-2 h-4 w-full max-w-70">
                 <Image src={vectorUnderline} alt="" fill className="object-contain" />
