@@ -35,25 +35,32 @@ export default function LiberationsGrid() {
 
   const rawItems = definitions && definitions.length > 0 ? definitions : rawFeedLiberations;
 
-  const liberationsData: LiberationItem[] = rawItems.map((item: any) => ({
-    id: item.id || item.journey_code,
-    journeyCode: item.journey_code,
-    category: 'LIBERATION',
-    title: item.title,
-    description: item.description || `A ${item.total_days || 7}-day path to transformation.`,
-    image: resolveMediaUrl(item.cover_image_url) || fallbackCardImage,
-    price:
-      item.price !== undefined && item.price !== null
-        ? `€${item.price}`
-        : item.price_cents
-          ? `€${item.price_cents / 100}`
-          : item.price_display
-            ? `€${item.price_display}`
-            : item.rating
-              ? item.rating.toString()
-              : '€47',
-    totalDays: item.total_days ?? 7,
-  }));
+  const liberationsData: LiberationItem[] = rawItems.map((item: any) => {
+    const dayImage = item.days?.find((d: any) => d.image_url)?.image_url;
+    const isGenericDefault =
+      !item.cover_image_url || item.cover_image_url.includes('de6eed03ae5244c0a80b60c85d6b57ab');
+    const finalCover = isGenericDefault && dayImage ? dayImage : item.cover_image_url || dayImage;
+
+    return {
+      id: item.id || item.journey_code,
+      journeyCode: item.journey_code,
+      category: 'LIBERATION',
+      title: item.title,
+      description: item.description || `A ${item.total_days || 7}-day path to transformation.`,
+      image: resolveMediaUrl(finalCover) || fallbackCardImage,
+      price:
+        item.price !== undefined && item.price !== null
+          ? `€${item.price}`
+          : item.price_cents
+            ? `€${item.price_cents / 100}`
+            : item.price_display
+              ? `€${item.price_display}`
+              : item.rating
+                ? item.rating.toString()
+                : '€47',
+      totalDays: item.total_days ?? 7,
+    };
+  });
 
   const visibleLiberations = liberationsData.slice(0, visibleCount);
   const hasMore = liberationsData.length > visibleCount;
