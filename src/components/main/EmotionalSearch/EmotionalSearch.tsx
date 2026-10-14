@@ -96,12 +96,12 @@ export default function EmotionalSearch({
       const ids = response?.track_ids || [];
       setMatchedIds(ids);
       if (onFilterByTrackIds) {
-        onFilterByTrackIds(ids.length > 0 ? ids : null);
+        onFilterByTrackIds(ids);
       }
     } catch {
       setMatchedIds([]);
       if (onFilterByTrackIds) {
-        onFilterByTrackIds(null);
+        onFilterByTrackIds([]);
       }
     }
   };

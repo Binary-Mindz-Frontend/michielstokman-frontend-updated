@@ -86,51 +86,56 @@ export default function StoryCatalogGrid({
     );
 
     // Filter by AI Pinecone semantic matches if an emotional search is active
-    if (aiMatchedTrackIds && aiMatchedTrackIds.length > 0) {
-      const SLUG_TITLE_MAP: Record<string, string> = {
-        'story-132-joanna': 'back to the current',
-        'story-136-jonas': 'contact with the trees',
-        'story-201-desiree': 'growing toward the light',
-        'story-204-jasna': 'the first time we shared',
-        'story-028-lars': 'two men and nia',
-      };
+    if (aiMatchedTrackIds !== null) {
+      if (aiMatchedTrackIds.length === 0) {
+        items = [];
+      } else {
+        const SLUG_TITLE_MAP: Record<string, string> = {
+          'story-132-joanna': 'back to the current',
+          'story-136-jonas': 'contact with the trees',
+          'story-201-desiree': 'growing toward the light',
+          'story-204-jasna': 'the first time we shared',
+          'story-028-lars': 'two men and nia',
+        };
 
-      const filtered = items.filter((item: any) => {
-        const itemId = String(item.id || '')
-          .toLowerCase()
-          .trim();
-        const trackId = String(item.track_id || '')
-          .toLowerCase()
-          .trim();
-        const journeyCode = String(item.journey_code || '')
-          .toLowerCase()
-          .trim();
-        const itemTitle = String(item.title || '')
-          .toLowerCase()
-          .trim();
-        const author = String(item.author_name || '')
-          .toLowerCase()
-          .trim();
+        const filtered = items.filter((item: any) => {
+          const itemId = String(item.id || '')
+            .toLowerCase()
+            .trim();
+          const trackId = String(item.track_id || '')
+            .toLowerCase()
+            .trim();
+          const journeyCode = String(item.journey_code || '')
+            .toLowerCase()
+            .trim();
+          const itemTitle = String(item.title || '')
+            .toLowerCase()
+            .trim();
+          const author = String(item.author_name || '')
+            .toLowerCase()
+            .trim();
 
-        return aiMatchedTrackIds.some((trackIdOrSlug) => {
-          const needle = trackIdOrSlug.toLowerCase().trim();
-          if (!needle) return false;
-          const mappedTitle = SLUG_TITLE_MAP[needle];
+          return aiMatchedTrackIds.some((trackIdOrSlug) => {
+            const needle = trackIdOrSlug.toLowerCase().trim();
+            if (!needle) return false;
+            const mappedTitle = SLUG_TITLE_MAP[needle];
 
-          return (
-            (itemId && (itemId === needle || needle.includes(itemId) || itemId.includes(needle))) ||
-            (trackId && (trackId === needle || needle.includes(trackId))) ||
-            (journeyCode && (journeyCode === needle || needle.includes(journeyCode))) ||
-            (mappedTitle &&
-              itemTitle &&
-              (itemTitle.includes(mappedTitle) || mappedTitle.includes(itemTitle))) ||
-            (itemTitle && (itemTitle.includes(needle) || needle.includes(itemTitle))) ||
-            (author && (needle.includes(author) || author === needle))
-          );
+            return (
+              (itemId &&
+                (itemId === needle || needle.includes(itemId) || itemId.includes(needle))) ||
+              (trackId && (trackId === needle || needle.includes(trackId))) ||
+              (journeyCode && (journeyCode === needle || needle.includes(journeyCode))) ||
+              (mappedTitle &&
+                itemTitle &&
+                (itemTitle.includes(mappedTitle) || mappedTitle.includes(itemTitle))) ||
+              (itemTitle && (itemTitle.includes(needle) || needle.includes(itemTitle))) ||
+              (author && (needle.includes(author) || author === needle))
+            );
+          });
         });
-      });
 
-      items = filtered;
+        items = filtered;
+      }
     }
 
     // Idempotent with the API: still works against an older feed that ignores query params.
@@ -280,21 +285,32 @@ export default function StoryCatalogGrid({
             ) : (
               <div className="col-span-full space-y-3 py-12 text-center">
                 <p className="font-sans text-sm font-semibold text-[#777]">
-                  {catalogEmptyMessage({
-                    noun,
-                    growthArea,
-                    tag,
-                    hideExplicit,
-                  })}
+                  {aiMatchedTrackIds !== null
+                    ? `No active ${noun.toLowerCase()} directly match this emotion. Try adjusting your emotional keywords or clear the search.`
+                    : catalogEmptyMessage({
+                        noun,
+                        growthArea,
+                        tag,
+                        hideExplicit,
+                      })}
                 </p>
-                {hasActiveFilters ? (
+                {aiMatchedTrackIds !== null ? (
+                  <button
+                    type="button"
+                    onClick={() => setAiMatchedTrackIds(null)}
+                    className="font-sans text-xs font-semibold underline decoration-1 underline-offset-4"
+                    style={{ color: accentColor }}
+                  >
+                    Clear Emotional Search
+                  </button>
+                ) : hasActiveFilters ? (
                   <button
                     type="button"
                     onClick={() => router.replace(pathname, { scroll: false })}
                     className="font-sans text-xs font-semibold underline decoration-1 underline-offset-4"
                     style={{ color: accentColor }}
                   >
-                    Clear
+                    Clear Filters
                   </button>
                 ) : null}
               </div>

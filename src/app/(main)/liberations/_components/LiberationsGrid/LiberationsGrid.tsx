@@ -78,8 +78,11 @@ export default function LiberationsGrid() {
 
   // Non-destructive AI vector match filtering
   const filteredLiberations = useMemo(() => {
-    if (!aiMatchedTrackIds || aiMatchedTrackIds.length === 0) {
+    if (aiMatchedTrackIds === null) {
       return liberationsData;
+    }
+    if (aiMatchedTrackIds.length === 0) {
+      return [];
     }
 
     const matched = liberationsData.filter((item) => {
@@ -106,10 +109,7 @@ export default function LiberationsGrid() {
       });
     });
 
-    // NON-DESTRUCTIVE FALLBACK:
-    // If no direct matches in the current liberation journeys, keep all journeys visible
-    // so the catalog is never blanked out or empty.
-    return matched.length > 0 ? matched : liberationsData;
+    return matched;
   }, [liberationsData, aiMatchedTrackIds]);
 
   const isFiltered = Boolean(
