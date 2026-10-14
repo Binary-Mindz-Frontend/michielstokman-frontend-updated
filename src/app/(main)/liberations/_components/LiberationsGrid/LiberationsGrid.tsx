@@ -3,7 +3,10 @@
 
 import DynamicActionButton from '@/components/main/DynamicActionButton/DynamicActionButton';
 import ProductCardSkeleton from '@/components/main/Skeletons/ProductCardSkeleton';
-import { useGetLiberationCatalogQuery } from '@/redux/features/discoveryFeed/discoveryFeed.api';
+import {
+  useGetLiberationCatalogQuery,
+  useGetDiscoveryFeedQuery,
+} from '@/redux/features/discoveryFeed/discoveryFeed.api';
 import { resolveMediaUrl } from '@/lib/publications/media';
 import { FADE_IN_UP_CONTAINER, FADE_IN_UP_ITEM } from '@/utils/animations.utils';
 import { STORY_CATALOG_GRID_CLASS } from '@/utils/storyCover.utils';
@@ -16,11 +19,23 @@ import fallbackCardImage from '@/assets/shared/confession-card-1.png';
 
 export default function LiberationsGrid() {
   const [visibleCount, setVisibleCount] = useState(8);
-  const { data: catalogResponse, isLoading } = useGetLiberationCatalogQuery(undefined);
+  const { data: catalogResponse, isLoading: isCatalogLoading } =
+    useGetLiberationCatalogQuery(undefined);
+  const { data: feedResponse, isLoading: isFeedLoading } = useGetDiscoveryFeedQuery([]);
 
-  const definitions = catalogResponse?.data?.definitions || [];
+  const definitions = catalogResponse?.data?.definitions;
 
-  const liberationsData: LiberationItem[] = definitions.map((item: any) => ({
+  // Fallback: If catalog API has no items or is pending deployment, fall back to discovery feed
+  const rawFeedLiberations = (feedResponse?.data?.items || []).filter(
+    (item: any) =>
+      item.card_type === 'liberation_journey' ||
+      item.card_type === 'liberation' ||
+      item.story_type === 'liberation',
+  );
+
+  const rawItems = definitions && definitions.length > 0 ? definitions : rawFeedLiberations;
+
+  const liberationsData: LiberationItem[] = rawItems.map((item: any) => ({
     id: item.id || item.journey_code,
     journeyCode: item.journey_code,
     category: 'LIBERATION',
@@ -32,9 +47,11 @@ export default function LiberationsGrid() {
         ? `€${item.price}`
         : item.price_cents
           ? `€${item.price_cents / 100}`
-          : item.rating
-            ? item.rating.toString()
-            : '€47',
+          : item.price_display
+            ? `€${item.price_display}`
+            : item.rating
+              ? item.rating.toString()
+              : '€47',
     totalDays: item.total_days ?? 7,
   }));
 
@@ -44,6 +61,8 @@ export default function LiberationsGrid() {
   const handleLoadMore = () => {
     setVisibleCount((prev) => prev + 8);
   };
+
+  const isLoading = isCatalogLoading && isFeedLoading && liberationsData.length === 0;
 
   if (isLoading) {
     return (
