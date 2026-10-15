@@ -19,8 +19,9 @@ function buildFeedQuery(arg: DiscoveryFeedQueryArg) {
   (options.storyTypes || []).forEach((type) => params.append('story_type', type.toLowerCase()));
   if (options.sort && options.sort !== 'newest') params.set('sort', options.sort);
   if (options.hideExplicit) params.set('hide_explicit', 'true');
-  if (options.growthArea) params.set('growth_area', options.growthArea);
-  if (options.tag) params.set('tag', options.tag);
+  // Note: StoryCatalogGrid handles growthArea and tag filtering client-side
+  // across the loaded feed, allowing flexible casing, hyphens, and synonym matching
+  // without exact-match PostgreSQL JSONB drops.
   if (options.limit) params.set('limit', String(options.limit));
 
   const query = params.toString();

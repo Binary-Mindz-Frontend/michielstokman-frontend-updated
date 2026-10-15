@@ -142,10 +142,10 @@ export default function StoryCatalogGrid({
     if (hideExplicit) {
       items = items.filter((item: any) => !item.is_explicit);
     }
-    if (growthArea && items.some((item: any) => Array.isArray(item.growth_areas))) {
+    if (growthArea) {
       items = items.filter((item: any) => listHasValue(item.growth_areas, growthArea));
     }
-    if (tag && items.some((item: any) => Array.isArray(item.tags))) {
+    if (tag) {
       items = items.filter((item: any) => listHasValue(item.tags, tag));
     }
     if (sort === 'most_listened') {
