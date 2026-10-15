@@ -35,6 +35,46 @@ export function cardMoodTags(tags: string[] | null | undefined, max = 2): string
     .slice(0, max);
 }
 
+const TITLE_MOOD_FALLBACKS: { match: string; areas: string[] }[] = [
+  // Meditations
+  { match: 'flirt & sparkle', areas: ['Love & Connection', 'Presence', 'Self-Acceptance'] },
+  { match: 'sacral fire', areas: ['Presence', 'Self-Compassion', 'Letting Go'] },
+  { match: 'opening the third eye', areas: ['Presence', 'Purpose & Meaning', 'Patience'] },
+  { match: 'opening to wealth', areas: ['Rebuilding', 'Purpose & Meaning', 'Self-Acceptance'] },
+  { match: 'temple of health', areas: ['Self-Compassion', 'Presence', 'Patience'] },
+  { match: 'listening to your body', areas: ['Self-Compassion', 'Presence', 'Patience'] },
+  { match: 'letting the ego teach you', areas: ['Fear & Freedom', 'Letting Go', 'Forgiveness'] },
+  { match: 'true freedom', areas: ['Fear & Freedom', 'Letting Go', 'Forgiveness'] },
+
+  // Confessions without tags in DB
+  { match: 'the first time we shared', areas: ['Love & Connection', 'Presence', 'Fear & Freedom'] },
+  {
+    match: 'my transform to liberation confession',
+    areas: ['Self-Acceptance', 'Rebuilding', 'Letting Go'],
+  },
+  {
+    match: 'when the book began to breathe',
+    areas: ['Purpose & Meaning', 'Forgiveness', 'Presence'],
+  },
+];
+
+export function resolveStoryGrowthAreas(item: {
+  title?: string;
+  growth_areas?: unknown;
+}): string[] {
+  if (Array.isArray(item.growth_areas) && item.growth_areas.length > 0) {
+    const raw = item.growth_areas.map((g) => String(g).trim()).filter(Boolean);
+    if (raw.length > 0) return raw;
+  }
+  const titleLower = String(item.title || '').toLowerCase();
+  for (const entry of TITLE_MOOD_FALLBACKS) {
+    if (titleLower.includes(entry.match)) {
+      return entry.areas;
+    }
+  }
+  return [];
+}
+
 function normalizeMoodText(str: string): string {
   return str.toLowerCase().replace(/[-_&]/g, ' ').replace(/\s+/g, ' ').trim();
 }

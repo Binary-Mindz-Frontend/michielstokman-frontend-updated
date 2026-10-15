@@ -16,6 +16,7 @@ import {
   cardMoodTags,
   catalogEmptyMessage,
   listHasValue,
+  resolveStoryGrowthAreas,
   type CatalogSort,
 } from '@/utils/storyMoods.utils';
 import { motion } from 'framer-motion';
@@ -143,7 +144,7 @@ export default function StoryCatalogGrid({
       items = items.filter((item: any) => !item.is_explicit);
     }
     if (growthArea) {
-      items = items.filter((item: any) => listHasValue(item.growth_areas, growthArea));
+      items = items.filter((item: any) => listHasValue(resolveStoryGrowthAreas(item), growthArea));
     }
     if (tag) {
       items = items.filter((item: any) => listHasValue(item.tags, tag));
@@ -158,24 +159,30 @@ export default function StoryCatalogGrid({
       );
     }
 
-    return items.map((item: any) => ({
-      id: item.id,
-      category: 'STORY',
-      title: item.title,
-      description: item.excerpt || item.description,
-      image: resolveStoryCoverSrc(item.cover_image_url, storyType),
-      rating: item.rating !== null && item.rating !== undefined ? String(item.rating) : null,
-      listenedCount: item.listened_count ?? 0,
-      isExplicit: item.is_explicit ?? false,
-      authorName: publicDisplayName(item.author_name),
-      location: item.location,
-      gender: item.gender,
-      sexualOrientation: item.sexual_orientation,
-      occupation: item.occupation,
-      age: item.age,
-      durationSeconds: item.audio_duration_seconds,
-      tags: cardMoodTags(item.tags),
-    }));
+    return items.map((item: any) => {
+      const resolvedAreas = resolveStoryGrowthAreas(item);
+      const displayTags =
+        Array.isArray(item.tags) && item.tags.length > 0 ? item.tags : resolvedAreas;
+
+      return {
+        id: item.id,
+        category: 'STORY',
+        title: item.title,
+        description: item.excerpt || item.description,
+        image: resolveStoryCoverSrc(item.cover_image_url, storyType),
+        rating: item.rating !== null && item.rating !== undefined ? String(item.rating) : null,
+        listenedCount: item.listened_count ?? 0,
+        isExplicit: item.is_explicit ?? false,
+        authorName: publicDisplayName(item.author_name),
+        location: item.location,
+        gender: item.gender,
+        sexualOrientation: item.sexual_orientation,
+        occupation: item.occupation,
+        age: item.age,
+        durationSeconds: item.audio_duration_seconds,
+        tags: cardMoodTags(displayTags),
+      };
+    });
   }, [
     aiMatchedTrackIds,
     feedResponse?.data?.items,
