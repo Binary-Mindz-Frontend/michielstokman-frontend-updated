@@ -19,11 +19,15 @@ const adminVoiceReviewApi = apiClient.injectEndpoints({
 
     // Regenerate Voice
     regenerateVoice: builder.mutation({
-      query: (storyId) => ({
+      query: (storyId: string) => ({
         url: `/admin/voice-review/${storyId}/regenerate`,
         method: 'POST',
       }),
-      invalidatesTags: ['Voice_Review'],
+      invalidatesTags: (_result, _error, storyId) => [
+        { type: 'Story' as const, id: storyId },
+        'Voice_Review',
+        'ModerationQueue',
+      ],
     }),
   }),
 });
