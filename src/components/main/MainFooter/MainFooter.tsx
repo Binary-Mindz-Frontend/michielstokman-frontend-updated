@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { FaReddit } from 'react-icons/fa';
 import { useAuthState } from '@/redux/features/auth/authSlice';
 import { useAppSelector } from '@/redux/hooks';
 
@@ -42,6 +43,22 @@ function MainFooter() {
             <p className="font-playpen mt-3 text-xs leading-relaxed font-semibold text-[#555] sm:mt-3.5 sm:text-sm">
               A space to be real, to feel deep, to transform without asking permission.
             </p>
+
+            <div className="mt-3.5 flex items-center gap-2">
+              <a
+                href="https://www.reddit.com/user/ADGalaxyTeam/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Follow on Reddit"
+                className="group inline-flex items-center gap-2 rounded-full border border-[#E5DDD2] bg-white px-3 py-1.5 text-xs font-bold text-[#4A3B32] shadow-2xs transition-all hover:border-[#FF4500] hover:text-[#FF4500]"
+              >
+                <FaReddit
+                  size={16}
+                  className="text-[#FF4500] transition-transform group-hover:scale-110"
+                />
+                <span className="font-playpen">Reddit</span>
+              </a>
+            </div>
           </div>
 
           {/* Quick Links Column */}
@@ -111,12 +128,24 @@ function MainFooter() {
         {/* Bottom Copyright Row */}
         <div className="font-playpen mt-6 flex flex-col items-center justify-between gap-2.5 text-center text-[11px] font-semibold text-[#777] sm:flex-row sm:text-left sm:text-xs">
           <p>© {new Date().getFullYear()} TRANSFORM TO LIBERATION. ALL RIGHTS RESERVED.</p>
-          <div className="flex items-center gap-1.5">
-            <span>Made with</span>
-            <div className="relative h-3.5 w-3.5 shrink-0">
-              <Image src={pinkHeartDrawn} alt="Heart" fill className="object-contain" />
+          <div className="flex items-center gap-4">
+            <a
+              href="https://www.reddit.com/user/ADGalaxyTeam/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Reddit"
+              className="inline-flex items-center gap-1.5 font-bold text-[#555] transition-colors hover:text-[#FF4500]"
+            >
+              <FaReddit size={14} className="text-[#FF4500]" />
+              <span>Reddit</span>
+            </a>
+            <div className="flex items-center gap-1.5">
+              <span>Made with</span>
+              <div className="relative h-3.5 w-3.5 shrink-0">
+                <Image src={pinkHeartDrawn} alt="Heart" fill className="object-contain" />
+              </div>
+              <span>for authentic souls.</span>
             </div>
-            <span>for authentic souls.</span>
           </div>
         </div>
       </div>

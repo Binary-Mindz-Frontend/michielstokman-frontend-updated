@@ -196,15 +196,41 @@ const VoiceTab = ({
               </div>
             </>
           ) : (
-            <p className="text-sm text-[#8A6E5F]">
-              No audio yet. Pick a voice and regenerate, or upload a recording.
-            </p>
+            <div className="flex flex-col items-start justify-between gap-3 pt-1 sm:flex-row sm:items-center">
+              <p className="text-sm text-[#8A6E5F]">
+                No audio yet. Pick a voice and generate narration, or upload a recording.
+              </p>
+              {!detail.isHumanNarrated ? (
+                <Button
+                  type="button"
+                  onClick={handleRegenerate}
+                  disabled={isRegenerating || isVoiceInProgress || isSaving}
+                  size="sm"
+                  className="btn-styles shrink-0"
+                >
+                  {isRegenerating || isVoiceInProgress ? (
+                    <Loader2 size={13} className="animate-spin" />
+                  ) : (
+                    <RefreshCw size={13} />
+                  )}
+                  {isRegenerating
+                    ? 'Queuing…'
+                    : isVoiceInProgress
+                      ? 'Narrating with AI…'
+                      : 'Generate voice'}
+                </Button>
+              ) : null}
+            </div>
           )}
 
-          {detail.statuses.voice === 'in_progress' ? (
-            <p className="text-[11px] text-[#8A6E5F]">
-              New narration is being produced. Refresh in a moment to hear it.
-            </p>
+          {isVoiceInProgress ? (
+            <div className="flex items-center gap-2 rounded-md border border-[#EFE8E1] bg-[#FBF7F4] p-2.5 text-xs text-[#8A6E5F]">
+              <Loader2 size={14} className="shrink-0 animate-spin text-[#BF7758]" />
+              <span>
+                Audio narration is being generated with ElevenLabs AI. It will update automatically
+                when ready.
+              </span>
+            </div>
           ) : null}
 
           <dl className="grid grid-cols-2 gap-3 border-t border-[#F0EAE5] pt-3">
