@@ -17,6 +17,7 @@ import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import BulkCoverRegenerate from './BulkCoverRegenerate';
+import BulkStoryImport from './BulkStoryImport';
 import PublicationCard from './PublicationCard';
 import StatusChip from './StatusChip';
 import { usePublicationRows, type MissingAsset, type PublicationSort } from './usePublicationRows';
@@ -212,6 +213,7 @@ const PublicationsOverview = () => {
             <Images size={16} /> Cover library
           </Link>
           <BulkCoverRegenerate />
+          <BulkStoryImport />
           <Button
             onClick={handleExport}
             disabled={!rows.length}

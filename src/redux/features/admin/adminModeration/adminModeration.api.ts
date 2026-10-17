@@ -238,6 +238,34 @@ const adminModerationApi = apiClient.injectEndpoints({
       },
       invalidatesTags: (_result, _error, { storyId }) => [...publicationTags(storyId)],
     }),
+
+    bulkParseDocument: builder.mutation({
+      query: ({ file, defaultStoryType }: { file: File; defaultStoryType?: string }) => {
+        const body = new FormData();
+        body.append('file', file);
+        const params = defaultStoryType
+          ? `?default_story_type=${encodeURIComponent(defaultStoryType)}`
+          : '';
+        return {
+          url: `/admin/moderation/bulk-parse${params}`,
+          method: 'POST',
+          body,
+        };
+      },
+    }),
+
+    bulkConfirmIngest: builder.mutation({
+      query: (payload: {
+        stories: unknown[];
+        generate_covers?: boolean;
+        generate_audio?: boolean;
+      }) => ({
+        url: '/admin/moderation/bulk-confirm',
+        method: 'POST',
+        body: payload,
+      }),
+      invalidatesTags: ['ModerationQueue'],
+    }),
   }),
 });
 
@@ -256,4 +284,6 @@ export const {
   useRegeneratePublicationCoverMutation,
   useReplacePublicationCoverMutation,
   useReplacePublicationAudioMutation,
+  useBulkParseDocumentMutation,
+  useBulkConfirmIngestMutation,
 } = adminModerationApi;
