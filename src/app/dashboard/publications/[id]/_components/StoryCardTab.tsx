@@ -10,6 +10,7 @@ import {
 } from '@/redux/features/admin/adminModeration/adminModeration.api';
 import type { PublicationDetail } from '@/types/publication.types';
 import { storyIdentityLines } from '@/utils/storyIdentity.utils';
+import { STORY_GROWTH_AREAS, STORY_LIFE_PHASES } from '@/utils/storyMoods.utils';
 import {
   AlertCircle,
   Check,
@@ -538,18 +539,67 @@ const StoryCardTab = ({
             <span className="mb-1 block text-[10px] font-bold tracking-wider text-[#A08170] uppercase">
               Growth areas
             </span>
-            <ChipList
-              items={form.growthAreas}
-              onChange={(growthAreas) => patch({ growthAreas })}
-              placeholder="Add a growth area and press Enter"
-            />
+            <div className="space-y-2">
+              {form.growthAreas.length ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {form.growthAreas.map((item) => (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() =>
+                        patch({ growthAreas: form.growthAreas.filter((val) => val !== item) })
+                      }
+                      className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-[#E1D7CE] bg-white px-2.5 py-1 text-[11px] font-medium text-[#5C3A21] hover:bg-[#F5F0EB]"
+                    >
+                      {item} <X size={10} />
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[11px] text-[#8A6E5F]">
+                  Nothing yet — generate or select from dropdown below.
+                </p>
+              )}
+              <select
+                className={inputClass}
+                value=""
+                onChange={(event) => {
+                  const value = event.target.value;
+                  if (value && !form.growthAreas.includes(value)) {
+                    patch({ growthAreas: [...form.growthAreas, value] });
+                  }
+                }}
+              >
+                <option value="">Select a growth area to add...</option>
+                {STORY_GROWTH_AREAS.map((area) => (
+                  <option key={area} value={area} disabled={form.growthAreas.includes(area)}>
+                    {area} {form.growthAreas.includes(area) ? '✓ (added)' : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
-          <input
-            className={inputClass}
-            placeholder="Life phase"
-            value={form.lifePhase}
-            onChange={(event) => patch({ lifePhase: event.target.value })}
-          />
+          <div>
+            <span className="mb-1 block text-[10px] font-bold tracking-wider text-[#A08170] uppercase">
+              Life phase
+            </span>
+            <select
+              className={inputClass}
+              value={form.lifePhase || ''}
+              onChange={(event) => patch({ lifePhase: event.target.value })}
+            >
+              <option value="">Select life phase...</option>
+              {STORY_LIFE_PHASES.map((phase) => (
+                <option key={phase} value={phase}>
+                  {phase}
+                </option>
+              ))}
+              {form.lifePhase &&
+              !STORY_LIFE_PHASES.includes(form.lifePhase as (typeof STORY_LIFE_PHASES)[number]) ? (
+                <option value={form.lifePhase}>{form.lifePhase} (custom)</option>
+              ) : null}
+            </select>
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 border-t border-[#E6DFDA] pt-4">
