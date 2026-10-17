@@ -11,7 +11,7 @@ import {
 import { useRegenerateVoiceMutation } from '@/redux/features/admin/adminVoiceReview/adminVoiceReview.api';
 import type { PublicationDetail } from '@/types/publication.types';
 import { Check, Download, Loader2, MicOff, RefreshCw, Upload, Volume2 } from 'lucide-react';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useAssetApproval } from './useAssetApproval';
 import type { WorkspaceForm } from './useWorkspaceDraft';
@@ -67,6 +67,18 @@ const VoiceTab = ({
 
   const approved = detail.statuses.voice === 'approved';
   const audioSrc = detail.audioPath;
+
+  const isVoiceInProgress = detail.statuses.voice === 'in_progress';
+  const prevVoiceStatusRef = useRef(detail.statuses.voice);
+
+  useEffect(() => {
+    if (prevVoiceStatusRef.current === 'in_progress' && !isVoiceInProgress) {
+      if (detail.statuses.voice === 'ready_for_review' || detail.statuses.voice === 'approved') {
+        toast.success('New audio narration ready!');
+      }
+    }
+    prevVoiceStatusRef.current = detail.statuses.voice;
+  }, [detail.statuses.voice, isVoiceInProgress]);
 
   const applySpeed = (next: number) => {
     setSpeed(next);
@@ -278,16 +290,29 @@ const VoiceTab = ({
           <Button
             type="button"
             onClick={handleRegenerate}
-            disabled={isRegenerating || isSaving || detail.isHumanNarrated}
+            disabled={isRegenerating || isVoiceInProgress || isSaving || detail.isHumanNarrated}
             className="btn-styles w-full"
           >
-            {isRegenerating ? (
+            {isRegenerating || isVoiceInProgress ? (
               <Loader2 size={14} className="animate-spin" />
             ) : (
               <RefreshCw size={14} />
             )}
-            {isRegenerating ? 'Queuing…' : 'Regenerate voice'}
+            {isRegenerating
+              ? 'Queuing…'
+              : isVoiceInProgress
+                ? 'Narrating with AI…'
+                : 'Regenerate voice'}
           </Button>
+
+          {isVoiceInProgress ? (
+            <div className="flex items-center gap-2 rounded-md border border-[#EFE8E1] bg-[#FBF7F4] p-2.5 text-xs text-[#8A6E5F]">
+              <Loader2 size={14} className="shrink-0 animate-spin text-[#BF7758]" />
+              <span>
+                Audio narration is being generated with AI. It will update automatically when ready.
+              </span>
+            </div>
+          ) : null}
 
           <button
             type="button"
