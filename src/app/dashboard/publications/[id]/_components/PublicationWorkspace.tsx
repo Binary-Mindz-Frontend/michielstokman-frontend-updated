@@ -31,16 +31,37 @@ const WorkspaceSkeleton = () => (
   </div>
 );
 
+const isAssetInProgress = (detail?: PublicationDetail | null, data?: unknown): boolean => {
+  if (detail?.statuses?.cover === 'in_progress' || detail?.statuses?.voice === 'in_progress') {
+    return true;
+  }
+  const raw = (data as { data?: Record<string, unknown> } | undefined)?.data;
+  if (!raw) return false;
+  const cover = String(raw.cover_status || '').toLowerCase();
+  const voice = String(raw.voice_status || '').toLowerCase();
+  return cover.includes('in_progress') || voice.includes('in_progress');
+};
+
 const PublicationWorkspace = ({ id }: { id: string }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const { data, isLoading, isError } = useGetModerationStoryDetailsQuery(id);
+  const { data, isLoading, isError, refetch } = useGetModerationStoryDetailsQuery(id);
 
   const detail = useMemo(
     () => mapPublicationDetail(data?.data as Record<string, unknown> | undefined),
     [data],
   );
+
+  const isProcessing = useMemo(() => isAssetInProgress(detail, data), [detail, data]);
+
+  useEffect(() => {
+    if (!isProcessing) return undefined;
+    const timer = setInterval(() => {
+      refetch();
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [isProcessing, refetch]);
 
   const tabParam = searchParams.get('tab');
   const activeTab: TabId = TABS.some((tab) => tab.id === tabParam)

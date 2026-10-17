@@ -22,7 +22,7 @@ import {
   X,
 } from 'lucide-react';
 import Image from 'next/image';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useAssetApproval } from './useAssetApproval';
 import type { WorkspaceForm } from './useWorkspaceDraft';
@@ -112,9 +112,20 @@ const StoryCardTab = ({
   const [regenerateCover, { isLoading: isRegenerating }] = useRegeneratePublicationCoverMutation();
   const [replaceCover, { isLoading: isUploading }] = useReplacePublicationCoverMutation();
   const { setApproved, isLoading: isApproving } = useAssetApproval(detail.id, 'cover');
-
   const approved = detail.statuses.cover === 'approved';
   const coverSrc = detail.coverImageUrl || placeholder;
+
+  const isCoverInProgress = detail.statuses.cover === 'in_progress';
+  const prevCoverStatusRef = useRef(detail.statuses.cover);
+
+  useEffect(() => {
+    if (prevCoverStatusRef.current === 'in_progress' && !isCoverInProgress) {
+      if (detail.statuses.cover === 'ready_for_review' || detail.statuses.cover === 'approved') {
+        toast.success('New story card image ready!');
+      }
+    }
+    prevCoverStatusRef.current = detail.statuses.cover;
+  }, [detail.statuses.cover, isCoverInProgress]);
 
   const identity = storyIdentityLines({
     authorName: form.pseudonym,
@@ -214,13 +225,27 @@ const StoryCardTab = ({
 
           <div className="relative mt-3 mb-4 h-60 w-full overflow-hidden rounded-md bg-[#E9E1DA]">
             <Image
+              key={typeof coverSrc === 'string' ? coverSrc : 'story-placeholder'}
               src={coverSrc}
               alt={form.title || 'Story cover'}
               fill
               unoptimized={typeof coverSrc === 'string'}
-              className="object-cover object-center"
+              className={`object-cover object-center transition-all duration-300 ${
+                isCoverInProgress ? 'scale-105 blur-[2px] brightness-75' : ''
+              }`}
               sizes="340px"
             />
+            {isCoverInProgress ? (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 p-4 text-center text-white backdrop-blur-[2px]">
+                <Loader2 size={26} className="animate-spin text-white drop-shadow-md" />
+                <p className="mt-2 text-xs font-semibold tracking-wide">
+                  Generating new story card...
+                </p>
+                <p className="mt-0.5 text-[11px] text-white/80">
+                  Drawing with AI, updates automatically
+                </p>
+              </div>
+            ) : null}
           </div>
 
           <span className="font-sans text-xs font-semibold tracking-widest text-[#301C05] uppercase">
@@ -284,31 +309,35 @@ const StoryCardTab = ({
             <button
               type="button"
               onClick={handleRegenerate}
-              disabled={isRegenerating}
-              className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-[#E1D7CE] bg-white px-3 py-2 text-sm font-medium text-[#5C3A21] hover:bg-[#F5F0EB] disabled:opacity-60"
+              disabled={isRegenerating || isCoverInProgress}
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-[#E1D7CE] bg-white px-3 py-2 text-sm font-medium text-[#5C3A21] hover:bg-[#F5F0EB] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isRegenerating ? (
-                <Loader2 size={14} className="animate-spin" />
+              {isRegenerating || isCoverInProgress ? (
+                <Loader2 size={14} className="animate-spin text-[#BF7758]" />
               ) : (
                 <RefreshCw size={14} />
               )}
-              Regenerate
+              {isCoverInProgress ? 'Generating…' : 'Regenerate'}
             </button>
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
-              className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-[#E1D7CE] bg-white px-3 py-2 text-sm font-medium text-[#5C3A21] hover:bg-[#F5F0EB] disabled:opacity-60"
+              disabled={isUploading || isCoverInProgress}
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-[#E1D7CE] bg-white px-3 py-2 text-sm font-medium text-[#5C3A21] hover:bg-[#F5F0EB] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isUploading ? <Loader2 size={14} className="animate-spin" /> : <ImageUp size={14} />}
               Replace
             </button>
           </div>
 
-          {detail.statuses.cover === 'in_progress' ? (
-            <p className="text-[11px] text-[#8A6E5F]">
-              A new story card is being drawn. Refresh in a moment to see it.
-            </p>
+          {isCoverInProgress ? (
+            <div className="flex items-center gap-2 rounded-md border border-[#EFE8E1] bg-[#FBF7F4] p-2.5 text-xs text-[#8A6E5F]">
+              <Loader2 size={14} className="shrink-0 animate-spin text-[#BF7758]" />
+              <span>
+                A new story card is being drawn with AI. It will appear here automatically when
+                ready.
+              </span>
+            </div>
           ) : null}
 
           <div className="flex items-center gap-2 border-t border-[#F0EAE5] pt-3">
