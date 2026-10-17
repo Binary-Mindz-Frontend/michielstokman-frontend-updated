@@ -15,6 +15,7 @@ import {
   X,
 } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import React, { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -65,6 +66,9 @@ const BulkStoryImport: React.FC = () => {
   const [bulkParse, { isLoading: isParsing }] = useBulkParseDocumentMutation();
   const [bulkConfirm, { isLoading: isConfirming }] = useBulkConfirmIngestMutation();
 
+  const router = useRouter();
+  const pathname = usePathname();
+
   const resetState = () => {
     setSelectedFile(null);
     setExtractedStories([]);
@@ -77,6 +81,11 @@ const BulkStoryImport: React.FC = () => {
     if (isParsing || isConfirming) return;
     setIsOpen(false);
     resetState();
+  };
+
+  const handleFinishAndGoToPending = () => {
+    handleClose();
+    router.push(`${pathname}?status=pending`);
   };
 
   const validateAndSetFile = (file: File) => {
@@ -499,13 +508,20 @@ const BulkStoryImport: React.FC = () => {
               )}
 
               {step === 'success' && (
-                <div className="flex w-full justify-end">
-                  <Button
+                <div className="flex w-full items-center justify-between">
+                  <button
                     type="button"
                     onClick={handleClose}
-                    className="rounded-md bg-[#301C05] px-6 py-2 text-xs font-semibold text-white hover:bg-[#4A3B32]"
+                    className="cursor-pointer text-xs font-medium text-gray-500 hover:text-gray-800"
                   >
-                    Done
+                    Close
+                  </button>
+                  <Button
+                    type="button"
+                    onClick={handleFinishAndGoToPending}
+                    className="inline-flex items-center gap-1.5 rounded-md bg-[#BF7758] px-5 py-2 text-xs font-semibold text-white hover:bg-[#A86447]"
+                  >
+                    View Stories in Pending Queue <ArrowRight size={14} />
                   </Button>
                 </div>
               )}
